@@ -1,7 +1,7 @@
 # Patch dependencies to run all tests against versions of the crate in the
 # repository.
 [patch.crates-io]
-tower = { path = "tower" }
-tower-layer = { path = "tower-layer" }
-tower-service = { path = "tower-service" }
-tower-test = { path = "tower-test" }
+tower-async = { path = "tower-async" }
+tower-async-layer = { path = "tower-async-layer" }
+tower-async-service = { path = "tower-async-service" }
+tower-async-test = { path = "tower-async-test" }
