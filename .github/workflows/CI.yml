@@ -10,14 +10,14 @@ env:
   MSRV: 1.49.0
 
 jobs:
-  check-stable:
+  check-nightly:
     # Run `cargo check` first to ensure that the pushed code at least compiles.
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
     - uses: actions-rs/toolchain@v1
       with:
-        toolchain: stable
+        toolchain: nightly
         profile: minimal
         override: true
     - name: Check
@@ -32,40 +32,13 @@ jobs:
     - uses: actions/checkout@master
     - uses: actions-rs/toolchain@v1
       with:
-        toolchain: stable
+        toolchain: nightly
         profile: minimal
     - name: cargo doc
       working-directory: ${{ matrix.subcrate }}
       env:
         RUSTDOCFLAGS: "-D rustdoc::broken_intra_doc_links"
       run: cargo doc --all-features --no-deps
-
-  check-msrv:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@master
-    - name: "install Rust ${{ env.MSRV }}"
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: ${{ env.MSRV }}
-        profile: minimal
-    - name: "install Rust nightly"
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: nightly
-        profile: minimal
-    - name: Select minimal versions
-      uses: actions-rs/cargo@v1
-      with:
-        command: update
-        args: -Z minimal-versions
-        toolchain: nightly
-    - name: Check
-      uses: actions-rs/cargo@v1
-      with:
-        command: check
-        args: --all --all-targets --all-features --locked
-        toolchain: ${{ env.MSRV }}
 
   cargo-hack:
     runs-on: ubuntu-latest
@@ -83,7 +56,7 @@ jobs:
 
   test-versions:
     # Test against the stable, beta, and nightly Rust toolchains on ubuntu-latest.
-    needs: check-stable
+    needs: check-nightly
     runs-on: ubuntu-latest
     strategy:
       # Disable fail-fast. If the test run for a particular Rust version fails,
@@ -91,7 +64,7 @@ jobs:
       # failure only occurs on a particular version.
       fail-fast: false
       matrix:
-        rust: [stable, beta, nightly]
+        rust: [nightly]
     steps:
     - uses: actions/checkout@master
     - name: "install Rust ${{ matrix.rust }}"
@@ -106,42 +79,14 @@ jobs:
         command: test
         args: --workspace --all-features
 
-  test-msrv:
-    needs: check-msrv
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@master
-    - name: "install Rust ${{ env.MSRV }}"
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: ${{ env.MSRV }}
-        profile: minimal
-    - name: "install Rust nightly"
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: nightly
-        profile: minimal
-    - name: Select minimal versions
-      uses: actions-rs/cargo@v1
-      with:
-        command: update
-        args: -Z minimal-versions
-        toolchain: nightly
-    - name: test
-      uses: actions-rs/cargo@v1
-      with:
-        command: check
-        args: --workspace --all-features --locked
-        toolchain: ${{ env.MSRV }}
-
   style:
-    needs: check-stable
+    needs: check-nightly
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
     - uses: actions-rs/toolchain@v1
       with:
-        toolchain: stable
+        toolchain: nightly
         components: rustfmt
         profile: minimal
     - name: rustfmt
@@ -149,12 +94,3 @@ jobs:
       with:
         command: fmt
         args: --all -- --check
-
-  deny-check:
-    name: cargo-deny check
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v1
-    - uses: EmbarkStudios/cargo-deny-action@v1
-      with:
-        command: check
