@@ -1,8 +1,8 @@
 [workspace]
 
 members = [
-  "tower",
-  "tower-layer",
-  "tower-service",
-  "tower-test",
+  "tower-async",
+  "tower-async-layer",
+  "tower-async-service",
+  "tower-async-test",
 ]
