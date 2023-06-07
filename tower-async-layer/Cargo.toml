@@ -1,5 +1,5 @@
 [package]
-name = "tower-layer"
+name = "tower-async-layer"
 # When releasing to crates.io:
 # - Update doc url
 #   - Cargo.toml
@@ -7,20 +7,19 @@ name = "tower-layer"
 # - Update CHANGELOG.md.
 # - Create "v0.1.x" git tag.
 version = "0.3.2"
-authors = ["Tower Maintainers <team@tower-rs.com>"]
+authors = ["Glen De Cauwsemaecker <glen@plabayo.tech>"]
 license = "MIT"
 readme = "README.md"
-repository = "https://github.com/tower-rs/tower"
-homepage = "https://github.com/tower-rs/tower"
-documentation = "https://docs.rs/tower-layer/0.3.0-alpha.2"
+repository = "https://github.com/plabayo/async-tower"
+homepage = "https://github.com/plabayo/async-tower"
 description = """
 Decorates a `Service` to allow easy composition between `Service`s.
 """
 categories = ["asynchronous", "network-programming"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 
 [dev-dependencies]
-tower-service = { version = "0.3.0", path = "../tower-service" }
-tower = { version = "0.4", path = "../tower" }
+tower-async-service = { version = "0.1", path = "../tower-async-service" }
+tower-async = { version = "0.1", path = "../tower-async" }

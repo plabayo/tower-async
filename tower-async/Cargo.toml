@@ -1,5 +1,5 @@
 [package]
-name = "tower"
+name = "tower-async"
 # When releasing to crates.io:
 # - Update doc url
 #   - Cargo.toml
@@ -7,20 +7,18 @@ name = "tower"
 # - Update CHANGELOG.md.
 # - Create "vX.X.X" git tag.
 version = "0.4.13"
-authors = ["Tower Maintainers <team@tower-rs.com>"]
+authors = ["Glen De Cauwsemaecker <glen@plabayo.tech>"]
 license = "MIT"
 readme = "README.md"
-repository = "https://github.com/tower-rs/tower"
-homepage = "https://github.com/tower-rs/tower"
-documentation = "https://docs.rs/tower/0.4.12"
+repository = "https://github.com/plabayo/async-tower"
+homepage = "https://github.com/plabayo/async-tower"
 description = """
-Tower is a library of modular and reusable components for building robust
+Tower Async is a library of modular and reusable components for building robust
 clients and servers.
 """
 categories = ["asynchronous", "network-programming"]
 keywords = ["io", "async", "non-blocking", "futures", "service"]
-edition = "2018"
-rust-version = "1.49.0"
+edition = "2021"
 
 [features]
 
@@ -65,8 +63,8 @@ timeout = ["pin-project-lite", "tokio/time"]
 util = ["__common", "futures-util", "pin-project-lite", "sync_wrapper"]
 
 [dependencies]
-tower-layer = { version = "0.3.1", path = "../tower-layer" }
-tower-service = { version = "0.3.1", path = "../tower-service" }
+tower-layer = { version = "0.3.1", path = "../tower-async-ayer" }
+tower-service = { version = "0.3.1", path = "../tower-async-service" }
 
 futures-core = { version = "0.3", optional = true }
 futures-util = { version = "0.3", default-features = false, features = ["alloc"], optional = true }
@@ -103,6 +101,6 @@ rustdoc-args = ["--cfg", "docsrs"]
 features = ["full"]
 
 [[example]]
-name = "tower-balance"
-path = "examples/tower-balance.rs"
+name = "tower-async-balance"
+path = "examples/tower-async-balance.rs"
 required-features = ["full"]

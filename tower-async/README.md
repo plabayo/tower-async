@@ -1,30 +1,30 @@
-# Tower
+# Tower Async
 
-Tower is a library of modular and reusable components for building robust
+Tower Async is a library of modular and reusable components for building robust
 networking clients and servers.
 
 [![Crates.io][crates-badge]][crates-url]
 [![Documentation][docs-badge]][docs-url]
-[![Documentation (master)][docs-master-badge]][docs-master-url]
 [![MIT licensed][mit-badge]][mit-url]
 [![Build Status][actions-badge]][actions-url]
-[![Discord chat][discord-badge]][discord-url]
 
-[crates-badge]: https://img.shields.io/crates/v/tower.svg
-[crates-url]: https://crates.io/crates/tower
-[docs-badge]: https://docs.rs/tower/badge.svg
-[docs-url]: https://docs.rs/tower
-[docs-master-badge]: https://img.shields.io/badge/docs-master-blue
-[docs-master-url]: https://tower-rs.github.io/tower/tower
+[crates-badge]: https://img.shields.io/crates/v/tower-async-service.svg
+[crates-url]: https://crates.io/crates/tower-async-service
+[docs-badge]: https://docs.rs/tower-async-service/badge.svg
+[docs-url]: https://docs.rs/tower-async-service
 [mit-badge]: https://img.shields.io/badge/license-MIT-blue.svg
 [mit-url]: LICENSE
-[actions-badge]: https://github.com/tower-rs/tower/workflows/CI/badge.svg
-[actions-url]:https://github.com/tower-rs/tower/actions?query=workflow%3ACI
-[discord-badge]: https://img.shields.io/discord/500028886025895936?logo=discord&label=discord&logoColor=white
-[discord-url]: https://discord.gg/EeF3cQw
+[actions-badge]: https://github.com/plabayo/tower-async/workflows/CI/badge.svg
+[actions-url]:https://github.com/plabayo/tower-async/actions?query=workflow%3ACI
+
+TODO:
+
+- mention fork
+- fix this README
+
 ## Overview
 
-Tower aims to make it as easy as possible to build robust networking clients and
+Tower Async aims to make it as easy as possible to build robust networking clients and
 servers. It is protocol agnostic, but is designed around a request / response
 pattern. If your protocol is entirely stream based, Tower may not be a good fit.
 
@@ -167,7 +167,7 @@ Tower.
 [`tower-layer`]: https://crates.io/crates/tower-layer
 [`tower-test`]: https://crates.io/crates/tower-test
 [`retry`]: https://docs.rs/tower/latest/tower/retry
-[open a PR]: https://github.com/tower-rs/tower/compare
+[open a PR]: https://github.com/plabayo/async-tower/compare
 
 
 ## Supported Rust Versions

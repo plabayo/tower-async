@@ -158,8 +158,8 @@
 //! [`tower-layer`]: https://crates.io/crates/tower-layer
 //! [`tower-test`]: https://crates.io/crates/tower-test
 //! [`retry`]: crate::retry
-//! [open a PR]: https://github.com/tower-rs/tower/compare
-//! [guides]: https://github.com/tower-rs/tower/tree/master/guides
+//! [open a PR]: https://github.com/plabayo/async-tower/compare
+//! [guides]: https://github.com/plabayo/async-tower/tree/master/guides
 
 #[macro_use]
 pub(crate) mod macros;
