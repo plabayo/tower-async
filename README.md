@@ -46,7 +46,10 @@ on this roadmap by the Rust Language Core Team.
 ## Getting Started
 
 If you're brand new to Tower and want to start with the basics we recommend you
-check out some of our [guides].
+check out some of the original Tower [guides].
+
+We work exactly the same as Tower, expect in an async manner and slightly easier to use as such.
+But the core ideas are obviously the same, so it should never the less help you to get started.
 
 ## License
 
@@ -60,4 +63,4 @@ Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in Tower Async by you, shall be licensed as MIT, without any additional
 terms or conditions.
 
-[guides]: https://github.com/plabayo/tower-async/tree/master/guides
+[guides]: https://github.com/tokio-rs/tower/tree/master/guides
