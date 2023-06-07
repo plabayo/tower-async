@@ -63,4 +63,4 @@ Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in Tower Async by you, shall be licensed as MIT, without any additional
 terms or conditions.
 
-[guides]: https://github.com/tokio-rs/tower/tree/master/guides
+[guides]: https://github.com/tower-rs/tower/tree/master/guides
