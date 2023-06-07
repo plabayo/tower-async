@@ -57,7 +57,7 @@ licensed their code under the same License type.
 ### Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally submitted
-for inclusion in Tower by you, shall be licensed as MIT, without any additional
+for inclusion in Tower Async by you, shall be licensed as MIT, without any additional
 terms or conditions.
 
 [guides]: https://github.com/plabayo/tower-async/tree/master/guides
