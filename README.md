@@ -9,7 +9,6 @@ to integrate async functions into middleware.
 [![Documentation][docs-badge]][docs-url]
 [![MIT licensed][mit-badge]][mit-url]
 [![Build Status][actions-badge]][actions-url]
-[![Discord chat][discord-badge]][discord-url]
 
 [crates-badge]: https://img.shields.io/crates/v/tower-async.svg
 [crates-url]: https://crates.io/crates/tower-async
