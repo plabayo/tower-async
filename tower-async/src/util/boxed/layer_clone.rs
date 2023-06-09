@@ -1,7 +1,7 @@
 use crate::util::BoxCloneService;
 use std::{fmt, sync::Arc};
-use tower_layer::{layer_fn, Layer};
-use tower_service::Service;
+use tower_async_layer::{layer_fn, Layer};
+use tower_async_service::Service;
 
 /// A [`Clone`] + [`Send`] boxed [`Layer`].
 ///
@@ -23,8 +23,8 @@ use tower_service::Service;
 ///
 /// ```
 /// use std::time::Duration;
-/// use tower::{Service, ServiceBuilder, BoxError};
-/// use tower::util::{BoxCloneServiceLayer, BoxCloneService};
+/// use tower_async::{Service, ServiceBuilder, BoxError};
+/// use tower_async::util::{BoxCloneServiceLayer, BoxCloneService};
 ///
 /// #
 /// # struct Request;
@@ -78,8 +78,8 @@ use tower_service::Service;
 ///
 /// ```
 ///
-/// [`Layer`]: tower_layer::Layer
-/// [`Service`]: tower_service::Service
+/// [`Layer`]: tower_async_layer::Layer
+/// [`Service`]: tower_async_service::Service
 /// [`BoxService`]: super::BoxService
 /// [`Timeout`]: crate::timeout
 pub struct BoxCloneServiceLayer<In, T, U, E> {

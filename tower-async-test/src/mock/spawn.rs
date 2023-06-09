@@ -2,7 +2,7 @@
 
 use std::task::Poll;
 use tokio_test::task;
-use tower_service::Service;
+use tower_async_service::Service;
 
 /// Service spawned on a mock task
 #[derive(Debug)]

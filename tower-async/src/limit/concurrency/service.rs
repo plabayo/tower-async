@@ -1,7 +1,7 @@
 use super::future::ResponseFuture;
 use tokio::sync::{OwnedSemaphorePermit, Semaphore};
 use tokio_util::sync::PollSemaphore;
-use tower_service::Service;
+use tower_async_service::Service;
 
 use futures_core::ready;
 use std::{

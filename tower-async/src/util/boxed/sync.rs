@@ -1,6 +1,6 @@
 use crate::ServiceExt;
-use tower_layer::{layer_fn, LayerFn};
-use tower_service::Service;
+use tower_async_layer::{layer_fn, LayerFn};
+use tower_async_service::Service;
 
 use sync_wrapper::SyncWrapper;
 
@@ -29,8 +29,8 @@ use std::{
 ///
 /// ```
 /// use futures_util::future::ready;
-/// # use tower_service::Service;
-/// # use tower::util::{BoxService, service_fn};
+/// # use tower_async_service::Service;
+/// # use tower_async::util::{BoxService, service_fn};
 /// // Respond to requests using a closure, but closures cannot be named...
 /// # pub fn main() {
 /// let svc = service_fn(|mut request: String| {

@@ -4,9 +4,9 @@ mod support;
 
 use tokio::time;
 use tokio_test::{assert_pending, assert_ready, assert_ready_err, assert_ready_ok};
-use tower::spawn_ready::{SpawnReady, SpawnReadyLayer};
-use tower::util::ServiceExt;
-use tower_test::mock;
+use tower_async::spawn_ready::{SpawnReady, SpawnReadyLayer};
+use tower_async::util::ServiceExt;
+use tower_async_test::mock;
 
 #[tokio::test(flavor = "current_thread")]
 async fn when_inner_is_not_ready() {

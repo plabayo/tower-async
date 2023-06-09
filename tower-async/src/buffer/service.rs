@@ -10,7 +10,7 @@ use std::{
 };
 use tokio::sync::{mpsc, oneshot};
 use tokio_util::sync::PollSender;
-use tower_service::Service;
+use tower_async_service::Service;
 
 /// Adds an mpsc buffer in front of an inner service.
 ///

@@ -46,7 +46,7 @@ use std::task::{Context, Poll};
 /// # use std::pin::Pin;
 /// # use std::task::{Poll, Context};
 /// # use std::future::Future;
-/// # use tower_service::Service;
+/// # use tower_async_service::Service;
 /// use http::{Request, Response, StatusCode};
 ///
 /// struct HelloWorld;
@@ -112,8 +112,8 @@ use std::task::{Context, Poll};
 /// Take timeouts as an example:
 ///
 /// ```rust
-/// use tower_service::Service;
-/// use tower_layer::Layer;
+/// use tower_async_service::Service;
+/// use tower_async_layer::Layer;
 /// use futures::FutureExt;
 /// use std::future::Future;
 /// use std::task::{Context, Poll};
@@ -244,7 +244,7 @@ use std::task::{Context, Poll};
 /// # use std::pin::Pin;
 /// # use std::task::{Poll, Context};
 /// # use std::future::Future;
-/// # use tower_service::Service;
+/// # use tower_async_service::Service;
 /// #
 /// struct Wrapper<S> {
 ///     inner: S,
@@ -279,7 +279,7 @@ use std::task::{Context, Poll};
 /// # use std::pin::Pin;
 /// # use std::task::{Poll, Context};
 /// # use std::future::Future;
-/// # use tower_service::Service;
+/// # use tower_async_service::Service;
 /// #
 /// struct Wrapper<S> {
 ///     inner: S,

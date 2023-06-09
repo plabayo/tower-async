@@ -1,8 +1,8 @@
 use futures_util::{future::Map, FutureExt};
 use std::fmt;
 use std::task::{Context, Poll};
-use tower_layer::Layer;
-use tower_service::Service;
+use tower_async_layer::Layer;
+use tower_async_service::Service;
 
 /// Service returned by the [`map_result`] combinator.
 ///
@@ -27,7 +27,7 @@ where
 
 /// A [`Layer`] that produces a [`MapResult`] service.
 ///
-/// [`Layer`]: tower_layer::Layer
+/// [`Layer`]: tower_async_layer::Layer
 #[derive(Debug, Clone)]
 pub struct MapResultLayer<F> {
     f: F,
@@ -50,7 +50,7 @@ impl<S, F> MapResult<S, F> {
     ///
     /// This is a convenience function that simply calls [`MapResultLayer::new`].
     ///
-    /// [`Layer`]: tower_layer::Layer
+    /// [`Layer`]: tower_async_layer::Layer
     pub fn layer(f: F) -> MapResultLayer<F> {
         MapResultLayer { f }
     }

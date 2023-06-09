@@ -12,7 +12,7 @@ pub use self::layer::TimeoutLayer;
 use self::future::ResponseFuture;
 use std::task::{Context, Poll};
 use std::time::Duration;
-use tower_service::Service;
+use tower_async_service::Service;
 
 /// Applies a timeout to requests.
 #[derive(Debug, Clone)]

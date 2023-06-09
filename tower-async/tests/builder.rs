@@ -2,11 +2,11 @@
 mod support;
 use futures_util::{future::Ready, pin_mut};
 use std::time::Duration;
-use tower::builder::ServiceBuilder;
-use tower::retry::Policy;
-use tower::util::ServiceExt;
-use tower_service::*;
-use tower_test::{assert_request_eq, mock};
+use tower_async::builder::ServiceBuilder;
+use tower_async::retry::Policy;
+use tower_async::util::ServiceExt;
+use tower_async_service::*;
+use tower_async_test::{assert_request_eq, mock};
 
 #[tokio::test(flavor = "current_thread")]
 async fn builder_service() {

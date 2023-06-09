@@ -3,8 +3,8 @@ use std::{
     future::Future,
     task::{Context, Poll},
 };
-use tower_layer::Layer;
-use tower_service::Service;
+use tower_async_layer::Layer;
+use tower_async_service::Service;
 
 /// [`Service`] returned by the [`map_future`] combinator.
 ///
@@ -25,7 +25,7 @@ impl<S, F> MapFuture<S, F> {
     ///
     /// This is a convenience function that simply calls [`MapFutureLayer::new`].
     ///
-    /// [`Layer`]: tower_layer::Layer
+    /// [`Layer`]: tower_async_layer::Layer
     pub fn layer(f: F) -> MapFutureLayer<F> {
         MapFutureLayer::new(f)
     }
@@ -80,7 +80,7 @@ where
 
 /// A [`Layer`] that produces a [`MapFuture`] service.
 ///
-/// [`Layer`]: tower_layer::Layer
+/// [`Layer`]: tower_async_layer::Layer
 #[derive(Clone)]
 pub struct MapFutureLayer<F> {
     f: F,

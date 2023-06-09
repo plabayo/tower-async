@@ -9,9 +9,9 @@ use std::future::Future;
 use std::task::{Context, Poll};
 use std::{cell::Cell, rc::Rc};
 use tokio_test::{assert_pending, assert_ready, task};
-use tower::util::ServiceExt;
-use tower_service::*;
-use tower_test::{assert_request_eq, mock, mock::Mock};
+use tower_async::util::ServiceExt;
+use tower_async_service::*;
+use tower_async_test::{assert_request_eq, mock, mock::Mock};
 
 type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
@@ -230,8 +230,8 @@ async fn poll_ready_error() {
 
 #[tokio::test]
 async fn stream_does_not_block_service() {
-    use tower::buffer::Buffer;
-    use tower::limit::ConcurrencyLimit;
+    use tower_async::buffer::Buffer;
+    use tower_async::limit::ConcurrencyLimit;
 
     let _t = support::trace_init();
     let (mock, mut handle) = mock::pair::<_, &'static str>();

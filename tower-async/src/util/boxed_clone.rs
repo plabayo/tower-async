@@ -4,8 +4,8 @@ use std::{
     fmt,
     task::{Context, Poll},
 };
-use tower_layer::{layer_fn, LayerFn};
-use tower_service::Service;
+use tower_async_layer::{layer_fn, LayerFn};
+use tower_async_service::Service;
 
 /// A [`Clone`] + [`Send`] boxed [`Service`].
 ///
@@ -18,7 +18,7 @@ use tower_service::Service;
 /// # Example
 ///
 /// ```
-/// use tower::{Service, ServiceBuilder, BoxError, util::BoxCloneService};
+/// use tower_async::{Service, ServiceBuilder, BoxError, util::BoxCloneService};
 /// use std::time::Duration;
 /// #
 /// # struct Request;

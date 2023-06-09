@@ -5,8 +5,8 @@ mod support;
 use std::time::Duration;
 use tokio::time;
 use tokio_test::{assert_pending, assert_ready, assert_ready_ok, task};
-use tower::hedge::{Hedge, Policy};
-use tower_test::{assert_request_eq, mock};
+use tower_async::hedge::{Hedge, Policy};
+use tower_async_test::{assert_request_eq, mock};
 
 #[tokio::test(flavor = "current_thread")]
 async fn hedge_orig_completes_first() {
@@ -143,8 +143,8 @@ async fn request_not_clonable() {
 
 type Req = &'static str;
 type Res = &'static str;
-type Mock = tower_test::mock::Mock<Req, Res>;
-type Handle = tower_test::mock::Handle<Req, Res>;
+type Mock = tower_async_test::mock::Mock<Req, Res>;
+type Handle = tower_async_test::mock::Handle<Req, Res>;
 
 static NOT_RETRYABLE: &str = "NOT_RETRYABLE";
 static NOT_CLONABLE: &str = "NOT_CLONABLE";
@@ -152,7 +152,7 @@ static NOT_CLONABLE: &str = "NOT_CLONABLE";
 #[derive(Clone)]
 struct TestPolicy;
 
-impl tower::hedge::Policy<Req> for TestPolicy {
+impl tower_async::hedge::Policy<Req> for TestPolicy {
     fn can_retry(&self, req: &Req) -> bool {
         *req != NOT_RETRYABLE
     }
@@ -167,7 +167,7 @@ impl tower::hedge::Policy<Req> for TestPolicy {
 }
 
 fn new_service<P: Policy<Req> + Clone>(policy: P) -> (mock::Spawn<Hedge<Mock, P>>, Handle) {
-    let (service, handle) = tower_test::mock::pair();
+    let (service, handle) = tower_async_test::mock::pair();
 
     let mock_latencies: [u64; 10] = [1, 1, 1, 1, 1, 1, 1, 1, 10, 10];
 

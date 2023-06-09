@@ -15,7 +15,7 @@ use std::{
     task::{Context, Poll},
 };
 use tokio::sync::oneshot;
-use tower_service::Service;
+use tower_async_service::Service;
 use tracing::{debug, trace};
 
 /// Efficiently distributes requests across an arbitrary number of services.

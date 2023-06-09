@@ -5,7 +5,7 @@ use std::fmt;
 use std::future::Future;
 use std::marker::PhantomData;
 use std::task::{Context, Poll};
-use tower_service::Service;
+use tower_async_service::Service;
 
 pub(crate) mod shared;
 
@@ -52,9 +52,9 @@ pub trait MakeService<Target, Request>: Sealed<(Target, Request)> {
     /// # Example
     /// ```
     /// use std::convert::Infallible;
-    /// use tower::Service;
-    /// use tower::make::MakeService;
-    /// use tower::service_fn;
+    /// use tower_async::Service;
+    /// use tower_async::make::MakeService;
+    /// use tower_async::service_fn;
     ///
     /// # fn main() {
     /// # async {
@@ -91,9 +91,9 @@ pub trait MakeService<Target, Request>: Sealed<(Target, Request)> {
     /// # Example
     /// ```
     /// use std::convert::Infallible;
-    /// use tower::Service;
-    /// use tower::make::MakeService;
-    /// use tower::service_fn;
+    /// use tower_async::Service;
+    /// use tower_async::make::MakeService;
+    /// use tower_async::service_fn;
     ///
     /// # fn main() {
     /// # async {

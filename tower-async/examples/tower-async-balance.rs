@@ -12,12 +12,12 @@ use std::{
     task::{Context, Poll},
 };
 use tokio::time::{self, Instant};
-use tower::balance as lb;
-use tower::discover::{Change, Discover};
-use tower::limit::concurrency::ConcurrencyLimit;
-use tower::load;
-use tower::util::ServiceExt;
-use tower_service::Service;
+use tower_async::balance as lb;
+use tower_async::discover::{Change, Discover};
+use tower_async::limit::concurrency::ConcurrencyLimit;
+use tower_async::load;
+use tower_async::util::ServiceExt;
+use tower_async_service::Service;
 
 const REQUESTS: usize = 100_000;
 const CONCURRENCY: usize = 500;
@@ -119,7 +119,7 @@ fn gen_disco() -> impl Discover<
             .iter()
             .enumerate()
             .map(|(instance, latency)| {
-                let svc = tower::service_fn(move |_| {
+                let svc = tower_async::service_fn(move |_| {
                     let start = Instant::now();
 
                     let maxms = u64::from(latency.subsec_millis())

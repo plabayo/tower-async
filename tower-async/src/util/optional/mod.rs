@@ -9,7 +9,7 @@ pub mod future;
 
 use self::future::ResponseFuture;
 use std::task::{Context, Poll};
-use tower_service::Service;
+use tower_async_service::Service;
 
 /// Optionally forwards requests to an inner service.
 ///

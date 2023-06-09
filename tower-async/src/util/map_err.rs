@@ -1,8 +1,8 @@
 use futures_util::{future, TryFutureExt};
 use std::fmt;
 use std::task::{Context, Poll};
-use tower_layer::Layer;
-use tower_service::Service;
+use tower_async_layer::Layer;
+use tower_async_service::Service;
 
 /// Service returned by the [`map_err`] combinator.
 ///
@@ -27,7 +27,7 @@ where
 
 /// A [`Layer`] that produces [`MapErr`] services.
 ///
-/// [`Layer`]: tower_layer::Layer
+/// [`Layer`]: tower_async_layer::Layer
 #[derive(Clone, Debug)]
 pub struct MapErrLayer<F> {
     f: F,
@@ -50,7 +50,7 @@ impl<S, F> MapErr<S, F> {
     ///
     /// This is a convenience function that simply calls [`MapErrLayer::new`].
     ///
-    /// [`Layer`]: tower_layer::Layer
+    /// [`Layer`]: tower_async_layer::Layer
     pub fn layer(f: F) -> MapErrLayer<F> {
         MapErrLayer { f }
     }

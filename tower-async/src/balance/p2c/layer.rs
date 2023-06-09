@@ -1,6 +1,6 @@
 use super::MakeBalance;
 use std::{fmt, marker::PhantomData};
-use tower_layer::Layer;
+use tower_async_layer::Layer;
 
 /// Construct load balancers ([`Balance`]) over dynamic service sets ([`Discover`]) produced by the
 /// "inner" service in response to requests coming from the "outer" service.

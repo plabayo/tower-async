@@ -1,7 +1,7 @@
 //! Builder types to compose layers and services
 
-use tower_layer::{Identity, Layer, Stack};
-use tower_service::Service;
+use tower_async_layer::{Identity, Layer, Stack};
+use tower_async_service::Service;
 
 use std::fmt;
 
@@ -30,8 +30,8 @@ use std::fmt;
 /// ```
 /// # // this (and other) doctest is ignored because we don't have a way
 /// # // to say that it should only be run with cfg(feature = "...")
-/// # use tower::Service;
-/// # use tower::builder::ServiceBuilder;
+/// # use tower_async::Service;
+/// # use tower_async::builder::ServiceBuilder;
 /// # #[cfg(all(feature = "buffer", feature = "limit"))]
 /// # async fn wrap<S>(svc: S) where S: Service<(), Error = &'static str> + 'static + Send, S::Future: Send {
 /// ServiceBuilder::new()
@@ -49,8 +49,8 @@ use std::fmt;
 /// in-flight.
 ///
 /// ```
-/// # use tower::Service;
-/// # use tower::builder::ServiceBuilder;
+/// # use tower_async::Service;
+/// # use tower_async::builder::ServiceBuilder;
 /// # #[cfg(all(feature = "buffer", feature = "limit"))]
 /// # async fn wrap<S>(svc: S) where S: Service<(), Error = &'static str> + 'static + Send, S::Future: Send {
 /// ServiceBuilder::new()
@@ -70,10 +70,10 @@ use std::fmt;
 /// A [`Service`] stack with a single layer:
 ///
 /// ```
-/// # use tower::Service;
-/// # use tower::builder::ServiceBuilder;
+/// # use tower_async::Service;
+/// # use tower_async::builder::ServiceBuilder;
 /// # #[cfg(feature = "limit")]
-/// # use tower::limit::concurrency::ConcurrencyLimitLayer;
+/// # use tower_async::limit::concurrency::ConcurrencyLimitLayer;
 /// # #[cfg(feature = "limit")]
 /// # async fn wrap<S>(svc: S) where S: Service<(), Error = &'static str> + 'static + Send, S::Future: Send {
 /// ServiceBuilder::new()
@@ -87,8 +87,8 @@ use std::fmt;
 /// in-flight request limits, and a channel-backed, clonable [`Service`]:
 ///
 /// ```
-/// # use tower::Service;
-/// # use tower::builder::ServiceBuilder;
+/// # use tower_async::Service;
+/// # use tower_async::builder::ServiceBuilder;
 /// # use std::time::Duration;
 /// # #[cfg(all(feature = "buffer", feature = "limit"))]
 /// # async fn wrap<S>(svc: S) where S: Service<(), Error = &'static str> + 'static + Send, S::Future: Send {
@@ -139,9 +139,9 @@ impl<L> ServiceBuilder<L> {
     ///
     /// ```
     /// # use std::time::Duration;
-    /// # use tower::Service;
-    /// # use tower::builder::ServiceBuilder;
-    /// # use tower::timeout::TimeoutLayer;
+    /// # use tower_async::Service;
+    /// # use tower_async::builder::ServiceBuilder;
+    /// # use tower_async::timeout::TimeoutLayer;
     /// # async fn wrap<S>(svc: S) where S: Service<(), Error = &'static str> + 'static + Send, S::Future: Send {
     /// # let timeout = Some(Duration::new(10, 0));
     /// // Apply a timeout if configured
@@ -311,13 +311,13 @@ impl<L> ServiceBuilder<L> {
     /// Changing the type of a request:
     ///
     /// ```rust
-    /// use tower::ServiceBuilder;
-    /// use tower::ServiceExt;
+    /// use tower_async::ServiceBuilder;
+    /// use tower_async::ServiceExt;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), ()> {
     /// // Suppose we have some `Service` whose request type is `String`:
-    /// let string_svc = tower::service_fn(|request: String| async move {
+    /// let string_svc = tower_async::service_fn(|request: String| async move {
     ///     println!("request: {}", request);
     ///     Ok(())
     /// });
@@ -339,13 +339,13 @@ impl<L> ServiceBuilder<L> {
     /// Modifying the request value:
     ///
     /// ```rust
-    /// use tower::ServiceBuilder;
-    /// use tower::ServiceExt;
+    /// use tower_async::ServiceBuilder;
+    /// use tower_async::ServiceExt;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), ()> {
     /// // A service that takes a number and returns it:
-    /// let svc = tower::service_fn(|request: usize| async move {
+    /// let svc = tower_async::service_fn(|request: usize| async move {
     ///    Ok(request)
     /// });
     ///
@@ -500,7 +500,7 @@ impl<L> ServiceBuilder<L> {
     /// [`ServiceBuilder::service`] with a [`service_fn`], like this:
     ///
     /// ```rust
-    /// # use tower::{ServiceBuilder, service_fn};
+    /// # use tower_async::{ServiceBuilder, service_fn};
     /// # async fn handler_fn(_: ()) -> Result<(), ()> { Ok(()) }
     /// # let _ = {
     /// ServiceBuilder::new()
@@ -513,7 +513,7 @@ impl<L> ServiceBuilder<L> {
     ///
     /// ```rust
     /// use std::time::Duration;
-    /// use tower::{ServiceBuilder, ServiceExt, BoxError, service_fn};
+    /// use tower_async::{ServiceBuilder, ServiceExt, BoxError, service_fn};
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), BoxError> {
@@ -553,7 +553,7 @@ impl<L> ServiceBuilder<L> {
     /// # Example
     ///
     /// ```rust
-    /// use tower::ServiceBuilder;
+    /// use tower_async::ServiceBuilder;
     ///
     /// let builder = ServiceBuilder::new()
     ///     // Do something before processing the request
@@ -587,7 +587,7 @@ impl<L> ServiceBuilder<L> {
     /// # Example
     ///
     /// ```rust
-    /// use tower::ServiceBuilder;
+    /// use tower_async::ServiceBuilder;
     ///
     /// # #[derive(Clone)]
     /// # struct MyService;
@@ -625,9 +625,9 @@ impl<L> ServiceBuilder<L> {
     /// # Example
     ///
     /// ```rust
-    /// use tower::ServiceBuilder;
+    /// use tower_async::ServiceBuilder;
     /// use std::task::{Poll, Context};
-    /// use tower::{Service, ServiceExt};
+    /// use tower_async::{Service, ServiceExt};
     ///
     /// // An example service
     /// struct MyService;
@@ -679,7 +679,7 @@ impl<L> ServiceBuilder<L> {
     /// # Example
     ///
     /// ```
-    /// use tower::{Service, ServiceBuilder, BoxError, util::BoxService};
+    /// use tower_async::{Service, ServiceBuilder, BoxError, util::BoxService};
     /// use std::time::Duration;
     /// #
     /// # struct Request;
@@ -707,7 +707,7 @@ impl<L> ServiceBuilder<L> {
         self,
     ) -> ServiceBuilder<
         Stack<
-            tower_layer::LayerFn<
+            tower_async_layer::LayerFn<
                 fn(
                     L::Service,
                 ) -> crate::util::BoxService<
@@ -737,7 +737,7 @@ impl<L> ServiceBuilder<L> {
     /// # Example
     ///
     /// ```
-    /// use tower::{Service, ServiceBuilder, BoxError, util::BoxCloneService};
+    /// use tower_async::{Service, ServiceBuilder, BoxError, util::BoxCloneService};
     /// use std::time::Duration;
     /// #
     /// # struct Request;
@@ -770,7 +770,7 @@ impl<L> ServiceBuilder<L> {
         self,
     ) -> ServiceBuilder<
         Stack<
-            tower_layer::LayerFn<
+            tower_async_layer::LayerFn<
                 fn(
                     L::Service,
                 ) -> crate::util::BoxCloneService<

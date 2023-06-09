@@ -4,7 +4,7 @@ use std::{
     pin::Pin,
     task::{Context, Poll},
 };
-use tower_service::Service;
+use tower_async_service::Service;
 
 /// Returns a new [`FutureService`] for the given future.
 ///
@@ -13,8 +13,8 @@ use tower_service::Service;
 ///
 /// # Example
 /// ```
-/// use tower::{service_fn, Service, ServiceExt};
-/// use tower::util::future_service;
+/// use tower_async::{service_fn, Service, ServiceExt};
+/// use tower_async::util::future_service;
 /// use std::convert::Infallible;
 ///
 /// # fn main() {
@@ -69,8 +69,8 @@ impl<F, S> FutureService<F, S> {
     ///
     /// # Example
     /// ```
-    /// use tower::{service_fn, Service, ServiceExt};
-    /// use tower::util::FutureService;
+    /// use tower_async::{service_fn, Service, ServiceExt};
+    /// use tower_async::util::FutureService;
     /// use std::convert::Infallible;
     ///
     /// # fn main() {
@@ -185,7 +185,7 @@ mod tests {
 
         assert_eq!(
             format!("{:?}", pending_svc),
-            "FutureService { state: State::Future(<futures_util::future::ready::Ready<core::result::Result<tower::util::future_service::tests::DebugService, core::convert::Infallible>>>) }"
+            "FutureService { state: State::Future(<futures_util::future::ready::Ready<core::result::Result<tower_async::util::future_service::tests::DebugService, core::convert::Infallible>>>) }"
         );
 
         pending_svc.ready().await.unwrap();

@@ -4,8 +4,8 @@ mod support;
 
 use futures_util::future::{ready, Ready};
 use std::task::{Context, Poll};
-use tower::steer::Steer;
-use tower_service::Service;
+use tower_async::steer::Steer;
+use tower_async_service::Service;
 
 type StdError = Box<dyn std::error::Error + Send + Sync + 'static>;
 

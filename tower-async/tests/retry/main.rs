@@ -4,8 +4,8 @@ mod support;
 
 use futures_util::future;
 use tokio_test::{assert_pending, assert_ready_err, assert_ready_ok, task};
-use tower::retry::Policy;
-use tower_test::{assert_request_eq, mock};
+use tower_async::retry::Policy;
+use tower_async_test::{assert_request_eq, mock};
 
 #[tokio::test(flavor = "current_thread")]
 async fn retry_errors() {
@@ -220,7 +220,7 @@ where
 
 fn new_service<P: Policy<Req, Res, Error> + Clone>(
     policy: P,
-) -> (mock::Spawn<tower::retry::Retry<P, Mock>>, Handle) {
-    let retry = tower::retry::RetryLayer::new(policy);
+) -> (mock::Spawn<tower_async::retry::Retry<P, Mock>>, Handle) {
+    let retry = tower_async::retry::RetryLayer::new(policy);
     mock::spawn_layer(retry)
 }

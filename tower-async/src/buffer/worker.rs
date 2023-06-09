@@ -10,7 +10,7 @@ use std::{
     task::{Context, Poll},
 };
 use tokio::sync::mpsc;
-use tower_service::Service;
+use tower_async_service::Service;
 
 pin_project_lite::pin_project! {
     /// Task that handles processing the buffer. This type should not be used

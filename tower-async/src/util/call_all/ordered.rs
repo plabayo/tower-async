@@ -12,7 +12,7 @@ use std::{
     pin::Pin,
     task::{Context, Poll},
 };
-use tower_service::Service;
+use tower_async_service::Service;
 
 pin_project! {
     /// This is a [`Stream`] of responses resulting from calling the wrapped [`Service`] for each
@@ -27,8 +27,8 @@ pin_project! {
     /// use futures::future::{ready, Ready};
     /// use futures::StreamExt;
     /// use futures::channel::mpsc;
-    /// use tower_service::Service;
-    /// use tower::util::ServiceExt;
+    /// use tower_async_service::Service;
+    /// use tower_async::util::ServiceExt;
     ///
     /// // First, we need to have a Service to process our requests.
     /// #[derive(Debug, Eq, PartialEq)]
@@ -168,7 +168,7 @@ impl<F: Future> common::Drive<F> for FuturesOrdered<F> {
     }
 
     fn push(&mut self, future: F) {
-        FuturesOrdered::push(self, future)
+        FuturesOrdered::push_back(self, future)
     }
 
     fn poll(&mut self, cx: &mut Context<'_>) -> Poll<Option<F::Output>> {

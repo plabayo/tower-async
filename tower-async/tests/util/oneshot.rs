@@ -1,7 +1,7 @@
 use std::task::{Context, Poll};
 use std::{future::Future, pin::Pin};
-use tower::util::ServiceExt;
-use tower_service::Service;
+use tower_async::util::ServiceExt;
+use tower_async_service::Service;
 
 #[tokio::test(flavor = "current_thread")]
 async fn service_driven_to_readiness() {

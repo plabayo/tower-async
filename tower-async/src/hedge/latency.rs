@@ -7,7 +7,7 @@ use std::{
     task::{Context, Poll},
 };
 use tokio::time::Instant;
-use tower_service::Service;
+use tower_async_service::Service;
 
 /// Record is the interface for accepting request latency measurements.  When
 /// a request completes, record is called with the elapsed duration between

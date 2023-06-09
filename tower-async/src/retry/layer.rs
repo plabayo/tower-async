@@ -1,5 +1,5 @@
 use super::Retry;
-use tower_layer::Layer;
+use tower_async_layer::Layer;
 
 /// Retry requests based on a policy
 #[derive(Debug, Clone)]

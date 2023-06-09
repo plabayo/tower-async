@@ -2,7 +2,7 @@
 //!
 //! [`Layer`]: crate::Layer
 
-pub use tower_layer::{layer_fn, Layer, LayerFn};
+pub use tower_async_layer::{layer_fn, Layer, LayerFn};
 
 /// Utilities for combining layers
 ///
@@ -10,5 +10,5 @@ pub use tower_layer::{layer_fn, Layer, LayerFn};
 /// [`Layer`]: crate::Layer
 /// [`Stack`]: crate::layer::util::Stack
 pub mod util {
-    pub use tower_layer::{Identity, Stack};
+    pub use tower_async_layer::{Identity, Stack};
 }

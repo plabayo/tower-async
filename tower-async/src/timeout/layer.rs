@@ -1,6 +1,6 @@
 use super::Timeout;
 use std::time::Duration;
-use tower_layer::Layer;
+use tower_async_layer::Layer;
 
 /// Applies a timeout to requests via the supplied inner service.
 #[derive(Debug, Clone)]

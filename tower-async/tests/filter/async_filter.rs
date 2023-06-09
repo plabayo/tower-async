@@ -3,9 +3,9 @@
 mod support;
 use futures_util::{future::poll_fn, pin_mut};
 use std::future::Future;
-use tower::filter::{error::Error, AsyncFilter};
-use tower_service::Service;
-use tower_test::{assert_request_eq, mock};
+use tower_async::filter::{error::Error, AsyncFilter};
+use tower_async_service::Service;
+use tower_async_test::{assert_request_eq, mock};
 
 #[tokio::test(flavor = "current_thread")]
 async fn passthrough_sync() {

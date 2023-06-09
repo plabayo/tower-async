@@ -4,8 +4,8 @@ mod support;
 
 use std::pin::Pin;
 use tokio_test::{assert_pending, assert_ready, task};
-use tower::ready_cache::{error, ReadyCache};
-use tower_test::mock;
+use tower_async::ready_cache::{error, ReadyCache};
+use tower_async_test::mock;
 
 type Req = &'static str;
 type Mock = mock::Mock<Req, Req>;
@@ -202,13 +202,13 @@ async fn cancelation_observed() {
     // NOTE This test passes at 129 items, but fails at 130 items (if coop
     // schedulding interferes with cancelation).
     for _ in 0..130 {
-        let (svc, mut handle) = tower_test::mock::pair::<(), ()>();
+        let (svc, mut handle) = tower_async_test::mock::pair::<(), ()>();
         handle.allow(1);
         cache.push("ep0", svc);
         handles.push(handle);
     }
 
-    struct Ready(ReadyCache<&'static str, tower_test::mock::Mock<(), ()>, ()>);
+    struct Ready(ReadyCache<&'static str, tower_async_test::mock::Mock<(), ()>, ()>);
     impl Unpin for Ready {}
     impl std::future::Future for Ready {
         type Output = Result<(), error::Failed<&'static str>>;

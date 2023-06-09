@@ -6,7 +6,7 @@ use pin_project_lite::pin_project;
 use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
-use tower_service::Service;
+use tower_async_service::Service;
 
 pin_project! {
     /// The [`Future`] returned by a [`Retry`] service.

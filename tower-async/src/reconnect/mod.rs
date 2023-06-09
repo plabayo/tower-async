@@ -23,7 +23,7 @@ use std::{
     pin::Pin,
     task::{Context, Poll},
 };
-use tower_service::Service;
+use tower_async_service::Service;
 use tracing::trace;
 
 /// Reconnect to failed services.

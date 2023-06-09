@@ -7,7 +7,7 @@ use std::{
     pin::Pin,
     task::{Context, Poll},
 };
-use tower_service::Service;
+use tower_async_service::Service;
 
 pin_project! {
     /// Static service discovery based on a predetermined list of services.

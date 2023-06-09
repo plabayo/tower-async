@@ -13,7 +13,7 @@ use super::completion::{CompleteOnResponse, TrackCompletion, TrackCompletionFutu
 use super::Load;
 use std::sync::Arc;
 use std::task::{Context, Poll};
-use tower_service::Service;
+use tower_async_service::Service;
 
 /// Measures the load of the underlying service using the number of currently-pending requests.
 #[derive(Debug)]

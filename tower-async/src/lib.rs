@@ -207,9 +207,9 @@ pub use crate::builder::ServiceBuilder;
 #[doc(inline)]
 pub use crate::make::MakeService;
 #[doc(inline)]
-pub use tower_layer::Layer;
+pub use tower_async_layer::Layer;
 #[doc(inline)]
-pub use tower_service::Service;
+pub use tower_async_service::Service;
 
 #[allow(unreachable_pub)]
 mod sealed {

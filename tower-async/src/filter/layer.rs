@@ -1,5 +1,5 @@
 use super::{AsyncFilter, Filter};
-use tower_layer::Layer;
+use tower_async_layer::Layer;
 
 /// Conditionally dispatch requests to the inner service based on a synchronous
 /// [predicate].

@@ -44,7 +44,7 @@ pin_project! {
     #[derive(Debug)]
     pub struct Future<S, Request>
     where
-        S: tower_service::Service<Request>,
+        S: tower_async_service::Service<Request>,
     {
         #[pin]
         inner: S::Future,
@@ -92,7 +92,7 @@ impl<S, P> Hedge<S, P> {
         period: Duration,
     ) -> Hedge<S, P>
     where
-        S: tower_service::Service<Request> + Clone,
+        S: tower_async_service::Service<Request> + Clone,
         S::Error: Into<crate::BoxError>,
         P: Policy<Request> + Clone,
     {
@@ -111,7 +111,7 @@ impl<S, P> Hedge<S, P> {
         latencies_ms: &[u64],
     ) -> Hedge<S, P>
     where
-        S: tower_service::Service<Request> + Clone,
+        S: tower_async_service::Service<Request> + Clone,
         S::Error: Into<crate::BoxError>,
         P: Policy<Request> + Clone,
     {
@@ -133,7 +133,7 @@ impl<S, P> Hedge<S, P> {
         histo: Histo,
     ) -> Hedge<S, P>
     where
-        S: tower_service::Service<Request> + Clone,
+        S: tower_async_service::Service<Request> + Clone,
         S::Error: Into<crate::BoxError>,
         P: Policy<Request> + Clone,
     {
@@ -164,9 +164,9 @@ impl<S, P> Hedge<S, P> {
     }
 }
 
-impl<S, P, Request> tower_service::Service<Request> for Hedge<S, P>
+impl<S, P, Request> tower_async_service::Service<Request> for Hedge<S, P>
 where
-    S: tower_service::Service<Request> + Clone,
+    S: tower_async_service::Service<Request> + Clone,
     S::Error: Into<crate::BoxError>,
     P: Policy<Request> + Clone,
 {
@@ -187,7 +187,7 @@ where
 
 impl<S, Request> std::future::Future for Future<S, Request>
 where
-    S: tower_service::Service<Request>,
+    S: tower_async_service::Service<Request>,
     S::Error: Into<crate::BoxError>,
 {
     type Output = Result<S::Response, crate::BoxError>;

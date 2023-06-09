@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use super::ConcurrencyLimit;
 use tokio::sync::Semaphore;
-use tower_layer::Layer;
+use tower_async_layer::Layer;
 
 /// Enforces a limit on the concurrent number of requests the underlying
 /// service can handle.

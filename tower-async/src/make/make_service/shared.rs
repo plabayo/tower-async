@@ -1,6 +1,6 @@
 use std::convert::Infallible;
 use std::task::{Context, Poll};
-use tower_service::Service;
+use tower_async_service::Service;
 
 /// A [`MakeService`] that produces services by cloning an inner service.
 ///
@@ -12,9 +12,9 @@ use tower_service::Service;
 /// # use std::task::{Context, Poll};
 /// # use std::pin::Pin;
 /// # use std::convert::Infallible;
-/// use tower::make::{MakeService, Shared};
-/// use tower::buffer::Buffer;
-/// use tower::Service;
+/// use tower_async::make::{MakeService, Shared};
+/// use tower_async::buffer::Buffer;
+/// use tower_async::Service;
 /// use futures::future::{Ready, ready};
 ///
 /// // An example connection type

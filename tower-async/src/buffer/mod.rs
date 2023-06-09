@@ -12,9 +12,9 @@
 //!
 //! ```rust
 //! # #[cfg(feature = "util")]
-//! use tower::buffer::Buffer;
+//! use tower_async::buffer::Buffer;
 //! # #[cfg(feature = "util")]
-//! use tower::{Service, ServiceExt};
+//! use tower_async::{Service, ServiceExt};
 //! # #[cfg(feature = "util")]
 //! async fn mass_produce<S: Service<usize>>(svc: S)
 //! where

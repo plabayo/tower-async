@@ -4,8 +4,8 @@ use std::fmt;
 use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
-use tower_layer::Layer;
-use tower_service::Service;
+use tower_async_layer::Layer;
+use tower_async_service::Service;
 
 /// Service returned by the [`and_then`] combinator.
 ///
@@ -66,7 +66,7 @@ where
 
 /// A [`Layer`] that produces a [`AndThen`] service.
 ///
-/// [`Layer`]: tower_layer::Layer
+/// [`Layer`]: tower_async_layer::Layer
 #[derive(Clone, Debug)]
 pub struct AndThenLayer<F> {
     f: F,
@@ -82,7 +82,7 @@ impl<S, F> AndThen<S, F> {
     ///
     /// This is a convenience function that simply calls [`AndThenLayer::new`].
     ///
-    /// [`Layer`]: tower_layer::Layer
+    /// [`Layer`]: tower_async_layer::Layer
     pub fn layer(f: F) -> AndThenLayer<F> {
         AndThenLayer { f }
     }

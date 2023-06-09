@@ -9,7 +9,7 @@ impl SpawnReadyLayer {
     }
 }
 
-impl<S> tower_layer::Layer<S> for SpawnReadyLayer {
+impl<S> tower_async_layer::Layer<S> for SpawnReadyLayer {
     type Service = super::SpawnReady<S>;
 
     fn layer(&self, service: S) -> Self::Service {

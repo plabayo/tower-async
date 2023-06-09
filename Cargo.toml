@@ -6,3 +6,5 @@ members = [
   "tower-async-service",
   "tower-async-test",
 ]
+
+resolver = "2"

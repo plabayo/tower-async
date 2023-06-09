@@ -1,6 +1,6 @@
-//! Error types for the [`tower::balance`] middleware.
+//! Error types for the [`tower_async::balance`] middleware.
 //!
-//! [`tower::balance`]: crate::balance
+//! [`tower_async::balance`]: crate::balance
 
 use std::fmt;
 

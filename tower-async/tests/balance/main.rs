@@ -5,10 +5,10 @@ mod support;
 use std::future::Future;
 use std::task::{Context, Poll};
 use tokio_test::{assert_pending, assert_ready, task};
-use tower::balance::p2c::Balance;
-use tower::discover::Change;
-use tower_service::Service;
-use tower_test::mock;
+use tower_async::balance::p2c::Balance;
+use tower_async::discover::Change;
+use tower_async_service::Service;
+use tower_async_test::mock;
 
 type Req = &'static str;
 struct Mock(mock::Mock<Req, Req>);
@@ -25,7 +25,7 @@ impl Service<Req> for Mock {
     }
 }
 
-impl tower::load::Load for Mock {
+impl tower_async::load::Load for Mock {
     type Metric = usize;
     fn load(&self) -> Self::Metric {
         rand::random()

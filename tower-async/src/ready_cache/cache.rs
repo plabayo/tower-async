@@ -12,7 +12,7 @@ use std::pin::Pin;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::task::{Context, Poll};
-use tower_service::Service;
+use tower_async_service::Service;
 use tracing::{debug, trace};
 
 /// Drives readiness over a set of services.

@@ -2,8 +2,8 @@ use super::support;
 use std::time::Duration;
 use tokio::time;
 use tokio_test::{assert_pending, assert_ready, assert_ready_ok};
-use tower::limit::rate::RateLimitLayer;
-use tower_test::{assert_request_eq, mock};
+use tower_async::limit::rate::RateLimitLayer;
+use tower_async_test::{assert_request_eq, mock};
 
 #[tokio::test(flavor = "current_thread")]
 async fn reaching_capacity() {

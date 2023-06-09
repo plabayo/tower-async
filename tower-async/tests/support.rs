@@ -6,7 +6,7 @@ use std::pin::Pin;
 use std::task::{Context, Poll};
 use tokio::sync::mpsc;
 use tokio_stream::Stream;
-use tower::Service;
+use tower_async::Service;
 
 pub(crate) fn trace_init() -> tracing::subscriber::DefaultGuard {
     let subscriber = tracing_subscriber::fmt()

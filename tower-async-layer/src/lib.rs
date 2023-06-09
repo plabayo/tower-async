@@ -40,9 +40,9 @@ pub use self::{
 /// Take request logging as an example:
 ///
 /// ```rust
-/// # use tower_service::Service;
+/// # use tower_async_service::Service;
 /// # use std::task::{Poll, Context};
-/// # use tower_layer::Layer;
+/// # use tower_async_layer::Layer;
 /// # use std::fmt;
 ///
 /// pub struct LogLayer {

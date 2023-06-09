@@ -1,7 +1,7 @@
 use super::service::Buffer;
 use std::{fmt, marker::PhantomData};
-use tower_layer::Layer;
-use tower_service::Service;
+use tower_async_layer::Layer;
+use tower_async_service::Service;
 
 /// Adds an mpsc buffer in front of an inner service.
 ///

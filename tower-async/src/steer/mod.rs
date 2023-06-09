@@ -9,12 +9,12 @@
 //!
 //! ```rust
 //! # use std::task::{Context, Poll};
-//! # use tower_service::Service;
+//! # use tower_async_service::Service;
 //! # use futures_util::future::{ready, Ready, poll_fn};
-//! # use tower::steer::Steer;
-//! # use tower::service_fn;
-//! # use tower::util::BoxService;
-//! # use tower::ServiceExt;
+//! # use tower_async::steer::Steer;
+//! # use tower_async::service_fn;
+//! # use tower_async::util::BoxService;
+//! # use tower_async::ServiceExt;
 //! # use std::convert::Infallible;
 //! use http::{Request, Response, StatusCode, Method};
 //!
@@ -70,7 +70,7 @@
 //! ```
 use std::task::{Context, Poll};
 use std::{collections::VecDeque, fmt, marker::PhantomData};
-use tower_service::Service;
+use tower_async_service::Service;
 
 /// This is how callers of [`Steer`] tell it which `Service` a `Req` corresponds to.
 pub trait Picker<S, Req> {

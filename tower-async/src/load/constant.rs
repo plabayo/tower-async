@@ -10,7 +10,7 @@ use std::pin::Pin;
 use super::Load;
 use pin_project_lite::pin_project;
 use std::task::{Context, Poll};
-use tower_service::Service;
+use tower_async_service::Service;
 
 pin_project! {
     #[derive(Debug)]

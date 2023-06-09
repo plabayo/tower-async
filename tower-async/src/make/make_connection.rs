@@ -2,7 +2,7 @@ use crate::sealed::Sealed;
 use std::future::Future;
 use std::task::{Context, Poll};
 use tokio::io::{AsyncRead, AsyncWrite};
-use tower_service::Service;
+use tower_async_service::Service;
 
 /// The [`MakeConnection`] trait is used to create transports.
 ///

@@ -1,7 +1,7 @@
 use crate::util::BoxService;
 use std::{fmt, sync::Arc};
-use tower_layer::{layer_fn, Layer};
-use tower_service::Service;
+use tower_async_layer::{layer_fn, Layer};
+use tower_async_service::Service;
 
 /// A boxed [`Layer`] trait object.
 ///
@@ -20,7 +20,7 @@ use tower_service::Service;
 ///
 /// ```
 /// use std::time::Duration;
-/// use tower::{Service, ServiceBuilder, BoxError, util::BoxLayer};
+/// use tower_async::{Service, ServiceBuilder, BoxError, util::BoxLayer};
 ///
 /// fn common_layer<S, T>() -> BoxLayer<S, T, S::Response, BoxError>
 /// where
@@ -47,8 +47,8 @@ use tower_service::Service;
 /// }
 /// ```
 ///
-/// [`Layer`]: tower_layer::Layer
-/// [`Service`]: tower_service::Service
+/// [`Layer`]: tower_async_layer::Layer
+/// [`Service`]: tower_async_service::Service
 /// [`BoxService`]: super::BoxService
 /// [`Timeout`]: crate::timeout
 pub struct BoxLayer<In, T, U, E> {

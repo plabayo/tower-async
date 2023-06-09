@@ -6,7 +6,7 @@ use std::{
     task::{Context, Poll},
 };
 use tokio::time::{Instant, Sleep};
-use tower_service::Service;
+use tower_async_service::Service;
 
 /// Enforces a rate limit on the number of requests the underlying
 /// service can handle over a period of time.

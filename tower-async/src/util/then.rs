@@ -4,8 +4,8 @@ use std::{
     future::Future,
     task::{Context, Poll},
 };
-use tower_layer::Layer;
-use tower_service::Service;
+use tower_async_layer::Layer;
+use tower_async_service::Service;
 
 /// [`Service`] returned by the [`then`] combinator.
 ///
@@ -30,7 +30,7 @@ where
 
 /// A [`Layer`] that produces a [`Then`] service.
 ///
-/// [`Layer`]: tower_layer::Layer
+/// [`Layer`]: tower_async_layer::Layer
 #[derive(Debug, Clone)]
 pub struct ThenLayer<F> {
     f: F,
@@ -46,7 +46,7 @@ impl<S, F> Then<S, F> {
     ///
     /// This is a convenience function that simply calls [`ThenLayer::new`].
     ///
-    /// [`Layer`]: tower_layer::Layer
+    /// [`Layer`]: tower_async_layer::Layer
     pub fn layer(f: F) -> ThenLayer<F> {
         ThenLayer { f }
     }

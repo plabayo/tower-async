@@ -6,7 +6,7 @@ use std::{
     pin::Pin,
     task::{Context, Poll},
 };
-use tower_service::Service;
+use tower_async_service::Service;
 
 pin_project! {
     /// A [`Future`] consuming a [`Service`] and request, waiting until the [`Service`]

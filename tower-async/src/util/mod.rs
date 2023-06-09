@@ -64,7 +64,7 @@ pub mod future {
 
 /// An extension trait for `Service`s that provides a variety of convenient
 /// adapters
-pub trait ServiceExt<Request>: tower_service::Service<Request> {
+pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// Yields a mutable reference to the service when it is ready to accept a request.
     fn ready(&mut self) -> Ready<'_, Self, Request>
     where
@@ -118,7 +118,7 @@ pub trait ServiceExt<Request>: tower_service::Service<Request> {
     /// # Example
     /// ```
     /// # use std::task::{Poll, Context};
-    /// # use tower::{Service, ServiceExt};
+    /// # use tower_async::{Service, ServiceExt};
     /// #
     /// # struct DatabaseService;
     /// # impl DatabaseService {
@@ -187,7 +187,7 @@ pub trait ServiceExt<Request>: tower_service::Service<Request> {
     /// # Example
     /// ```
     /// # use std::task::{Poll, Context};
-    /// # use tower::{Service, ServiceExt};
+    /// # use tower_async::{Service, ServiceExt};
     /// #
     /// # struct DatabaseService;
     /// # impl DatabaseService {
@@ -254,7 +254,7 @@ pub trait ServiceExt<Request>: tower_service::Service<Request> {
     /// # Example
     /// ```
     /// # use std::task::{Poll, Context};
-    /// # use tower::{Service, ServiceExt};
+    /// # use tower_async::{Service, ServiceExt};
     /// #
     /// # struct DatabaseService;
     /// # impl DatabaseService {
@@ -344,7 +344,7 @@ pub trait ServiceExt<Request>: tower_service::Service<Request> {
     ///
     /// ```
     /// # use std::task::{Poll, Context};
-    /// # use tower::{Service, ServiceExt};
+    /// # use tower_async::{Service, ServiceExt};
     /// #
     /// # struct DatabaseService;
     /// # impl DatabaseService {
@@ -407,7 +407,7 @@ pub trait ServiceExt<Request>: tower_service::Service<Request> {
     ///
     /// ```
     /// # use std::task::{Poll, Context};
-    /// # use tower::{Service, ServiceExt};
+    /// # use tower_async::{Service, ServiceExt};
     /// #
     /// # struct DatabaseService;
     /// # impl DatabaseService {
@@ -439,7 +439,7 @@ pub trait ServiceExt<Request>: tower_service::Service<Request> {
     /// #
     /// # fn main() {
     /// #    async {
-    /// use tower::BoxError;
+    /// use tower_async::BoxError;
     ///
     /// // A service returning Result<Record, DbError>
     /// let service = DatabaseService::new("127.0.0.1:8080");
@@ -478,7 +478,7 @@ pub trait ServiceExt<Request>: tower_service::Service<Request> {
     /// ```
     /// # use std::convert::TryFrom;
     /// # use std::task::{Poll, Context};
-    /// # use tower::{Service, ServiceExt};
+    /// # use tower_async::{Service, ServiceExt};
     /// #
     /// # struct DatabaseService;
     /// # impl DatabaseService {
@@ -549,7 +549,7 @@ pub trait ServiceExt<Request>: tower_service::Service<Request> {
     /// ```
     /// # use std::convert::TryFrom;
     /// # use std::task::{Poll, Context};
-    /// # use tower::{Service, ServiceExt};
+    /// # use tower_async::{Service, ServiceExt};
     /// #
     /// # struct DatabaseService;
     /// # impl DatabaseService {
@@ -609,7 +609,7 @@ pub trait ServiceExt<Request>: tower_service::Service<Request> {
     /// ```
     /// # use std::convert::TryFrom;
     /// # use std::task::{Poll, Context};
-    /// # use tower::{Service, ServiceExt};
+    /// # use tower_async::{Service, ServiceExt};
     /// #
     /// # struct DatabaseService;
     /// # impl DatabaseService {
@@ -682,7 +682,7 @@ pub trait ServiceExt<Request>: tower_service::Service<Request> {
     /// ```
     /// # use std::convert::TryFrom;
     /// # use std::task::{Poll, Context};
-    /// # use tower::{Service, ServiceExt};
+    /// # use tower_async::{Service, ServiceExt};
     /// #
     /// # #[derive(Clone)] struct DatabaseService;
     /// # impl DatabaseService {
@@ -789,7 +789,7 @@ pub trait ServiceExt<Request>: tower_service::Service<Request> {
     ///
     /// ```
     /// # use std::task::{Poll, Context};
-    /// # use tower::{Service, ServiceExt};
+    /// # use tower_async::{Service, ServiceExt};
     /// #
     /// # struct DatabaseService;
     /// # impl DatabaseService {
@@ -875,7 +875,7 @@ pub trait ServiceExt<Request>: tower_service::Service<Request> {
     ///
     /// ```
     /// # use std::task::{Poll, Context};
-    /// # use tower::{Service, ServiceExt, BoxError};
+    /// # use tower_async::{Service, ServiceExt, BoxError};
     /// #
     /// # struct DatabaseService;
     /// # impl DatabaseService {
@@ -951,7 +951,7 @@ pub trait ServiceExt<Request>: tower_service::Service<Request> {
     /// # Example
     ///
     /// ```
-    /// use tower::{Service, ServiceExt, BoxError, service_fn, util::BoxService};
+    /// use tower_async::{Service, ServiceExt, BoxError, service_fn, util::BoxService};
     /// #
     /// # struct Request;
     /// # struct Response;
@@ -997,7 +997,7 @@ pub trait ServiceExt<Request>: tower_service::Service<Request> {
     /// # Example
     ///
     /// ```
-    /// use tower::{Service, ServiceExt, BoxError, service_fn, util::BoxCloneService};
+    /// use tower_async::{Service, ServiceExt, BoxError, service_fn, util::BoxCloneService};
     /// #
     /// # struct Request;
     /// # struct Response;
@@ -1038,16 +1038,16 @@ pub trait ServiceExt<Request>: tower_service::Service<Request> {
     }
 }
 
-impl<T: ?Sized, Request> ServiceExt<Request> for T where T: tower_service::Service<Request> {}
+impl<T: ?Sized, Request> ServiceExt<Request> for T where T: tower_async_service::Service<Request> {}
 
 /// Convert an `Option<Layer>` into a [`Layer`].
 ///
 /// ```
 /// # use std::time::Duration;
-/// # use tower::Service;
-/// # use tower::builder::ServiceBuilder;
-/// use tower::util::option_layer;
-/// # use tower::timeout::TimeoutLayer;
+/// # use tower_async::Service;
+/// # use tower_async::builder::ServiceBuilder;
+/// use tower_async::util::option_layer;
+/// # use tower_async::timeout::TimeoutLayer;
 /// # async fn wrap<S>(svc: S) where S: Service<(), Error = &'static str> + 'static + Send, S::Future: Send {
 /// # let timeout = Some(Duration::new(10, 0));
 /// // Layer to apply a timeout if configured

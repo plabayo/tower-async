@@ -10,7 +10,7 @@ use std::{
     pin::Pin,
     task::{Context, Poll},
 };
-use tower_service::Service;
+use tower_async_service::Service;
 
 /// Constructs load balancers over dynamic service sets produced by a wrapped "inner" service.
 ///

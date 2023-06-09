@@ -36,7 +36,7 @@ use self::future::{AsyncResponseFuture, ResponseFuture};
 use crate::BoxError;
 use futures_util::{future::Either, TryFutureExt};
 use std::task::{Context, Poll};
-use tower_service::Service;
+use tower_async_service::Service;
 
 /// Conditionally dispatch requests to the inner service based on a [predicate].
 ///

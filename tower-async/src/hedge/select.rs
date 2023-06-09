@@ -4,7 +4,7 @@ use std::{
     pin::Pin,
     task::{Context, Poll},
 };
-use tower_service::Service;
+use tower_async_service::Service;
 
 /// A policy which decides which requests can be cloned and sent to the B
 /// service.

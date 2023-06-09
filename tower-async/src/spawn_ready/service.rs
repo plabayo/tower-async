@@ -7,7 +7,7 @@ use std::{
     pin::Pin,
     task::{Context, Poll},
 };
-use tower_service::Service;
+use tower_async_service::Service;
 use tracing::Instrument;
 
 /// Spawns tasks to drive an inner service to readiness.

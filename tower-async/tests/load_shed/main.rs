@@ -3,8 +3,8 @@
 mod support;
 
 use tokio_test::{assert_ready_err, assert_ready_ok, task};
-use tower::load_shed::LoadShedLayer;
-use tower_test::{assert_request_eq, mock};
+use tower_async::load_shed::LoadShedLayer;
+use tower_async_test::{assert_request_eq, mock};
 
 #[tokio::test(flavor = "current_thread")]
 async fn when_ready() {
@@ -35,5 +35,5 @@ async fn when_not_ready() {
     let mut fut = task::spawn(service.call("hello"));
 
     let err = assert_ready_err!(fut.poll());
-    assert!(err.is::<tower::load_shed::error::Overloaded>());
+    assert!(err.is::<tower_async::load_shed::error::Overloaded>());
 }

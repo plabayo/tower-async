@@ -10,8 +10,8 @@ use crate::mock::{error::Error, future::ResponseFuture};
 use core::task::Waker;
 
 use tokio::sync::{mpsc, oneshot};
-use tower_layer::Layer;
-use tower_service::Service;
+use tower_async_layer::Layer;
+use tower_async_service::Service;
 
 use std::{
     collections::HashMap,

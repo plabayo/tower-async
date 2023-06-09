@@ -19,21 +19,21 @@
 //! # #[cfg(feature = "util")]
 //! # #[cfg(feature = "load")]
 //! # fn warnings_are_errors() {
-//! use tower::balance::p2c::Balance;
-//! use tower::load::Load;
-//! use tower::{Service, ServiceExt};
+//! use tower_async::balance::p2c::Balance;
+//! use tower_async::load::Load;
+//! use tower_async::{Service, ServiceExt};
 //! use futures_util::pin_mut;
 //! # use futures_core::Stream;
 //! # use futures_util::StreamExt;
 //!
 //! async fn spread<Req, S: Service<Req> + Load>(svc1: S, svc2: S, reqs: impl Stream<Item = Req>)
 //! where
-//!     S::Error: Into<tower::BoxError>,
+//!     S::Error: Into<tower_async::BoxError>,
 //! # // this bound is pretty unfortunate, and the compiler does _not_ help
 //!     S::Metric: std::fmt::Debug,
 //! {
 //!     // Spread load evenly across the two services
-//!     let p2c = Balance::new(tower::discover::ServiceList::new(vec![svc1, svc2]));
+//!     let p2c = Balance::new(tower_async::discover::ServiceList::new(vec![svc1, svc2]));
 //!
 //!     // Issue all the requests that come in.
 //!     // Some will go to svc1, some will go to svc2.

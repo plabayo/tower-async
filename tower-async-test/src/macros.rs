@@ -7,8 +7,8 @@
 /// # Examples
 ///
 /// ```rust
-/// use tower_service::Service;
-/// use tower_test::{mock, assert_request_eq};
+/// use tower_async_service::Service;
+/// use tower_async_test::{mock, assert_request_eq};
 /// use tokio_test::assert_ready;
 ///
 /// # async fn test() {

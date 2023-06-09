@@ -30,7 +30,7 @@
 //! use std::sync::Arc;
 //!
 //! use futures_util::future;
-//! use tower::retry::{budget::{Budget, TpsBudget}, Policy};
+//! use tower_async::retry::{budget::{Budget, TpsBudget}, Policy};
 //!
 //! type Req = String;
 //! type Res = String;

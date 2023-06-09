@@ -17,7 +17,7 @@ use std::{
     time::Duration,
 };
 use tokio::time::Instant;
-use tower_service::Service;
+use tower_async_service::Service;
 use tracing::trace;
 
 /// Measures the load of the underlying service using Peak-EWMA load measurement.

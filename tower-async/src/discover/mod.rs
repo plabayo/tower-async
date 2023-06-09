@@ -13,7 +13,7 @@
 //!
 //! ```rust
 //! use futures_util::{future::poll_fn, pin_mut};
-//! use tower::discover::{Change, Discover};
+//! use tower_async::discover::{Change, Discover};
 //! async fn services_monitor<D: Discover>(services: D) {
 //!     pin_mut!(services);
 //!     while let Some(Ok(change)) = poll_fn(|cx| services.as_mut().poll_discover(cx)).await {

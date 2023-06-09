@@ -3,9 +3,9 @@
 mod support;
 use std::thread;
 use tokio_test::{assert_pending, assert_ready, assert_ready_err, assert_ready_ok, task};
-use tower::buffer::{error, Buffer};
-use tower::{util::ServiceExt, Service};
-use tower_test::{assert_request_eq, mock};
+use tower_async::buffer::{error, Buffer};
+use tower_async::{util::ServiceExt, Service};
+use tower_async_test::{assert_request_eq, mock};
 
 fn let_worker_work() {
     // Allow the Buffer's executor to do work
@@ -377,7 +377,7 @@ async fn wakes_pending_waiters_on_failure() {
 
 #[tokio::test(flavor = "current_thread")]
 async fn propagates_trace_spans() {
-    use tower::util::ServiceExt;
+    use tower_async::util::ServiceExt;
     use tracing::Instrument;
 
     let _t = support::trace_init();

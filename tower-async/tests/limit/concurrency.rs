@@ -1,8 +1,8 @@
 #[path = "../support.rs"]
 mod support;
 use tokio_test::{assert_pending, assert_ready, assert_ready_ok};
-use tower::limit::concurrency::ConcurrencyLimitLayer;
-use tower_test::{assert_request_eq, mock};
+use tower_async::limit::concurrency::ConcurrencyLimitLayer;
+use tower_async_test::{assert_request_eq, mock};
 
 #[tokio::test(flavor = "current_thread")]
 async fn basic_service_limit_functionality_with_poll_ready() {

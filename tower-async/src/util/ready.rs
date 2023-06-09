@@ -6,7 +6,7 @@ use std::{
     pin::Pin,
     task::{Context, Poll},
 };
-use tower_service::Service;
+use tower_async_service::Service;
 
 /// A [`Future`] that yields the service when it is ready to accept a request.
 ///

@@ -1,5 +1,5 @@
 use tokio_test::{assert_pending, assert_ready};
-use tower_test::{assert_request_eq, mock};
+use tower_async_test::{assert_request_eq, mock};
 
 #[tokio::test(flavor = "current_thread")]
 async fn single_request_ready() {

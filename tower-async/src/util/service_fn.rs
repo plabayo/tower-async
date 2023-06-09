@@ -1,7 +1,7 @@
 use std::fmt;
 use std::future::Future;
 use std::task::{Context, Poll};
-use tower_service::Service;
+use tower_async_service::Service;
 
 /// Returns a new [`ServiceFn`] with the given closure.
 ///
@@ -10,7 +10,7 @@ use tower_service::Service;
 /// # Example
 ///
 /// ```
-/// use tower::{service_fn, Service, ServiceExt, BoxError};
+/// use tower_async::{service_fn, Service, ServiceExt, BoxError};
 /// # struct Request;
 /// # impl Request {
 /// #     fn new() -> Self { Self }

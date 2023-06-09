@@ -1,6 +1,6 @@
 use super::{Rate, RateLimit};
 use std::time::Duration;
-use tower_layer::Layer;
+use tower_async_layer::Layer;
 
 /// Enforces a rate limit on the number of requests the underlying
 /// service can handle over a period of time.

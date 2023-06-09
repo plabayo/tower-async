@@ -12,7 +12,7 @@ pub use self::policy::Policy;
 use self::future::ResponseFuture;
 use pin_project_lite::pin_project;
 use std::task::{Context, Poll};
-use tower_service::Service;
+use tower_async_service::Service;
 
 pin_project! {
     /// Configure retrying requests of "failed" responses.

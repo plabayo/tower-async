@@ -12,9 +12,9 @@ use std::fmt;
 ///
 /// # Example
 /// ```rust
-/// # use tower::Service;
+/// # use tower_async::Service;
 /// # use std::task::{Poll, Context};
-/// # use tower_layer::{Layer, layer_fn};
+/// # use tower_async_layer::{Layer, layer_fn};
 /// # use std::fmt;
 /// # use std::convert::Infallible;
 /// #
@@ -54,7 +54,7 @@ use std::fmt;
 /// });
 ///
 /// // An example service. This one uppercases strings
-/// let uppercase_service = tower::service_fn(|request: String| async move {
+/// let uppercase_service = tower_async::service_fn(|request: String| async move {
 ///     Ok::<_, Infallible>(request.to_uppercase())
 /// });
 ///
@@ -107,7 +107,7 @@ mod tests {
         let _svc = layer.layer("foo");
 
         assert_eq!(
-            "LayerFn { f: tower_layer::layer_fn::tests::layer_fn_has_useful_debug_impl::{{closure}} }".to_string(),
+            "LayerFn { f: tower_async_layer::layer_fn::tests::layer_fn_has_useful_debug_impl::{{closure}} }".to_string(),
             format!("{:?}", layer),
         );
     }

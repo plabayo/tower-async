@@ -1,5 +1,5 @@
-use tower_layer::{layer_fn, LayerFn};
-use tower_service::Service;
+use tower_async_layer::{layer_fn, LayerFn};
+use tower_async_service::Service;
 
 use std::fmt;
 use std::{

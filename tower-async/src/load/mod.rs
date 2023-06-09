@@ -7,7 +7,7 @@
 //! - [`PendingRequests`] — Measures load by tracking the number of in-flight requests.
 //! - [`PeakEwma`] — Measures load using a moving average of the peak latency for the service.
 //!
-//! In general, you will want to use one of these when using the types in [`tower::balance`] which
+//! In general, you will want to use one of these when using the types in [`tower_async::balance`] which
 //! balance services depending on their load. Which load metric to use depends on your exact
 //! use-case, but the ones above should get you quite far!
 //!
@@ -33,9 +33,9 @@
 //!
 //! ```rust
 //! # #[cfg(feature = "util")]
-//! use tower::util::ServiceExt;
+//! use tower_async::util::ServiceExt;
 //! # #[cfg(feature = "util")]
-//! use tower::{load::Load, Service};
+//! use tower_async::{load::Load, Service};
 //! # #[cfg(feature = "util")]
 //! async fn simple_balance<S1, S2, R>(
 //!     svc1: &mut S1,
@@ -54,7 +54,7 @@
 //! }
 //! ```
 //!
-//! [`tower::balance`]: crate::balance
+//! [`tower_async::balance`]: crate::balance
 //! [`Discover`]: crate::discover::Discover
 //! [`CompleteOnResponse`]: crate::load::completion::CompleteOnResponse
 // TODO: a custom completion example would be good here

@@ -1,7 +1,7 @@
 //! Middleware for shedding load when inner services aren't ready.
 
 use std::task::{Context, Poll};
-use tower_service::Service;
+use tower_async_service::Service;
 
 pub mod error;
 pub mod future;
