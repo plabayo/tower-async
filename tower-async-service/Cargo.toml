@@ -6,7 +6,7 @@ name = "tower-async-service"
 #   - README.md
 # - Update CHANGELOG.md.
 # - Create "v0.2.x" git tag.
-version = "0.3.2"
+version = "0.1.0"
 authors = ["Glen De Cauwsemaecker <glen@plabayo.tech>"]
 license = "MIT"
 readme = "README.md"

@@ -6,7 +6,7 @@ name = "tower-async"
 #   - README.md
 # - Update CHANGELOG.md.
 # - Create "vX.X.X" git tag.
-version = "0.4.13"
+version = "0.1.0"
 authors = ["Glen De Cauwsemaecker <glen@plabayo.tech>"]
 license = "MIT"
 readme = "README.md"
@@ -63,8 +63,8 @@ timeout = ["pin-project-lite", "tokio/time"]
 util = ["__common", "futures-util", "pin-project-lite", "sync_wrapper"]
 
 [dependencies]
-tower-async-layer = { version = "0.3.1", path = "../tower-async-ayer" }
-tower-async-service = { version = "0.3.1", path = "../tower-async-service" }
+tower-async-layer = { version = "0.1", path = "../tower-async-layer" }
+tower-async-service = { version = "0.1", path = "../tower-async-service" }
 
 futures-core = { version = "0.3", optional = true }
 futures-util = { version = "0.3", default-features = false, features = ["alloc"], optional = true }
@@ -85,7 +85,7 @@ pin-project-lite = "0.2.7"
 tokio = { version = "1.6.2", features = ["macros", "sync", "test-util", "rt-multi-thread"] }
 tokio-stream = "0.1"
 tokio-test = "0.4"
-tower-test = { version = "0.4", path = "../tower-test" }
+tower-async-test = { version = "0.1", path = "../tower-async-test" }
 tracing = { version = "0.1.2", default-features = false, features = ["std"] }
 tracing-subscriber = { version = "0.3", default-features = false, features = ["fmt", "ansi"] }
 http = "0.2"
