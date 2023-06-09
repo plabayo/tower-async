@@ -29,6 +29,10 @@ opportunity arises we'll contribute back "upstream" as well.
 
 This project is licensed under the [MIT license](LICENSE).
 
+Big thanks and credits go towards
+[the original Tower authors](https://github.com/tower-rs/tower/graphs/contributors?from=2016-08-21&to=2023-06-04&type=c)
+which licensed their code under the same License type.
+
 ### Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally submitted
