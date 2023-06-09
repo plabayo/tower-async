@@ -63,8 +63,8 @@ timeout = ["pin-project-lite", "tokio/time"]
 util = ["__common", "futures-util", "pin-project-lite", "sync_wrapper"]
 
 [dependencies]
-tower-layer = { version = "0.3.1", path = "../tower-async-ayer" }
-tower-service = { version = "0.3.1", path = "../tower-async-service" }
+tower-async-layer = { version = "0.3.1", path = "../tower-async-ayer" }
+tower-async-service = { version = "0.3.1", path = "../tower-async-service" }
 
 futures-core = { version = "0.3", optional = true }
 futures-util = { version = "0.3", default-features = false, features = ["alloc"], optional = true }
