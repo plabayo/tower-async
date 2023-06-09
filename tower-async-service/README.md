@@ -16,6 +16,15 @@ The foundational `Service` trait that [Tower Async] is based on.
 [actions-badge]: https://github.com/plabayo/tower-async/workflows/CI/badge.svg
 [actions-url]:https://github.com/plabayo/tower-async/actions?query=workflow%3ACI
 
+## Fork
+
+Tower Async Service is a fork of <https://github.com/tower-rs/tower>
+and makes use of `async traits` to simplify things and make it more easier
+to integrate async functions into middleware.
+
+Where suitable we'll keep in sync (manually) with Tower and if the
+opportunity arises we'll contribute back "upstream" as well.
+
 ## Overview
 
 The [`Service`] trait provides the foundation upon which [Tower] is built. It is a
@@ -47,5 +56,5 @@ This project is licensed under the [MIT license](LICENSE).
 ### Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally submitted
-for inclusion in Tower by you, shall be licensed as MIT, without any additional
+for inclusion in Tower Async by you, shall be licensed as MIT, without any additional
 terms or conditions.

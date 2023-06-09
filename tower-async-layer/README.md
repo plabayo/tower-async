@@ -16,6 +16,15 @@ Decorates a [Tower Async] `Service`, transforming either the request or the resp
 [actions-badge]: https://github.com/plabayo/tower-async/workflows/CI/badge.svg
 [actions-url]:https://github.com/plabayo/tower-async/actions?query=workflow%3ACI
 
+## Fork
+
+Tower Async Layer is a fork of <https://github.com/tower-rs/tower>
+and makes use of `async traits` to simplify things and make it more easier
+to integrate async functions into middleware.
+
+Where suitable we'll keep in sync (manually) with Tower and if the
+opportunity arises we'll contribute back "upstream" as well.
+
 ## Overview
 
 Often, many of the pieces needed for writing network applications can be
@@ -31,7 +40,7 @@ This project is licensed under the [MIT license](LICENSE).
 ### Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally submitted
-for inclusion in Tower by you, shall be licensed as MIT, without any additional
+for inclusion in Tower Async by you, shall be licensed as MIT, without any additional
 terms or conditions.
 
 [Tower Async]: https://crates.io/crates/tower-async

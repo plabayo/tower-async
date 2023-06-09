@@ -17,10 +17,14 @@ networking clients and servers.
 [actions-badge]: https://github.com/plabayo/tower-async/workflows/CI/badge.svg
 [actions-url]:https://github.com/plabayo/tower-async/actions?query=workflow%3ACI
 
-TODO:
+## Fork
 
-- mention fork
-- fix this README
+Tower Async is a fork of <https://github.com/tower-rs/tower>
+and makes use of `async traits` to simplify things and make it more easier
+to integrate async functions into middleware.
+
+Where suitable we'll keep in sync (manually) with Tower and if the
+opportunity arises we'll contribute back "upstream" as well.
 
 ## Overview
 
@@ -28,7 +32,7 @@ Tower Async aims to make it as easy as possible to build robust networking clien
 servers. It is protocol agnostic, but is designed around a request / response
 pattern. If your protocol is entirely stream based, Tower may not be a good fit.
 
-Tower provides a simple core abstraction, the [`Service`] trait, which
+Tower Async provides a simple core abstraction, the [`Service`] trait, which
 represents an asynchronous function taking a request and returning either a
 response or an error. This abstraction can be used to model both clients and
 servers.
@@ -50,24 +54,24 @@ service by composing it with multiple [`Layer`]s.
 
 Tower is made up of the following crates:
 
-* [`tower`] (this crate)
-* [`tower-service`]
-* [`tower-layer`]
-* [`tower-test`]
+* [`tower-async`] (this crate)
+* [`tower-async-service`]
+* [`tower-async-layer`]
+* [`tower-async-test`]
 
 Since the [`Service`] and [`Layer`] traits are important integration points
 for all libraries using Tower, they are kept as stable as possible, and
 breaking changes are made rarely. Therefore, they are defined in separate
-crates, [`tower-service`] and [`tower-layer`]. This crate contains
+crates, [`tower-async-service`] and [`tower-async-layer`]. This crate contains
 re-exports of those core traits, implementations of commonly-used
 middleware, and [utilities] for working with [`Service`]s and [`Layer`]s.
-Finally, the [`tower-test`] crate provides tools for testing programs using
+Finally, the [`tower-async-test`] crate provides tools for testing programs using
 Tower.
 
 ## Usage
 
 Tower provides an abstraction layer, and generic implementations of various
-middleware. This means that the `tower` crate on its own does *not* provide
+middleware. This means that the `tower-async` crate on its own does *not* provide
 a working implementation of a network client or server. Instead, Tower's
 [`Service` trait][`Service`] provides an integration point between
 application code, libraries providing middleware implementations, and
@@ -87,7 +91,7 @@ Depending on your particular use case, you might use Tower in several ways:
   other Tower users!) or application-specific behavior that needs to be
   shared between multiple clients or servers.
 * **Implementing a network protocol**. Libraries that implement network
-  protocols (such as HTTP) can depend on `tower-service` to use the
+  protocols (such as HTTP) can depend on `tower-async-service` to use the
   [`Service`] trait as an integration point between the protocol and user
   code. For example, a client for some protocol might implement [`Service`],
   allowing users to add arbitrary Tower middleware to those clients.
@@ -99,35 +103,14 @@ Depending on your particular use case, you might use Tower in several ways:
 
 ### Library Support
 
-A number of third-party libraries support Tower and the [`Service`] trait.
-The following is an incomplete list of such libraries:
+Following are some libraries that make use of Tower Async (instead of Tower)
+and the [`Service`] trait:
 
-* [`hyper`]: A fast and correct low-level HTTP implementation.
-* [`tonic`]: A [gRPC-over-HTTP/2][grpc] implementation built on top of
-  [`hyper`]. See [here][tonic-examples] for examples of using [`tonic`] with
-  Tower.
-* [`axum`]: Ergonomic and modular web framework built with Tokio, Tower, and Hyper.
-* [`tower-lsp`]: implementations of the [Language
-  Server Protocol][lsp] based on Tower.
-* [`kube`]: Kubernetes client and futures controller runtime. [`kube::Client`]
-  makes use of the Tower ecosystem: [`tower`], [`tower-http`], and
-  [`tower-test`]. See [here][kube-example-minimal] and
-  [here][kube-example-trace] for examples of using [`kube`] with Tower.
+* [`rama`]: A proxy framework to anonymise your network traffic.
 
-[`hyper`]: https://crates.io/crates/hyper
-[`tonic`]: https://crates.io/crates/tonic
-[tonic-examples]: https://github.com/hyperium/tonic/tree/master/examples/src/tower
-[grpc]: https://grpc.io
-[`axum`]: https://crates.io/crates/axum
-[`tower-lsp`]: https://crates.io/crates/tower-lsp
-[lsp]: https://microsoft.github.io/language-server-protocol/
-[`kube`]: https://crates.io/crates/kube
-[`kube::Client`]: https://docs.rs/kube/latest/kube/struct.Client.html
-[kube-example-minimal]: https://github.com/clux/kube-rs/blob/master/examples/custom_client.rs
-[kube-example-trace]: https://github.com/clux/kube-rs/blob/master/examples/custom_client_trace.rs
-[`tower-http`]: https://crates.io/crates/tower-http
+[`rama`]: https://crates.io/crates/rama
 
-If you're the maintainer of a crate that supports Tower, we'd love to add
+If you're the maintainer of a crate that supports Tower Async, we'd love to add
 your crate to this list! Please [open a PR] adding a brief description of
 your library!
 
@@ -154,27 +137,32 @@ tower = { version = "0.4", features = ["retry", "timeout"] }
 See [here][all_layers] for a complete list of all middleware provided by
 Tower.
 
-[`Service`]: https://docs.rs/tower/latest/tower/trait.Service.html
-[`Layer`]: https://docs.rs/tower/latest/tower/trait.Layer.html
-[all_layers]: https://docs.rs/tower/latest/tower/#modules
-[timeouts]: https://docs.rs/tower/latest/tower/timeout/
-[rate limiting]: https://docs.rs/tower/latest/tower/limit/rate
-[load balancing]: https://docs.rs/tower/latest/tower/balance/
-[`ServiceBuilder`]: https://docs.rs/tower/latest/tower/struct.ServiceBuilder.html
-[utilities]: https://docs.rs/tower/latest/tower/trait.ServiceExt.html
-[`tower`]: https://crates.io/crates/tower
-[`tower-service`]: https://crates.io/crates/tower-service
-[`tower-layer`]: https://crates.io/crates/tower-layer
-[`tower-test`]: https://crates.io/crates/tower-test
-[`retry`]: https://docs.rs/tower/latest/tower/retry
-[open a PR]: https://github.com/plabayo/async-tower/compare
+[`Service`]: https://docs.rs/tower-async/latest/tower-async/trait.Service.html
+[`Layer`]: https://docs.rs/tower-async/latest/tower-async/trait.Layer.html
+[all_layers]: https://docs.rs/tower-async/latest/tower-async/#modules
+[timeouts]: https://docs.rs/tower-async/latest/tower-async/timeout/
+[rate limiting]: https://docs.rs/tower-async/latest/tower-async/limit/rate
+[load balancing]: https://docs.rs/tower-async/latest/tower-async/balance/
+[`ServiceBuilder`]: https://docs.rs/tower-async/latest/tower-async/struct.ServiceBuilder.html
+[utilities]: https://docs.rs/tower-async/latest/tower-async/trait.ServiceExt.html
+[`tower-async`]: https://crates.io/crates/tower
+[`tower-async-service`]: https://crates.io/crates/tower-async-service
+[`tower-async-layer`]: https://crates.io/crates/tower-async-layer
+[`tower-async-test`]: https://crates.io/crates/tower-async-test
+[`retry`]: https://docs.rs/tower-async/latest/tower-async/retry
+[open a PR]: https://github.com/plabayo/tower-async/compare
 
 
 ## Supported Rust Versions
 
-Tower will keep a rolling MSRV (minimum supported Rust version) policy of **at
-least** 6 months. When increasing the MSRV, the new Rust version must have been
-released at least six months ago. The current MSRV is 1.49.0.
+Tower Async requires nightly Rust for the time being and has no backwards compatibility
+promises for the time being.
+
+Once `async traits` are stabalized we'll start supporting stable rust once again,
+and we can start working towards backwards compatibility.
+
+Read <https://blog.rust-lang.org/inside-rust/2023/05/03/stabilizing-async-fn-in-trait.html> for more information
+on this roadmap by the Rust Language Core Team.
 
 ## License
 
@@ -183,5 +171,5 @@ This project is licensed under the [MIT license](LICENSE).
 ### Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally submitted
-for inclusion in Tower by you, shall be licensed as MIT, without any additional
+for inclusion in Tower Async by you, shall be licensed as MIT, without any additional
 terms or conditions.
