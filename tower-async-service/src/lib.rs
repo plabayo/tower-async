@@ -5,6 +5,8 @@
     unreachable_pub
 )]
 #![forbid(unsafe_code)]
+#![allow(incomplete_features)]
+#![feature(async_fn_in_trait)]
 // `rustdoc::broken_intra_doc_links` is checked on CI
 
 //! Definition of the core `Service` trait to Tower
@@ -12,9 +14,6 @@
 //! The [`Service`] trait provides the necessary abstractions for defining
 //! request / response clients and servers. It is simple but powerful and is
 //! used as the foundation for the rest of Tower.
-
-use std::future::Future;
-use std::task::{Context, Poll};
 
 /// An asynchronous function from a `Request` to a `Response`.
 ///
@@ -43,9 +42,8 @@ use std::task::{Context, Poll};
 /// As an example, here is how an HTTP request is processed by a server:
 ///
 /// ```rust
-/// # use std::pin::Pin;
-/// # use std::task::{Poll, Context};
-/// # use std::future::Future;
+/// # #![allow(incomplete_features)]
+/// # #![feature(async_fn_in_trait)]
 /// # use tower_async_service::Service;
 /// use http::{Request, Response, StatusCode};
 ///
@@ -54,13 +52,8 @@ use std::task::{Context, Poll};
 /// impl Service<Request<Vec<u8>>> for HelloWorld {
 ///     type Response = Response<Vec<u8>>;
 ///     type Error = http::Error;
-///     type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>>>>;
 ///
-///     fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-///         Poll::Ready(Ok(()))
-///     }
-///
-///     fn call(&mut self, req: Request<Vec<u8>>) -> Self::Future {
+///     async fn call(&mut self, req: Request<Vec<u8>>) -> Result<Self::Response, Self::Error> {
 ///         // create the body
 ///         let body: Vec<u8> = "hello, world!\n"
 ///             .as_bytes()
@@ -70,14 +63,8 @@ use std::task::{Context, Poll};
 ///             .status(StatusCode::OK)
 ///             .body(body)
 ///             .expect("Unable to create `http::Response`");
-///
-///         // create a response in a future.
-///         let fut = async {
-///             Ok(resp)
-///         };
-///
-///         // Return the response as an immediate future
-///         Box::pin(fut)
+///         // Return the response
+///         Ok(resp)
 ///     }
 /// }
 /// ```
@@ -112,6 +99,8 @@ use std::task::{Context, Poll};
 /// Take timeouts as an example:
 ///
 /// ```rust
+/// # #![allow(incomplete_features)]
+/// # #![feature(async_fn_in_trait)]
 /// use tower_async_service::Service;
 /// use tower_async_layer::Layer;
 /// use futures::FutureExt;
@@ -154,7 +143,6 @@ use std::task::{Context, Poll};
 /// impl<T, Request> Service<Request> for Timeout<T>
 /// where
 ///     T: Service<Request>,
-///     T::Future: 'static,
 ///     T::Error: Into<Box<dyn Error + Send + Sync>> + 'static,
 ///     T::Response: 'static,
 /// {
@@ -164,39 +152,16 @@ use std::task::{Context, Poll};
 ///     // `Error` type. Therefore, we return a boxed `dyn Error + Send + Sync` trait object to erase
 ///     // the error's type.
 ///     type Error = Box<dyn Error + Send + Sync>;
-///     type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>>>>;
 ///
-///     fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-///         // Our timeout service is ready if the inner service is ready.
-///         // This is how backpressure can be propagated through a tree of nested services.
-///        self.inner.poll_ready(cx).map_err(Into::into)
-///     }
-///
-///     fn call(&mut self, req: Request) -> Self::Future {
-///         // Create a future that completes after `self.timeout`
-///         let timeout = tokio::time::sleep(self.timeout);
-///
-///         // Call the inner service and get a future that resolves to the response
-///         let fut = self.inner.call(req);
-///
-///         // Wrap those two futures in another future that completes when either one completes
-///         //
-///         // If the inner service is too slow the `sleep` future will complete first
-///         // And an error will be returned and `fut` will be dropped and not polled again
-///         //
-///         // We have to box the errors so the types match
-///         let f = async move {
-///             tokio::select! {
-///                 res = fut => {
-///                     res.map_err(|err| err.into())
-///                 },
-///                 _ = timeout => {
-///                     Err(Box::new(Expired) as Box<dyn Error + Send + Sync>)
-///                 },
-///             }
-///         };
-///
-///         Box::pin(f)
+///     async fn call(&mut self, req: Request) -> Result<Self::Response, Self::Error> {
+///         tokio::select! {
+///             res = self.inner.call(req) => {
+///                 res.map_err(|err| err.into())
+///             },
+///             _ = tokio::time::sleep(self.timeout) => {
+///                 Err(Box::new(Expired) as Box<dyn Error + Send + Sync>)
+///             },
+///         }
 ///     }
 /// }
 ///
@@ -224,90 +189,16 @@ use std::task::{Context, Poll};
 ///
 /// # Backpressure
 ///
-/// Calling a `Service` which is at capacity (i.e., it is temporarily unable to process a
-/// request) should result in an error. The caller is responsible for ensuring
-/// that the service is ready to receive the request before calling it.
+/// There is no explicit support for Backpressure in the service.
+/// This can be achieved by having middleware at the front which
+/// implements backpressure and propagates it through the service
 ///
-/// `Service` provides a mechanism by which the caller is able to coordinate
-/// readiness. `Service::poll_ready` returns `Ready` if the service expects that
-/// it is able to process a request.
+/// Or one can also implement it in the location where this
+/// service gets created.
 ///
-/// # Be careful when cloning inner services
-///
-/// Services are permitted to panic if `call` is invoked without obtaining `Poll::Ready(Ok(()))`
-/// from `poll_ready`. You should therefore be careful when cloning services for example to move
-/// them into boxed futures. Even though the original service is ready, the clone might not be.
-///
-/// Therefore this kind of code is wrong and might panic:
-///
-/// ```rust
-/// # use std::pin::Pin;
-/// # use std::task::{Poll, Context};
-/// # use std::future::Future;
-/// # use tower_async_service::Service;
-/// #
-/// struct Wrapper<S> {
-///     inner: S,
-/// }
-///
-/// impl<R, S> Service<R> for Wrapper<S>
-/// where
-///     S: Service<R> + Clone + 'static,
-///     R: 'static,
-/// {
-///     type Response = S::Response;
-///     type Error = S::Error;
-///     type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>>>>;
-///
-///     fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-///         self.inner.poll_ready(cx)
-///     }
-///
-///     fn call(&mut self, req: R) -> Self::Future {
-///         let mut inner = self.inner.clone();
-///         Box::pin(async move {
-///             // `inner` might not be ready since its a clone
-///             inner.call(req).await
-///         })
-///     }
-/// }
-/// ```
-///
-/// You should instead use [`std::mem::replace`] to take the service that was ready:
-///
-/// ```rust
-/// # use std::pin::Pin;
-/// # use std::task::{Poll, Context};
-/// # use std::future::Future;
-/// # use tower_async_service::Service;
-/// #
-/// struct Wrapper<S> {
-///     inner: S,
-/// }
-///
-/// impl<R, S> Service<R> for Wrapper<S>
-/// where
-///     S: Service<R> + Clone + 'static,
-///     R: 'static,
-/// {
-///     type Response = S::Response;
-///     type Error = S::Error;
-///     type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>>>>;
-///
-///     fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-///         self.inner.poll_ready(cx)
-///     }
-///
-///     fn call(&mut self, req: R) -> Self::Future {
-///         let clone = self.inner.clone();
-///         // take the service that was ready
-///         let mut inner = std::mem::replace(&mut self.inner, clone);
-///         Box::pin(async move {
-///             inner.call(req).await
-///         })
-///     }
-/// }
-/// ```
+/// The original tower library had a `poll_ready` method which
+/// was used to implement backpressure. This was removed in this fork in
+/// favor of the above approach.
 pub trait Service<Request> {
     /// Responses given by the service.
     type Response;
@@ -315,44 +206,9 @@ pub trait Service<Request> {
     /// Errors produced by the service.
     type Error;
 
-    /// The future response value.
-    type Future: Future<Output = Result<Self::Response, Self::Error>>;
-
-    /// Returns `Poll::Ready(Ok(()))` when the service is able to process requests.
-    ///
-    /// If the service is at capacity, then `Poll::Pending` is returned and the task
-    /// is notified when the service becomes ready again. This function is
-    /// expected to be called while on a task. Generally, this can be done with
-    /// a simple `futures::future::poll_fn` call.
-    ///
-    /// If `Poll::Ready(Err(_))` is returned, the service is no longer able to service requests
-    /// and the caller should discard the service instance.
-    ///
-    /// Once `poll_ready` returns `Poll::Ready(Ok(()))`, a request may be dispatched to the
-    /// service using `call`. Until a request is dispatched, repeated calls to
-    /// `poll_ready` must return either `Poll::Ready(Ok(()))` or `Poll::Ready(Err(_))`.
-    ///
-    /// Note that `poll_ready` may reserve shared resources that are consumed in a subsequent
-    /// invocation of `call`. Thus, it is critical for implementations to not assume that `call`
-    /// will always be invoked and to ensure that such resources are released if the service is
-    /// dropped before `call` is invoked or the future returned by `call` is dropped before it
-    /// is polled.
-    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>>;
-
     /// Process the request and return the response asynchronously.
-    ///
-    /// This function is expected to be callable off task. As such,
-    /// implementations should take care to not call `poll_ready`.
-    ///
-    /// Before dispatching a request, `poll_ready` must be called and return
-    /// `Poll::Ready(Ok(()))`.
-    ///
-    /// # Panics
-    ///
-    /// Implementations are permitted to panic if `call` is invoked without
-    /// obtaining `Poll::Ready(Ok(()))` from `poll_ready`.
     #[must_use = "futures do nothing unless you `.await` or poll them"]
-    fn call(&mut self, req: Request) -> Self::Future;
+    async fn call(&mut self, req: Request) -> Result<Self::Response, Self::Error>;
 }
 
 impl<'a, S, Request> Service<Request> for &'a mut S
@@ -361,14 +217,13 @@ where
 {
     type Response = S::Response;
     type Error = S::Error;
-    type Future = S::Future;
 
-    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), S::Error>> {
-        (**self).poll_ready(cx)
-    }
-
-    fn call(&mut self, request: Request) -> S::Future {
-        (**self).call(request)
+    async fn call(
+        &mut self,
+        request: Request,
+    ) -> Result<<&'a mut S as Service<Request>>::Response, <&'a mut S as Service<Request>>::Error>
+    {
+        (**self).call(request).await
     }
 }
 
@@ -378,13 +233,8 @@ where
 {
     type Response = S::Response;
     type Error = S::Error;
-    type Future = S::Future;
 
-    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), S::Error>> {
-        (**self).poll_ready(cx)
-    }
-
-    fn call(&mut self, request: Request) -> S::Future {
-        (**self).call(request)
+    async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
+        (**self).call(request).await
     }
 }
