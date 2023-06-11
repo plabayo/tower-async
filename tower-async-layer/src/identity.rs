@@ -6,7 +6,7 @@ use std::fmt;
 /// When wrapping a [`Service`], the [`Identity`] layer returns the provided
 /// service without modifying it.
 ///
-/// [`Service`]: https://docs.rs/tower-service/latest/tower_service/trait.Service.html
+/// [`Service`]: https://docs.rs/tower-async-service/latest/tower_async_service/trait.Service.html
 #[derive(Default, Clone)]
 pub struct Identity {
     _p: (),
@@ -21,7 +21,7 @@ impl Identity {
 
 /// Decorates a [`Service`], transforming either the request or the response.
 ///
-/// [`Service`]: https://docs.rs/tower-service/latest/tower_service/trait.Service.html
+/// [`Service`]: https://docs.rs/tower-async-service/latest/tower_async_service/trait.Service.html
 impl<S> Layer<S> for Identity {
     type Service = S;
 

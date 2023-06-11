@@ -14,7 +14,7 @@
 //!
 //! A middleware implements the [`Layer`] and [`Service`] trait.
 //!
-//! [`Service`]: https://docs.rs/tower/*/tower/trait.Service.html
+//! [`Service`]: https://docs.rs/tower-async/*/tower_async/trait.Service.html
 
 mod identity;
 mod layer_fn;
@@ -40,6 +40,8 @@ pub use self::{
 /// Take request logging as an example:
 ///
 /// ```rust
+/// # #![allow(incomplete_features)]
+/// # #![feature(async_fn_in_trait)]
 /// # use tower_async_service::Service;
 /// # use std::task::{Poll, Context};
 /// # use tower_async_layer::Layer;
@@ -73,16 +75,11 @@ pub use self::{
 /// {
 ///     type Response = S::Response;
 ///     type Error = S::Error;
-///     type Future = S::Future;
 ///
-///     fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-///         self.service.poll_ready(cx)
-///     }
-///
-///     fn call(&mut self, request: Request) -> Self::Future {
+///     async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
 ///         // Insert log statement here or other functionality
 ///         println!("request = {:?}, target = {:?}", request, self.target);
-///         self.service.call(request)
+///         self.service.call(request).await
 ///     }
 /// }
 /// ```
@@ -91,7 +88,7 @@ pub use self::{
 /// is also decoupled from client or server concerns. In other words, the same
 /// log middleware could be used in either a client or a server.
 ///
-/// [`Service`]: https://docs.rs/tower/*/tower/trait.Service.html
+/// [`Service`]: https://docs.rs/tower-async/*/tower_async/trait.Service.html
 pub trait Layer<S> {
     /// The wrapped service
     type Service;

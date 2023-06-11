@@ -12,6 +12,8 @@ use std::fmt;
 ///
 /// # Example
 /// ```rust
+/// # #![allow(incomplete_features)]
+/// # #![feature(async_fn_in_trait)]
 /// # use tower_async::Service;
 /// # use std::task::{Poll, Context};
 /// # use tower_async_layer::{Layer, layer_fn};
@@ -31,17 +33,12 @@ use std::fmt;
 /// {
 ///     type Response = S::Response;
 ///     type Error = S::Error;
-///     type Future = S::Future;
 ///
-///     fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-///         self.service.poll_ready(cx)
-///     }
-///
-///     fn call(&mut self, request: Request) -> Self::Future {
+///     async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
 ///         // Log the request
 ///         println!("request = {:?}, target = {:?}", request, self.target);
 ///
-///         self.service.call(request)
+///         self.service.call(request).await
 ///     }
 /// }
 ///
@@ -62,7 +59,7 @@ use std::fmt;
 /// let wrapped_service = log_layer.layer(uppercase_service);
 /// ```
 ///
-/// [`Service`]: https://docs.rs/tower-service/latest/tower_service/trait.Service.html
+/// [`Service`]: https://docs.rs/tower-async-service/latest/tower_async_service/trait.Service.html
 /// [`Layer::layer`]: crate::Layer::layer
 pub fn layer_fn<T>(f: T) -> LayerFn<T> {
     LayerFn { f }

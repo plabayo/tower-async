@@ -17,7 +17,7 @@ use std::{
     collections::HashMap,
     future::Future,
     sync::{Arc, Mutex},
-    task::{Context, Poll},
+    task::{Poll},
     u64,
 };
 
@@ -57,7 +57,6 @@ pub struct Mock<T, U> {
     id: u64,
     tx: Mutex<Tx<T, U>>,
     state: Arc<Mutex<State>>,
-    can_send: bool,
 }
 
 /// Handle to the `Mock`.
@@ -107,7 +106,6 @@ pub fn pair<T, U>() -> (Mock<T, U>, Handle<T, U>) {
         id: 0,
         tx,
         state: state.clone(),
-        can_send: false,
     };
 
     let handle = Handle { rx, state };
@@ -118,54 +116,14 @@ pub fn pair<T, U>() -> (Mock<T, U>, Handle<T, U>) {
 impl<T, U> Service<T> for Mock<T, U> {
     type Response = U;
     type Error = Error;
-    type Future = ResponseFuture<U>;
 
-    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        let mut state = self.state.lock().unwrap();
-
-        if state.is_closed {
-            return Poll::Ready(Err(error::Closed::new().into()));
-        }
-
-        if let Some(e) = state.err_with.take() {
-            return Poll::Ready(Err(e));
-        }
-
-        if self.can_send {
-            return Poll::Ready(Ok(()));
-        }
-
-        if state.rem > 0 {
-            assert!(!state.tasks.contains_key(&self.id));
-
-            // Returning `Ready` means the next call to `call` must succeed.
-            self.can_send = true;
-
-            Poll::Ready(Ok(()))
-        } else {
-            // Bit weird... but whatevz
-            *state
-                .tasks
-                .entry(self.id)
-                .or_insert_with(|| cx.waker().clone()) = cx.waker().clone();
-
-            Poll::Pending
-        }
-    }
-
-    fn call(&mut self, request: T) -> Self::Future {
+    async fn call(&mut self, request: T) -> Result<Self::Response, Self::Error> {
         // Make sure that the service has capacity
         let mut state = self.state.lock().unwrap();
 
         if state.is_closed {
-            return ResponseFuture::closed();
+            return ResponseFuture::closed().await;
         }
-
-        if !self.can_send {
-            panic!("service not ready; poll_ready must be called first");
-        }
-
-        self.can_send = false;
 
         // Decrement the number of remaining requests that can be sent
         if state.rem > 0 {
@@ -179,11 +137,11 @@ impl<T, U> Service<T> for Mock<T, U> {
             Ok(_) => {}
             Err(_) => {
                 // TODO: Can this be reached
-                return ResponseFuture::closed();
+                return ResponseFuture::closed().await;
             }
         }
 
-        ResponseFuture::new(rx)
+        ResponseFuture::new(rx).await
     }
 }
 
@@ -204,7 +162,6 @@ impl<T, U> Clone for Mock<T, U> {
             id,
             tx,
             state: self.state.clone(),
-            can_send: false,
         }
     }
 }

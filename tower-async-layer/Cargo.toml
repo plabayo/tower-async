@@ -22,4 +22,4 @@ edition = "2021"
 
 [dev-dependencies]
 tower-async-service = { version = "0.1", path = "../tower-async-service" }
-tower-async = { version = "0.1", path = "../tower-async" }
+tower-async = { version = "0.1", path = "../tower-async", features = ["util"] }

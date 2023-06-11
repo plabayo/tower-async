@@ -14,8 +14,6 @@
 /// # async fn test() {
 /// let (mut service, mut handle) = mock::spawn();
 ///
-/// assert_ready!(service.poll_ready());
-///
 /// let response = service.call("hello");
 ///
 /// assert_request_eq!(handle, "hello").send_response("world");
