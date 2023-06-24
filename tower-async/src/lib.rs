@@ -5,6 +5,8 @@
     unreachable_pub
 )]
 #![forbid(unsafe_code)]
+#![allow(incomplete_features)]
+#![feature(async_fn_in_trait)]
 #![allow(elided_lifetimes_in_paths, clippy::type_complexity)]
 #![cfg_attr(test, allow(clippy::float_cmp))]
 #![cfg_attr(docsrs, feature(doc_auto_cfg, doc_cfg))]
@@ -160,22 +162,14 @@
 
 #[macro_use]
 pub(crate) mod macros;
-#[cfg(feature = "balance")]
-pub mod balance;
 #[cfg(feature = "buffer")]
 pub mod buffer;
-#[cfg(feature = "discover")]
-pub mod discover;
 #[cfg(feature = "filter")]
 pub mod filter;
 #[cfg(feature = "hedge")]
 pub mod hedge;
 #[cfg(feature = "limit")]
 pub mod limit;
-#[cfg(feature = "load")]
-pub mod load;
-#[cfg(feature = "load-shed")]
-pub mod load_shed;
 
 #[cfg(feature = "make")]
 pub mod make;

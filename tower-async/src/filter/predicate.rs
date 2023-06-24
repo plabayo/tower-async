@@ -1,13 +1,7 @@
 use crate::BoxError;
-use std::future::Future;
 
 /// Checks a request asynchronously.
 pub trait AsyncPredicate<Request> {
-    /// The future returned by [`check`].
-    ///
-    /// [`check`]: crate::filter::AsyncPredicate::check
-    type Future: Future<Output = Result<Self::Request, BoxError>>;
-
     /// The type of requests returned by [`check`].
     ///
     /// This request is forwarded to the inner service if the predicate
@@ -19,7 +13,7 @@ pub trait AsyncPredicate<Request> {
     /// Check whether the given request should be forwarded.
     ///
     /// If the future resolves with [`Ok`], the request is forwarded to the inner service.
-    fn check(&mut self, request: Request) -> Self::Future;
+    async fn check(&mut self, request: Request) -> Result<Self::Request, BoxError>;
 }
 /// Checks a request synchronously.
 pub trait Predicate<Request> {
@@ -40,13 +34,11 @@ pub trait Predicate<Request> {
 impl<F, T, U, R, E> AsyncPredicate<T> for F
 where
     F: FnMut(T) -> U,
-    U: Future<Output = Result<R, E>>,
     E: Into<BoxError>,
 {
-    type Future = futures_util::future::ErrInto<U, BoxError>;
     type Request = R;
 
-    fn check(&mut self, request: T) -> Self::Future {
+    fn check(&mut self, request: T) -> Result<R, E> {
         use futures_util::TryFutureExt;
         self(request).err_into()
     }

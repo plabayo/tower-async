@@ -5,6 +5,8 @@
     unreachable_pub
 )]
 #![forbid(unsafe_code)]
+#![allow(incomplete_features)]
+#![feature(async_fn_in_trait)]
 // `rustdoc::broken_intra_doc_links` is checked on CI
 
 //! Layer traits and extensions.

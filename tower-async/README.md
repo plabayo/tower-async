@@ -164,6 +164,29 @@ and we can start working towards backwards compatibility.
 Read <https://blog.rust-lang.org/inside-rust/2023/05/03/stabilizing-async-fn-in-trait.html> for more information
 on this roadmap by the Rust Language Core Team.
 
+## FAQ
+
+> Where is the `poll_ready` method from Tower's Service?
+
+This has been removed for the purpose of simplification and because the authors of this
+fork consider it a problem out of scope:
+
+- most Tower services / layers do not ever need the `poll_ready` method, and simply call the inner service for that;
+- for some backpressure purposes you do want to know the request to know how to handle it, so `poll_ready` wouldn't work for these;
+
+`poll_ready` was also used for load balancing services but this is considered out of scope:
+
+- load balancing incoming network streams is in our humble opinion more something
+  to be handled by your network infrastructure surrounding your service (using a... load balancer);
+- and again... if you do want to load balance within a service it might be because you
+  actually require context from the request to know what to do, in which case `poll_ready` wouldn't work for you;
+
+Where you do still want to apply some kind of rate limiting, back pressure or load balancing
+within a Tower (Async) Service you are to do it within the `call` function instead.
+
+This fork is however still in its early days, so feel free to start a discussion if you feel different about this topic.
+The authors of this library are always open for feedback but retain the reservation to deny any request they wish.
+
 ## License
 
 This project is licensed under the [MIT license](LICENSE).

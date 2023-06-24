@@ -23,7 +23,6 @@
 //!
 //! [`Future`]: std::future::Future
 //! [`HashSet`]: std::collections::HashSet
-pub mod future;
 mod layer;
 mod predicate;
 
@@ -32,10 +31,7 @@ pub use self::{
     predicate::{AsyncPredicate, Predicate},
 };
 
-use self::future::{AsyncResponseFuture, ResponseFuture};
 use crate::BoxError;
-use futures_util::{future::Either, TryFutureExt};
-use std::task::{Context, Poll};
 use tower_async_service::Service;
 
 /// Conditionally dispatch requests to the inner service based on a [predicate].
@@ -105,17 +101,12 @@ where
 {
     type Response = T::Response;
     type Error = BoxError;
-    type Future = ResponseFuture<T::Response, T::Future>;
 
-    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        self.inner.poll_ready(cx).map_err(Into::into)
-    }
-
-    fn call(&mut self, request: Request) -> Self::Future {
-        ResponseFuture::new(match self.predicate.check(request) {
-            Ok(request) => Either::Right(self.inner.call(request).err_into()),
-            Err(e) => Either::Left(futures_util::future::ready(Err(e))),
-        })
+    async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
+        match self.predicate.check(request) {
+            Ok(request) => self.inner.call(request).await.err_into(),
+            Err(e) => Err(e),
+        }
     }
 }
 
@@ -167,25 +158,11 @@ where
 {
     type Response = T::Response;
     type Error = BoxError;
-    type Future = AsyncResponseFuture<U, T, Request>;
 
-    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        self.inner.poll_ready(cx).map_err(Into::into)
-    }
-
-    fn call(&mut self, request: Request) -> Self::Future {
-        use std::mem;
-
-        let inner = self.inner.clone();
-        // In case the inner service has state that's driven to readiness and
-        // not tracked by clones (such as `Buffer`), pass the version we have
-        // already called `poll_ready` on into the future, and leave its clone
-        // behind.
-        let inner = mem::replace(&mut self.inner, inner);
-
-        // Check the request
-        let check = self.predicate.check(request);
-
-        AsyncResponseFuture::new(check, inner)
+    async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
+        match self.predicate.check(request).await {
+            Ok(request) => self.inner.call(request).await.err_into(),
+            Err(e) => Err(e),
+        }
     }
 }

@@ -99,8 +99,3 @@ rustdoc-args = ["--cfg", "docsrs"]
 
 [package.metadata.playground]
 features = ["full"]
-
-[[example]]
-name = "tower-async-balance"
-path = "examples/tower-async-balance.rs"
-required-features = ["full"]
