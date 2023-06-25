@@ -2,16 +2,13 @@
 
 pub mod backoff;
 pub mod budget;
-pub mod future;
 mod layer;
 mod policy;
 
 pub use self::layer::RetryLayer;
 pub use self::policy::Policy;
 
-use self::future::ResponseFuture;
 use pin_project_lite::pin_project;
-use std::task::{Context, Poll};
 use tower_async_service::Service;
 
 pin_project! {
@@ -76,19 +73,15 @@ where
 {
     type Response = S::Response;
     type Error = S::Error;
-    type Future = ResponseFuture<P, S, Request>;
 
-    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        // NOTE: the Future::poll impl for ResponseFuture assumes that Retry::poll_ready is
-        // equivalent to Ready.service.poll_ready. If this ever changes, that code must be updated
-        // as well.
-        self.service.poll_ready(cx)
-    }
-
-    fn call(&mut self, request: Request) -> Self::Future {
+    async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
         let cloned = self.policy.clone_request(&request);
-        let future = self.service.call(request);
-
-        ResponseFuture::new(cloned, self.clone(), future)
+        loop {
+            let result = self.service.call(request).await;
+            match self.policy.retry(&cloned, &mut result).await {
+                Some(_) => continue,
+                None => return result,
+            }
+        }
     }
 }

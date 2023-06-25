@@ -162,14 +162,8 @@
 
 #[macro_use]
 pub(crate) mod macros;
-#[cfg(feature = "buffer")]
-pub mod buffer;
 #[cfg(feature = "filter")]
 pub mod filter;
-#[cfg(feature = "hedge")]
-pub mod hedge;
-#[cfg(feature = "limit")]
-pub mod limit;
 
 #[cfg(feature = "make")]
 pub mod make;
@@ -179,8 +173,6 @@ pub mod ready_cache;
 pub mod reconnect;
 #[cfg(feature = "retry")]
 pub mod retry;
-#[cfg(feature = "spawn-ready")]
-pub mod spawn_ready;
 #[cfg(feature = "timeout")]
 pub mod timeout;
 #[cfg(feature = "util")]

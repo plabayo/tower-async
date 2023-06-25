@@ -14,9 +14,9 @@ use std::future::Future;
 /// struct Attempts(usize);
 ///
 /// impl<E> Policy<Req, Res, E> for Attempts {
-///     type Future = future::Ready<()>;
+///     type Output = ();
 ///
-///     fn retry(&mut self, req: &mut Req, result: &mut Result<Res, E>) -> Option<Self::Future> {
+///     async fn retry(&mut self, req: &mut Req, result: &mut Result<Res, E>) -> Option<()> {
 ///         match result {
 ///             Ok(_) => {
 ///                 // Treat all `Response`s as success,
@@ -29,7 +29,7 @@ use std::future::Future;
 ///                 if self.0 > 0 {
 ///                     // Try again!
 ///                     self.0 -= 1;
-///                     Some(future::ready(()))
+///                     Some(())
 ///                 } else {
 ///                     // Used all our attempts, no retry...
 ///                     None
@@ -44,9 +44,6 @@ use std::future::Future;
 /// }
 /// ```
 pub trait Policy<Req, Res, E> {
-    /// The [`Future`] type returned by [`Policy::retry`].
-    type Future: Future<Output = ()>;
-
     /// Check the policy if a certain request should be retried.
     ///
     /// This method is passed a reference to the original request, and either
@@ -80,7 +77,7 @@ pub trait Policy<Req, Res, E> {
     ///
     /// [`Service::Response`]: crate::Service::Response
     /// [`Service::Error`]: crate::Service::Error
-    fn retry(&mut self, req: &mut Req, result: &mut Result<Res, E>) -> Option<Self::Future>;
+    async fn retry(&mut self, req: &mut Req, result: &mut Result<Res, E>) -> Option<()>;
 
     /// Tries to clone a request before being passed to the inner service.
     ///
@@ -91,4 +88,4 @@ pub trait Policy<Req, Res, E> {
 
 // Ensure `Policy` is object safe
 #[cfg(test)]
-fn _obj_safe(_: Box<dyn Policy<(), (), (), Future = futures::future::Ready<()>>>) {}
+fn _obj_safe(_: Box<dyn Policy<(), (), ()>>) {}
