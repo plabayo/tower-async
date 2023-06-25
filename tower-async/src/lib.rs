@@ -181,8 +181,6 @@ pub mod reconnect;
 pub mod retry;
 #[cfg(feature = "spawn-ready")]
 pub mod spawn_ready;
-#[cfg(feature = "steer")]
-pub mod steer;
 #[cfg(feature = "timeout")]
 pub mod timeout;
 #[cfg(feature = "util")]
