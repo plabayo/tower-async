@@ -4,13 +4,12 @@
 //! will be aborted.
 
 pub mod error;
-pub mod future;
 mod layer;
 
 pub use self::layer::TimeoutLayer;
 
-use self::future::ResponseFuture;
-use std::task::{Context, Poll};
+use error::Elapsed;
+
 use std::time::Duration;
 use tower_async_service::Service;
 
@@ -52,19 +51,11 @@ where
 {
     type Response = S::Response;
     type Error = crate::BoxError;
-    type Future = ResponseFuture<S::Future>;
 
-    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        match self.inner.poll_ready(cx) {
-            Poll::Pending => Poll::Pending,
-            Poll::Ready(r) => Poll::Ready(r.map_err(Into::into)),
+    async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
+        tokio::select! {
+            res = self.inner.call(request) => res.map_err(Into::into),
+            _ = tokio::time::sleep(self.timeout) => Err(Elapsed(()).into()),
         }
-    }
-
-    fn call(&mut self, request: Request) -> Self::Future {
-        let response = self.inner.call(request);
-        let sleep = tokio::time::sleep(self.timeout);
-
-        ResponseFuture::new(response, sleep)
     }
 }
