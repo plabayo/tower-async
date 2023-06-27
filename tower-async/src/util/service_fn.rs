@@ -1,6 +1,5 @@
 use std::fmt;
 use std::future::Future;
-use std::task::{Context, Poll};
 use tower_async_service::Service;
 
 /// Returns a new [`ServiceFn`] with the given closure.
@@ -33,8 +32,6 @@ use tower_async_service::Service;
 /// let mut service = service_fn(handle);
 ///
 /// let response = service
-///     .ready()
-///     .await?
 ///     .call(Request::new())
 ///     .await?;
 ///
@@ -70,13 +67,8 @@ where
 {
     type Response = R;
     type Error = E;
-    type Future = F;
 
-    fn poll_ready(&mut self, _: &mut Context<'_>) -> Poll<Result<(), E>> {
-        Ok(()).into()
-    }
-
-    fn call(&mut self, req: Request) -> Self::Future {
-        (self.f)(req)
+    async fn call(&mut self, req: Request) -> Result<Self::Response, Self::Error> {
+        (self.f)(req).await
     }
 }

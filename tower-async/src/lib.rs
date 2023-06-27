@@ -138,8 +138,6 @@
 //! [`Layer`]: https://docs.rs/tower-async/latest/tower-async/trait.Layer.html
 //! [all_layers]: https://docs.rs/tower-async/latest/tower-async/#modules
 //! [timeouts]: https://docs.rs/tower-async/latest/tower-async/timeout/
-//! [rate limiting]: https://docs.rs/tower-async/latest/tower-async/limit/rate
-//! [load balancing]: https://docs.rs/tower-async/latest/tower-async/balance/
 //! [`ServiceBuilder`]: https://docs.rs/tower-async/latest/tower-async/struct.ServiceBuilder.html
 //! [utilities]: https://docs.rs/tower-async/latest/tower-async/trait.ServiceExt.html
 //! [`tower-async`]: https://crates.io/crates/tower
@@ -167,10 +165,6 @@ pub mod filter;
 
 #[cfg(feature = "make")]
 pub mod make;
-#[cfg(feature = "ready-cache")]
-pub mod ready_cache;
-#[cfg(feature = "reconnect")]
-pub mod reconnect;
 #[cfg(feature = "retry")]
 pub mod retry;
 #[cfg(feature = "timeout")]

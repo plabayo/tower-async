@@ -1,12 +1,9 @@
-use std::future::Future;
-
 /// A "retry policy" to classify if a request should be retried.
 ///
 /// # Example
 ///
 /// ```
 /// use tower_async::retry::Policy;
-/// use futures_util::future;
 ///
 /// type Req = String;
 /// type Res = String;

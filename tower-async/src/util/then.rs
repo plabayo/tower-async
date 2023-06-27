@@ -1,8 +1,7 @@
-use futures_util::{future, FutureExt};
+use futures_util::{FutureExt};
 use std::{
     fmt,
     future::Future,
-    task::{Context, Poll},
 };
 use tower_async_layer::Layer;
 use tower_async_service::Service;
@@ -52,13 +51,6 @@ impl<S, F> Then<S, F> {
     }
 }
 
-opaque_future! {
-    /// Response future from [`Then`] services.
-    ///
-    /// [`Then`]: crate::util::Then
-    pub type ThenFuture<F1, F2, N> = future::Then<F1, F2, N>;
-}
-
 impl<S, F, Request, Response, Error, Fut> Service<Request> for Then<S, F>
 where
     S: Service<Request>,
@@ -68,16 +60,10 @@ where
 {
     type Response = Response;
     type Error = Error;
-    type Future = ThenFuture<S::Future, Fut, F>;
 
     #[inline]
-    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        self.inner.poll_ready(cx).map_err(Into::into)
-    }
-
-    #[inline]
-    fn call(&mut self, request: Request) -> Self::Future {
-        ThenFuture::new(self.inner.call(request).then(self.f.clone()))
+    async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
+        self.inner.call(request).then(self.f.clone()).await
     }
 }
 
