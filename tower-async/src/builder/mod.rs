@@ -276,8 +276,7 @@ impl<L> ServiceBuilder<L> {
         self.layer(crate::util::ThenLayer::new(f))
     }
 
-    /// Executes a new future after this service's future resolves. This does
-    /// not alter the behaviour of the [`poll_ready`] method.
+    /// Executes a new future after this service's future resolves.
     ///
     /// This method can be used to change the [`Response`] type of the service
     /// into a different type. You can use this method to chain along a computation once the
@@ -289,7 +288,6 @@ impl<L> ServiceBuilder<L> {
     /// See the documentation for the [`and_then` combinator] for details.
     ///
     /// [`Response`]: crate::Service::Response
-    /// [`poll_ready`]: crate::Service::poll_ready
     /// [`and_then` combinator]: crate::util::ServiceExt::and_then
     /// [`AndThen`]: crate::util::AndThen
     #[cfg(feature = "util")]

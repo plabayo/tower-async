@@ -22,8 +22,15 @@ Tower Async Layer is a fork of <https://github.com/tower-rs/tower>
 and makes use of `async traits` to simplify things and make it more easier
 to integrate async functions into middleware.
 
+This fork is made entirely with the needs of the author in mind,
+and thus might not yet contain all features you might need.
+
+Come join us at discord at <https://discord.com/channels/1114459060050333696/1123537825929900113>
+or tag `@glendc` at Tokio's Tower discord instead.
+
 Where suitable we'll keep in sync (manually) with Tower and if the
 opportunity arises we'll contribute back "upstream" as well.
+Given however how big the diversange we aren't sure how likely that is.
 
 ## Overview
 

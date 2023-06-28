@@ -29,8 +29,15 @@ It is a fork of <https://github.com/tower-rs/tower>
 and makes use of `async traits` to simplify things and make it more easier
 to integrate async functions into middleware.
 
+This fork is made entirely with the needs of the author in mind,
+and thus might not yet contain all features you might need.
+
+Come join us at discord at <https://discord.com/channels/1114459060050333696/1123537825929900113>
+or tag `@glendc` at Tokio's Tower discord instead.
+
 Where suitable we'll keep in sync (manually) with Tower and if the
 opportunity arises we'll contribute back "upstream" as well.
+Given however how big the diversange we aren't sure how likely that is.
 
 ## Supported Rust Versions
 
@@ -73,6 +80,37 @@ within a Tower (Async) Service you are to do it within the `call` function inste
 
 This fork is however still in its early days, so feel free to start a discussion if you feel different about this topic.
 The authors of this library are always open for feedback but retain the reservation to deny any request they wish.
+
+> Where is my favourite Tower Utility?
+
+For the sake of simplicitly, the sanity of the author of this fork,
+and the ability to ship an async version of Tower on a reasonable timescale,
+not all features that Tower support are supported (yet) in this fork.
+
+Note that some features are not supported on purpose:
+
+1. all the 'ready' related functionality was removed on purpose as we believe it to be out of scope
+  - as such also all utilities that rely on this or build on top of this aren't supported
+
+See the previous FAQ point to get our point of view related to load balancing and the like.
+
+We do think there is plenty of room for growth and improvement.
+Following utilities probably do still a place here and we welcome contributons:
+
+- As `Service` functionality: `retry`
+- As `MakeService` functionality: `limit`
+
+And there are probably some more. The test coverage is also significantly less, so also
+here do we welcome contributions.
+
+And in general welcome any contributions.
+Best to do come and chat with us prior to starting any big endavours.
+
+> Are these crates compatible with the original Tower Ecosystem
+
+No, not at the moment.
+
+We welcome however contributions to make this opt-in bridge a possibility.
 
 ## License
 

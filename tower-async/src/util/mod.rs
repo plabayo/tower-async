@@ -648,12 +648,7 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     ///
     /// This method can be used to change the [`Response`] type of the service
     /// into a different type. It can also be used to change the [`Error`] type
-    /// of the service. However, because the `then` function is not applied
-    /// to the errors returned by the service's [`poll_ready`] method, it must
-    /// be possible to convert the service's [`Error`] type into the error type
-    /// returned by the `then` future. This is trivial when the function
-    /// returns the same error type as the service, but in other cases, it can
-    /// be useful to use [`BoxError`] to erase differing error types.
+    /// of the service.
     ///
     /// # Examples
     ///
