@@ -1,6 +1,5 @@
-use futures_util::{future::Map, FutureExt};
+use futures_util::FutureExt;
 use std::fmt;
-use std::task::{Context, Poll};
 use tower_async_layer::Layer;
 use tower_async_service::Service;
 
@@ -33,13 +32,6 @@ pub struct MapResultLayer<F> {
     f: F,
 }
 
-opaque_future! {
-    /// Response future from [`MapResult`] services.
-    ///
-    /// [`MapResult`]: crate::util::MapResult
-    pub type MapResultFuture<F, N> = Map<F, N>;
-}
-
 impl<S, F> MapResult<S, F> {
     /// Creates a new [`MapResult`] service.
     pub fn new(inner: S, f: F) -> Self {
@@ -64,16 +56,10 @@ where
 {
     type Response = Response;
     type Error = Error;
-    type Future = MapResultFuture<S::Future, F>;
 
     #[inline]
-    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        self.inner.poll_ready(cx).map_err(Into::into)
-    }
-
-    #[inline]
-    fn call(&mut self, request: Request) -> Self::Future {
-        MapResultFuture::new(self.inner.call(request).map(self.f.clone()))
+    async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
+        self.inner.call(request).map(self.f.clone()).await
     }
 }
 

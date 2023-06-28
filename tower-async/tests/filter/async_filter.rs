@@ -1,6 +1,4 @@
-#![cfg(feature = "filter")]
-#[path = "../support.rs"]
-mod support;
+
 use futures_util::{future::poll_fn, pin_mut};
 use std::future::Future;
 use tower_async::filter::{error::Error, AsyncFilter};
@@ -25,7 +23,6 @@ async fn passthrough_sync() {
 
     for i in 0usize..10 {
         let request = format!("ping-{}", i);
-        poll_fn(|cx| service.poll_ready(cx)).await.unwrap();
         let exchange = service.call(request);
         let exchange = async move {
             let response = exchange.await.unwrap();

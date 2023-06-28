@@ -14,7 +14,6 @@ use tower_async_service::Service;
 /// use tower_async::make::{MakeService, Shared};
 /// use tower_async::buffer::Buffer;
 /// use tower_async::Service;
-/// use futures::future::{Ready, ready};
 ///
 /// // An example connection type
 /// struct Connection {}
@@ -81,7 +80,7 @@ where
     type Response = S;
     type Error = Infallible;
 
-    fn call(&mut self, _target: T) -> Result<Self::Response, Self::Error> {
+    async fn call(&mut self, _target: T) -> Result<Self::Response, Self::Error> {
         Ok(self.service.clone())
     }
 }

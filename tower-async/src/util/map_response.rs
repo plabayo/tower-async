@@ -1,6 +1,5 @@
-use futures_util::{future::MapOk, TryFutureExt};
+use futures_util::TryFutureExt;
 use std::fmt;
-use std::task::{Context, Poll};
 use tower_async_layer::Layer;
 use tower_async_service::Service;
 
@@ -33,13 +32,6 @@ pub struct MapResponseLayer<F> {
     f: F,
 }
 
-opaque_future! {
-    /// Response future from [`MapResponse`] services.
-    ///
-    /// [`MapResponse`]: crate::util::MapResponse
-    pub type MapResponseFuture<F, N> = MapOk<F, N>;
-}
-
 impl<S, F> MapResponse<S, F> {
     /// Creates a new `MapResponse` service.
     pub fn new(inner: S, f: F) -> Self {
@@ -59,20 +51,15 @@ impl<S, F> MapResponse<S, F> {
 impl<S, F, Request, Response> Service<Request> for MapResponse<S, F>
 where
     S: Service<Request>,
+    // TODO check if we can remove the Clone bound
     F: FnOnce(S::Response) -> Response + Clone,
 {
     type Response = Response;
     type Error = S::Error;
-    type Future = MapResponseFuture<S::Future, F>;
 
     #[inline]
-    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        self.inner.poll_ready(cx)
-    }
-
-    #[inline]
-    fn call(&mut self, request: Request) -> Self::Future {
-        MapResponseFuture::new(self.inner.call(request).map_ok(self.f.clone()))
+    async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
+        self.inner.call(request).map_ok(self.f.clone()).await
     }
 }
 

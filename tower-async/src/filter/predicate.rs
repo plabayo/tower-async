@@ -1,3 +1,6 @@
+use futures_core::Future;
+use futures_util::TryFutureExt;
+
 use crate::BoxError;
 
 /// Checks a request asynchronously.
@@ -34,13 +37,13 @@ pub trait Predicate<Request> {
 impl<F, T, U, R, E> AsyncPredicate<T> for F
 where
     F: FnMut(T) -> U,
+    U: Future<Output = Result<R, E>>,
     E: Into<BoxError>,
 {
     type Request = R;
 
-    fn check(&mut self, request: T) -> Result<R, E> {
-        use futures_util::TryFutureExt;
-        self(request).err_into()
+    async fn check(&mut self, request: T) -> Result<Self::Request, BoxError> {
+        self(request).err_into().await
     }
 }
 

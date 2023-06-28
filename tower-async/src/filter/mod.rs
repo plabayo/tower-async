@@ -32,6 +32,7 @@ pub use self::{
 };
 
 use crate::BoxError;
+use futures_util::TryFutureExt;
 use tower_async_service::Service;
 
 /// Conditionally dispatch requests to the inner service based on a [predicate].
@@ -104,7 +105,7 @@ where
 
     async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
         match self.predicate.check(request) {
-            Ok(request) => self.inner.call(request).await.err_into(),
+            Ok(request) => self.inner.call(request).err_into().await,
             Err(e) => Err(e),
         }
     }
@@ -161,7 +162,7 @@ where
 
     async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
         match self.predicate.check(request).await {
-            Ok(request) => self.inner.call(request).await.err_into(),
+            Ok(request) => self.inner.call(request).err_into().await,
             Err(e) => Err(e),
         }
     }

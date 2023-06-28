@@ -131,7 +131,7 @@ where
     type Service = S;
     type MakeError = M::Error;
 
-    async fn make_service(&mut self, target: Target) -> Result<Self::Response, Self::Error> {
+    async fn make_service(&mut self, target: Target) -> Result<Self::Service, Self::MakeError> {
         Service::call(self, target).await
     }
 }

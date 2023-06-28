@@ -1,8 +1,5 @@
-use futures_util::{FutureExt};
-use std::{
-    fmt,
-    future::Future,
-};
+use futures_util::FutureExt;
+use std::{fmt, future::Future};
 use tower_async_layer::Layer;
 use tower_async_service::Service;
 

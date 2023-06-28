@@ -1,5 +1,4 @@
 use std::fmt;
-use std::task::{Context, Poll};
 use tower_async_layer::Layer;
 use tower_async_service::Service;
 
@@ -47,16 +46,10 @@ where
 {
     type Response = S::Response;
     type Error = S::Error;
-    type Future = S::Future;
 
     #[inline]
-    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), S::Error>> {
-        self.inner.poll_ready(cx)
-    }
-
-    #[inline]
-    fn call(&mut self, request: R1) -> S::Future {
-        self.inner.call((self.f)(request))
+    async fn call(&mut self, request: R1) -> Result<Self::Response, Self::Error> {
+        self.inner.call((self.f)(request)).await
     }
 }
 

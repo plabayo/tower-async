@@ -1,123 +1,44 @@
 //! Various utility types and functions that are generally used with Tower.
 
 mod and_then;
-mod boxed;
-mod boxed_clone;
-mod call_all;
 mod either;
 
-mod future_service;
 mod map_err;
 mod map_request;
 mod map_response;
 mod map_result;
 
-mod map_future;
-mod oneshot;
-mod optional;
-mod ready;
 mod service_fn;
 mod then;
 
-pub mod rng;
-
 pub use self::{
     and_then::{AndThen, AndThenLayer},
-    boxed::{BoxCloneServiceLayer, BoxLayer, BoxService, UnsyncBoxService},
-    boxed_clone::BoxCloneService,
     either::Either,
-    future_service::{future_service, FutureService},
     map_err::{MapErr, MapErrLayer},
-    map_future::{MapFuture, MapFutureLayer},
     map_request::{MapRequest, MapRequestLayer},
     map_response::{MapResponse, MapResponseLayer},
     map_result::{MapResult, MapResultLayer},
-    oneshot::Oneshot,
-    optional::Optional,
-    ready::{Ready, ReadyOneshot},
     service_fn::{service_fn, ServiceFn},
     then::{Then, ThenLayer},
 };
 
-pub use self::call_all::{CallAll, CallAllUnordered};
 use std::future::Future;
 
 use crate::layer::util::Identity;
 
-pub mod error {
-    //! Error types
-
-    pub use super::optional::error as optional;
-}
-
-pub mod future {
-    //! Future types
-
-    pub use super::and_then::AndThenFuture;
-    pub use super::either::EitherResponseFuture;
-    pub use super::map_err::MapErrFuture;
-    pub use super::map_response::MapResponseFuture;
-    pub use super::map_result::MapResultFuture;
-    pub use super::optional::future as optional;
-    pub use super::then::ThenFuture;
-}
-
 /// An extension trait for `Service`s that provides a variety of convenient
 /// adapters
 pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
-    /// Yields a mutable reference to the service when it is ready to accept a request.
-    fn ready(&mut self) -> Ready<'_, Self, Request>
-    where
-        Self: Sized,
-    {
-        Ready::new(self)
-    }
-
-    /// Yields the service when it is ready to accept a request.
-    fn ready_oneshot(self) -> ReadyOneshot<Self, Request>
-    where
-        Self: Sized,
-    {
-        ReadyOneshot::new(self)
-    }
-
-    /// Consume this `Service`, calling it with the provided request once it is ready.
-    fn oneshot(self, req: Request) -> Oneshot<Self, Request>
-    where
-        Self: Sized,
-    {
-        Oneshot::new(self, req)
-    }
-
-    /// Process all requests from the given [`Stream`], and produce a [`Stream`] of their responses.
-    ///
-    /// This is essentially [`Stream<Item = Request>`][stream] + `Self` => [`Stream<Item =
-    /// Response>`][stream]. See the documentation for [`CallAll`] for
-    /// details.
-    ///
-    /// [`Stream`]: https://docs.rs/futures/latest/futures/stream/trait.Stream.html
-    /// [stream]: https://docs.rs/futures/latest/futures/stream/trait.Stream.html
-    fn call_all<S>(self, reqs: S) -> CallAll<Self, S>
-    where
-        Self: Sized,
-        S: futures_core::Stream<Item = Request>,
-    {
-        CallAll::new(self, reqs)
-    }
-
-    /// Executes a new future after this service's future resolves. This does
-    /// not alter the behaviour of the [`poll_ready`] method.
+    /// Executes a new future after this service's future resolves.
     ///
     /// This method can be used to change the [`Response`] type of the service
     /// into a different type. You can use this method to chain along a computation once the
     /// service's response has been resolved.
     ///
     /// [`Response`]: crate::Service::Response
-    /// [`poll_ready`]: crate::Service::poll_ready
     ///
     /// # Example
     /// ```
-    /// # use std::task::{Poll, Context};
     /// # use tower_async::{Service, ServiceExt};
     /// #
     /// # struct DatabaseService;
@@ -135,14 +56,9 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// # impl Service<u32> for DatabaseService {
     /// #   type Response = Record;
     /// #   type Error = u8;
-    /// #   type Future = futures_util::future::Ready<Result<Record, u8>>;
     /// #
-    /// #   fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-    /// #       Poll::Ready(Ok(()))
-    /// #   }
-    /// #
-    /// #   fn call(&mut self, request: u32) -> Self::Future {
-    /// #       futures_util::future::ready(Ok(Record { name: "Jack".into(), age: 32 }))
+    /// #   async fn call(&mut self, request: u32) -> Result<Self::Response, Self::Error> {
+    /// #       Ok(Record { name: "Jack".into(), age: 32 })
     /// #   }
     /// # }
     /// #
@@ -173,8 +89,7 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
         AndThen::new(self, f)
     }
 
-    /// Maps this service's response value to a different value. This does not
-    /// alter the behaviour of the [`poll_ready`] method.
+    /// Maps this service's response value to a different value.
     ///
     /// This method can be used to change the [`Response`] type of the service
     /// into a different type. It is similar to the [`Result::map`]
@@ -182,11 +97,9 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// service's response has been resolved.
     ///
     /// [`Response`]: crate::Service::Response
-    /// [`poll_ready`]: crate::Service::poll_ready
     ///
     /// # Example
     /// ```
-    /// # use std::task::{Poll, Context};
     /// # use tower_async::{Service, ServiceExt};
     /// #
     /// # struct DatabaseService;
@@ -204,14 +117,9 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// # impl Service<u32> for DatabaseService {
     /// #   type Response = Record;
     /// #   type Error = u8;
-    /// #   type Future = futures_util::future::Ready<Result<Record, u8>>;
     /// #
-    /// #   fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-    /// #       Poll::Ready(Ok(()))
-    /// #   }
-    /// #
-    /// #   fn call(&mut self, request: u32) -> Self::Future {
-    /// #       futures_util::future::ready(Ok(Record { name: "Jack".into(), age: 32 }))
+    /// #   async fn call(&mut self, request: u32) -> Result<Self::Response, Self::Error> {
+    /// #       Ok(Record { name: "Jack".into(), age: 32 })
     /// #   }
     /// # }
     /// #
@@ -226,8 +134,6 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// // Call the new service
     /// let id = 13;
     /// let name = new_service
-    ///     .ready()
-    ///     .await?
     ///     .call(id)
     ///     .await?;
     /// # Ok::<(), u8>(())
@@ -242,18 +148,15 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
         MapResponse::new(self, f)
     }
 
-    /// Maps this service's error value to a different value. This does not
-    /// alter the behaviour of the [`poll_ready`] method.
+    /// Maps this service's error value to a different value.
     ///
     /// This method can be used to change the [`Error`] type of the service
     /// into a different type. It is similar to the [`Result::map_err`] method.
     ///
     /// [`Error`]: crate::Service::Error
-    /// [`poll_ready`]: crate::Service::poll_ready
     ///
     /// # Example
     /// ```
-    /// # use std::task::{Poll, Context};
     /// # use tower_async::{Service, ServiceExt};
     /// #
     /// # struct DatabaseService;
@@ -271,14 +174,9 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// # impl Service<u32> for DatabaseService {
     /// #   type Response = String;
     /// #   type Error = Error;
-    /// #   type Future = futures_util::future::Ready<Result<String, Error>>;
     /// #
-    /// #   fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-    /// #       Poll::Ready(Ok(()))
-    /// #   }
-    /// #
-    /// #   fn call(&mut self, request: u32) -> Self::Future {
-    /// #       futures_util::future::ready(Ok(String::new()))
+    /// #   async fn call(&mut self, request: u32) -> Result<Self::Response, Self::Error> {
+    /// #       Ok(String::new())
     /// #   }
     /// # }
     /// #
@@ -293,8 +191,6 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// // Call the new service
     /// let id = 13;
     /// let code = new_service
-    ///     .ready()
-    ///     .await?
     ///     .call(id)
     ///     .await
     ///     .unwrap_err();
@@ -331,19 +227,13 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     ///
     /// This method can be used to change the [`Response`] type of the service
     /// into a different type. It can also be used to change the [`Error`] type
-    /// of the service. However, because the [`map_result`] function is not applied
-    /// to the errors returned by the service's [`poll_ready`] method, it must
-    /// be possible to convert the service's [`Error`] type into the error type
-    /// returned by the [`map_result`] function. This is trivial when the function
-    /// returns the same error type as the service, but in other cases, it can
-    /// be useful to use [`BoxError`] to erase differing error types.
+    /// of the service.
     ///
     /// # Examples
     ///
     /// Recovering from certain errors:
     ///
     /// ```
-    /// # use std::task::{Poll, Context};
     /// # use tower_async::{Service, ServiceExt};
     /// #
     /// # struct DatabaseService;
@@ -366,14 +256,9 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// # impl Service<u32> for DatabaseService {
     /// #   type Response = Vec<Record>;
     /// #   type Error = DbError;
-    /// #   type Future = futures_util::future::Ready<Result<Vec<Record>, DbError>>;
     /// #
-    /// #   fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-    /// #       Poll::Ready(Ok(()))
-    /// #   }
-    /// #
-    /// #   fn call(&mut self, request: u32) -> Self::Future {
-    /// #       futures_util::future::ready(Ok(vec![Record { name: "Jack".into(), age: 32 }]))
+    /// #   fn call(&mut self, request: u32) -> Result<Self::Response, Self::Error> {
+    /// #       Ok(vec![Record { name: "Jack".into(), age: 32 }])
     /// #   }
     /// # }
     /// #
@@ -394,8 +279,6 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// // Call the new service
     /// let id = 13;
     /// let name = new_service
-    ///     .ready()
-    ///     .await?
     ///     .call(id)
     ///     .await?;
     /// # Ok::<(), DbError>(())
@@ -406,7 +289,6 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// Rejecting some `Ok` responses:
     ///
     /// ```
-    /// # use std::task::{Poll, Context};
     /// # use tower_async::{Service, ServiceExt};
     /// #
     /// # struct DatabaseService;
@@ -426,14 +308,9 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// # impl Service<u32> for DatabaseService {
     /// #   type Response = Record;
     /// #   type Error = DbError;
-    /// #   type Future = futures_util::future::Ready<Result<Record, DbError>>;
     /// #
-    /// #   fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-    /// #       Poll::Ready(Ok(()))
-    /// #   }
-    /// #
-    /// #   fn call(&mut self, request: u32) -> Self::Future {
-    /// #       futures_util::future::ready(Ok(Record { name: "Jack".into(), age: 32 }))
+    /// #   async fn call(&mut self, request: u32) -> Result<Self::Response, Self::Error> {
+    /// #       Ok(Record { name: "Jack".into(), age: 32 })
     /// #   }
     /// # }
     /// #
@@ -464,8 +341,6 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// // Call the new service
     /// let id = 13;
     /// let record = new_service
-    ///     .ready()
-    ///     .await?
     ///     .call(id)
     ///     .await?;
     /// # Ok::<(), BoxError>(())
@@ -477,7 +352,6 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     ///
     /// ```
     /// # use std::convert::TryFrom;
-    /// # use std::task::{Poll, Context};
     /// # use tower_async::{Service, ServiceExt};
     /// #
     /// # struct DatabaseService;
@@ -490,14 +364,9 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// # impl Service<u32> for DatabaseService {
     /// #   type Response = String;
     /// #   type Error = u8;
-    /// #   type Future = futures_util::future::Ready<Result<String, u8>>;
     /// #
-    /// #   fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-    /// #       Poll::Ready(Ok(()))
-    /// #   }
-    /// #
-    /// #   fn call(&mut self, request: u32) -> Self::Future {
-    /// #       futures_util::future::ready(Ok(String::new()))
+    /// #   async fn call(&mut self, request: u32) -> Result<Self::Response, Self::Error> {
+    /// #       Ok(String::new())
     /// #   }
     /// # }
     /// #
@@ -515,8 +384,6 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// // Call the new service
     /// let id = 13;
     /// let response = new_service
-    ///     .ready()
-    ///     .await?
     ///     .call(id)
     ///     .await;
     /// # response
@@ -529,7 +396,6 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// [`map_result`]: ServiceExt::map_result
     /// [`Error`]: crate::Service::Error
     /// [`Response`]: crate::Service::Response
-    /// [`poll_ready`]: crate::Service::poll_ready
     /// [`BoxError`]: crate::BoxError
     fn map_result<F, Response, Error>(self, f: F) -> MapResult<Self, F>
     where
@@ -548,7 +414,6 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// # Example
     /// ```
     /// # use std::convert::TryFrom;
-    /// # use std::task::{Poll, Context};
     /// # use tower_async::{Service, ServiceExt};
     /// #
     /// # struct DatabaseService;
@@ -561,14 +426,9 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// # impl Service<String> for DatabaseService {
     /// #   type Response = String;
     /// #   type Error = u8;
-    /// #   type Future = futures_util::future::Ready<Result<String, u8>>;
     /// #
-    /// #   fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-    /// #       Poll::Ready(Ok(()))
-    /// #   }
-    /// #
-    /// #   fn call(&mut self, request: String) -> Self::Future {
-    /// #       futures_util::future::ready(Ok(String::new()))
+    /// #   async fn call(&mut self, request: String) -> Result<Self::Response, Self::Error> {
+    /// #       Ok(String::new())
     /// #   }
     /// # }
     /// #
@@ -583,8 +443,6 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// // Call the new service
     /// let id = 13;
     /// let response = new_service
-    ///     .ready()
-    ///     .await?
     ///     .call(id)
     ///     .await;
     /// # response
@@ -608,7 +466,6 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// # Example
     /// ```
     /// # use std::convert::TryFrom;
-    /// # use std::task::{Poll, Context};
     /// # use tower_async::{Service, ServiceExt};
     /// #
     /// # struct DatabaseService;
@@ -629,14 +486,9 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// # impl Service<u32> for DatabaseService {
     /// #   type Response = String;
     /// #   type Error = DbError;
-    /// #   type Future = futures_util::future::Ready<Result<String, DbError>>;
     /// #
-    /// #   fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-    /// #       Poll::Ready(Ok(()))
-    /// #   }
-    /// #
-    /// #   fn call(&mut self, request: u32) -> Self::Future {
-    /// #       futures_util::future::ready(Ok(String::new()))
+    /// #   async fn call(&mut self, request: u32) -> Result<Self::Response, Self::Error> {
+    /// #       Ok(String::new())
     /// #   }
     /// # }
     /// #
@@ -652,8 +504,6 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// // Call the new service
     /// let id = "13";
     /// let response = new_service
-    ///     .ready()
-    ///     .await?
     ///     .call(id)
     ///     .await;
     /// # response
@@ -681,7 +531,6 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// # Example
     /// ```
     /// # use std::convert::TryFrom;
-    /// # use std::task::{Poll, Context};
     /// # use tower_async::{Service, ServiceExt};
     /// #
     /// # #[derive(Clone)] struct DatabaseService;
@@ -702,14 +551,9 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// # impl Service<u32> for DatabaseService {
     /// #   type Response = String;
     /// #   type Error = DbError;
-    /// #   type Future = futures_util::future::Ready<Result<String, DbError>>;
     /// #
-    /// #   fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-    /// #       Poll::Ready(Ok(()))
-    /// #   }
-    /// #
-    /// #   fn call(&mut self, request: u32) -> Self::Future {
-    /// #       futures_util::future::ready(Ok(String::new()))
+    /// #   async fn call(&mut self, request: u32) -> Result<Self::Response, Self::Error> {
+    /// #       Ok(String::new())
     /// #   }
     /// # }
     /// #
@@ -738,8 +582,6 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// let id = 13;
     /// # let id: u32 = id;
     /// let response = new_service
-    ///     .ready()
-    ///     .await?
     ///     .call(id)
     ///     .await;
     /// # response
@@ -788,7 +630,6 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// # Examples
     ///
     /// ```
-    /// # use std::task::{Poll, Context};
     /// # use tower_async::{Service, ServiceExt};
     /// #
     /// # struct DatabaseService;
@@ -804,14 +645,9 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// # impl Service<u32> for DatabaseService {
     /// #   type Response = Record;
     /// #   type Error = DbError;
-    /// #   type Future = futures_util::future::Ready<Result<Record, DbError>>;
     /// #
-    /// #   fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-    /// #       Poll::Ready(Ok(()))
-    /// #   }
-    /// #
-    /// #   fn call(&mut self, request: u32) -> Self::Future {
-    /// #       futures_util::future::ready(Ok(()))
+    /// #   async fn call(&mut self, request: u32) -> Result<Self::Response, Self::Error> {
+    /// #       Ok(())
     /// #   }
     /// # }
     /// #
@@ -839,8 +675,6 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// // Call the new service
     /// let id = 13;
     /// let record = new_service
-    ///     .ready()
-    ///     .await?
     ///     .call(id)
     ///     .await?;
     /// # Ok::<(), DbError>(())
@@ -854,7 +688,6 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// [`FutureExt::then`]: https://docs.rs/futures/latest/futures/future/trait.FutureExt.html#method.then
     /// [`Error`]: crate::Service::Error
     /// [`Response`]: crate::Service::Response
-    /// [`poll_ready`]: crate::Service::poll_ready
     /// [`BoxError`]: crate::BoxError
     fn then<F, Response, Error, Fut>(self, f: F) -> Then<Self, F>
     where
@@ -864,177 +697,6 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
         Fut: Future<Output = Result<Response, Error>>,
     {
         Then::new(self, f)
-    }
-
-    /// Composes a function that transforms futures produced by the service.
-    ///
-    /// This takes a function or closure returning a future computed from the future returned by
-    /// the service's [`call`] method, as opposed to the responses produced by the future.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use std::task::{Poll, Context};
-    /// # use tower_async::{Service, ServiceExt, BoxError};
-    /// #
-    /// # struct DatabaseService;
-    /// # impl DatabaseService {
-    /// #   fn new(address: &str) -> Self {
-    /// #       DatabaseService
-    /// #   }
-    /// # }
-    /// #
-    /// # type Record = ();
-    /// # type DbError = crate::BoxError;
-    /// #
-    /// # impl Service<u32> for DatabaseService {
-    /// #   type Response = Record;
-    /// #   type Error = DbError;
-    /// #   type Future = futures_util::future::Ready<Result<Record, DbError>>;
-    /// #
-    /// #   fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-    /// #       Poll::Ready(Ok(()))
-    /// #   }
-    /// #
-    /// #   fn call(&mut self, request: u32) -> Self::Future {
-    /// #       futures_util::future::ready(Ok(()))
-    /// #   }
-    /// # }
-    /// #
-    /// # fn main() {
-    /// use std::time::Duration;
-    /// use tokio::time::timeout;
-    ///
-    /// // A service returning Result<Record, DbError>
-    /// let service = DatabaseService::new("127.0.0.1:8080");
-    /// #    async {
-    ///
-    /// let mut new_service = service.map_future(|future| async move {
-    ///     let res = timeout(Duration::from_secs(1), future).await?;
-    ///     Ok::<_, BoxError>(res)
-    /// });
-    ///
-    /// // Call the new service
-    /// let id = 13;
-    /// let record = new_service
-    ///     .ready()
-    ///     .await?
-    ///     .call(id)
-    ///     .await?;
-    /// # Ok::<(), BoxError>(())
-    /// #    };
-    /// # }
-    /// ```
-    ///
-    /// Note that normally you wouldn't implement timeouts like this and instead use [`Timeout`].
-    ///
-    /// [`call`]: crate::Service::call
-    /// [`Timeout`]: crate::timeout::Timeout
-    fn map_future<F, Fut, Response, Error>(self, f: F) -> MapFuture<Self, F>
-    where
-        Self: Sized,
-        F: FnMut(Self::Future) -> Fut,
-        Error: From<Self::Error>,
-        Fut: Future<Output = Result<Response, Error>>,
-    {
-        MapFuture::new(self, f)
-    }
-
-    /// Convert the service into a [`Service`] + [`Send`] trait object.
-    ///
-    /// See [`BoxService`] for more details.
-    ///
-    /// If `Self` implements the [`Clone`] trait, the [`boxed_clone`] method
-    /// can be used instead, to produce a boxed service which will also
-    /// implement [`Clone`].
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use tower_async::{Service, ServiceExt, BoxError, service_fn, util::BoxService};
-    /// #
-    /// # struct Request;
-    /// # struct Response;
-    /// # impl Response {
-    /// #     fn new() -> Self { Self }
-    /// # }
-    ///
-    /// let service = service_fn(|req: Request| async {
-    ///     Ok::<_, BoxError>(Response::new())
-    /// });
-    ///
-    /// let service: BoxService<Request, Response, BoxError> = service
-    ///     .map_request(|req| {
-    ///         println!("received request");
-    ///         req
-    ///     })
-    ///     .map_response(|res| {
-    ///         println!("response produced");
-    ///         res
-    ///     })
-    ///     .boxed();
-    /// # let service = assert_service(service);
-    /// # fn assert_service<S, R>(svc: S) -> S
-    /// # where S: Service<R> { svc }
-    /// ```
-    ///
-    /// [`Service`]: crate::Service
-    /// [`boxed_clone`]: Self::boxed_clone
-    fn boxed(self) -> BoxService<Request, Self::Response, Self::Error>
-    where
-        Self: Sized + Send + 'static,
-        Self::Future: Send + 'static,
-    {
-        BoxService::new(self)
-    }
-
-    /// Convert the service into a [`Service`] + [`Clone`] + [`Send`] trait object.
-    ///
-    /// This is similar to the [`boxed`] method, but it requires that `Self` implement
-    /// [`Clone`], and the returned boxed service implements [`Clone`].
-    /// See [`BoxCloneService`] for more details.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use tower_async::{Service, ServiceExt, BoxError, service_fn, util::BoxCloneService};
-    /// #
-    /// # struct Request;
-    /// # struct Response;
-    /// # impl Response {
-    /// #     fn new() -> Self { Self }
-    /// # }
-    ///
-    /// let service = service_fn(|req: Request| async {
-    ///     Ok::<_, BoxError>(Response::new())
-    /// });
-    ///
-    /// let service: BoxCloneService<Request, Response, BoxError> = service
-    ///     .map_request(|req| {
-    ///         println!("received request");
-    ///         req
-    ///     })
-    ///     .map_response(|res| {
-    ///         println!("response produced");
-    ///         res
-    ///     })
-    ///     .boxed_clone();
-    ///
-    /// // The boxed service can still be cloned.
-    /// service.clone();
-    /// # let service = assert_service(service);
-    /// # fn assert_service<S, R>(svc: S) -> S
-    /// # where S: Service<R> { svc }
-    /// ```
-    ///
-    /// [`Service`]: crate::Service
-    /// [`boxed`]: Self::boxed
-    fn boxed_clone(self) -> BoxCloneService<Request, Self::Response, Self::Error>
-    where
-        Self: Clone + Sized + Send + 'static,
-        Self::Future: Send + 'static,
-    {
-        BoxCloneService::new(self)
     }
 }
 
@@ -1048,7 +710,7 @@ impl<T: ?Sized, Request> ServiceExt<Request> for T where T: tower_async_service:
 /// # use tower_async::builder::ServiceBuilder;
 /// use tower_async::util::option_layer;
 /// # use tower_async::timeout::TimeoutLayer;
-/// # async fn wrap<S>(svc: S) where S: Service<(), Error = &'static str> + 'static + Send, S::Future: Send {
+/// # async fn wrap<S>(svc: S) where S: Service<(), Error = &'static str> + 'static + Send {
 /// # let timeout = Some(Duration::new(10, 0));
 /// // Layer to apply a timeout if configured
 /// let maybe_timeout = option_layer(timeout.map(TimeoutLayer::new));

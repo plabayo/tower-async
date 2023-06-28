@@ -4,4 +4,3 @@
 tower-async = { path = "tower-async" }
 tower-async-layer = { path = "tower-async-layer" }
 tower-async-service = { path = "tower-async-service" }
-tower-async-test = { path = "tower-async-test" }

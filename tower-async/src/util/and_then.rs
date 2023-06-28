@@ -1,9 +1,6 @@
 use futures_core::TryFuture;
-use futures_util::{future, TryFutureExt};
+use futures_util::TryFutureExt;
 use std::fmt;
-use std::future::Future;
-use std::pin::Pin;
-use std::task::{Context, Poll};
 use tower_async_layer::Layer;
 use tower_async_service::Service;
 
@@ -25,42 +22,6 @@ where
             .field("inner", &self.inner)
             .field("f", &format_args!("{}", std::any::type_name::<F>()))
             .finish()
-    }
-}
-
-pin_project_lite::pin_project! {
-    /// Response future from [`AndThen`] services.
-    ///
-    /// [`AndThen`]: crate::util::AndThen
-    pub struct AndThenFuture<F1, F2: TryFuture, N> {
-        #[pin]
-        inner: future::AndThen<future::ErrInto<F1, F2::Error>, F2, N>,
-    }
-}
-
-impl<F1, F2: TryFuture, N> AndThenFuture<F1, F2, N> {
-    pub(crate) fn new(inner: future::AndThen<future::ErrInto<F1, F2::Error>, F2, N>) -> Self {
-        Self { inner }
-    }
-}
-
-impl<F1, F2: TryFuture, N> std::fmt::Debug for AndThenFuture<F1, F2, N> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_tuple("AndThenFuture")
-            .field(&format_args!("..."))
-            .finish()
-    }
-}
-
-impl<F1, F2: TryFuture, N> Future for AndThenFuture<F1, F2, N>
-where
-    future::AndThen<future::ErrInto<F1, F2::Error>, F2, N>: Future,
-{
-    type Output = <future::AndThen<future::ErrInto<F1, F2::Error>, F2, N> as Future>::Output;
-
-    #[inline]
-    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-        self.project().inner.poll(cx)
     }
 }
 
@@ -97,14 +58,13 @@ where
 {
     type Response = Fut::Ok;
     type Error = Fut::Error;
-    type Future = AndThenFuture<S::Future, Fut, F>;
 
-    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        self.inner.poll_ready(cx).map_err(Into::into)
-    }
-
-    fn call(&mut self, request: Request) -> Self::Future {
-        AndThenFuture::new(self.inner.call(request).err_into().and_then(self.f.clone()))
+    async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
+        self.inner
+            .call(request)
+            .err_into()
+            .and_then(self.f.clone())
+            .await
     }
 }
 
