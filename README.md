@@ -58,6 +58,16 @@ check out some of the original Tower [guides].
 We work exactly the same as Tower, expect in an async manner and slightly easier to use as such.
 But the core ideas are obviously the same, so it should never the less help you to get started.
 
+## Sponsorship
+
+Regular and onetime sponsors alike help us to pay the development and service costs
+done in function of all Plabayo's Free and Open Source work.
+
+We're also a monthly sponsor of Tokio ourselves, to give back to all
+the great work done and continued effort being put in by them.
+
+You can find more about Plabayo Sponsorship at <https://github.com/sponsors/plabayo>.
+
 ## FAQ
 
 > Where is the `poll_ready` method from Tower's Service?

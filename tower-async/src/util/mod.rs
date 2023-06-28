@@ -631,7 +631,7 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// Composes an asynchronous function *after* this service.
     ///
     /// This takes a function or closure returning a future, and returns a new
-    /// `Service` that chains that function after this service's [`Future`]. The
+    /// `Service` that chains that function after this service's Future. The
     /// new `Service`'s future will consist of this service's future, followed
     /// by the future returned by calling the chained function with the future's
     /// [`Output`] type. The chained function is called regardless of whether
@@ -707,7 +707,6 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// # }
     /// ```
     ///
-    /// [`Future`]: crate::Service::Future
     /// [`Output`]: std::future::Future::Output
     /// [`futures` crate]: https://docs.rs/futures
     /// [`FutureExt::then`]: https://docs.rs/futures/latest/futures/future/trait.FutureExt.html#method.then

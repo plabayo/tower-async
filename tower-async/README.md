@@ -44,8 +44,8 @@ represents an asynchronous function taking a request and returning either a
 response or an error. This abstraction can be used to model both clients and
 servers.
 
-Generic components, like [timeouts], [rate limiting], and [load balancing],
-can be modeled as [`Service`]s that wrap some inner service and apply
+Generic components, like [timeouts], can be modeled as [`Service`]s
+that wrap some inner service and apply
 additional behavior before or after the inner service is called. This allows
 implementing these components in a protocol-agnostic, composable way. Typically,
 such services are referred to as _middleware_.
@@ -128,14 +128,14 @@ To get started using all of Tower's optional middleware, add this to your
 `Cargo.toml`:
 
 ```toml
-tower = { version = "0.4", features = ["full"] }
+tower-async = { version = "0.4", features = ["full"] }
 ```
 
 Alternatively, you can only enable some features. For example, to enable
-only the [`retry`] and [`timeout`][timeouts] middleware, write:
+only the [`timeout`][timeouts] middleware, write:
 
 ```toml
-tower = { version = "0.4", features = ["retry", "timeout"] }
+tower-async = { version = "0.4", features = ["timeout"] }
 ```
 
 See [here][all_layers] for a complete list of all middleware provided by
@@ -145,14 +145,11 @@ Tower.
 [`Layer`]: https://docs.rs/tower-async/latest/tower-async/trait.Layer.html
 [all_layers]: https://docs.rs/tower-async/latest/tower-async/#modules
 [timeouts]: https://docs.rs/tower-async/latest/tower-async/timeout/
-[rate limiting]: https://docs.rs/tower-async/latest/tower-async/limit/rate
-[load balancing]: https://docs.rs/tower-async/latest/tower-async/balance/
 [`ServiceBuilder`]: https://docs.rs/tower-async/latest/tower-async/struct.ServiceBuilder.html
 [utilities]: https://docs.rs/tower-async/latest/tower-async/trait.ServiceExt.html
 [`tower-async`]: https://crates.io/crates/tower
 [`tower-async-service`]: https://crates.io/crates/tower-async-service
 [`tower-async-layer`]: https://crates.io/crates/tower-async-layer
-[`retry`]: https://docs.rs/tower-async/latest/tower-async/retry
 [open a PR]: https://github.com/plabayo/tower-async/compare
 
 
@@ -166,6 +163,16 @@ and we can start working towards backwards compatibility.
 
 Read <https://blog.rust-lang.org/inside-rust/2023/05/03/stabilizing-async-fn-in-trait.html> for more information
 on this roadmap by the Rust Language Core Team.
+
+## Sponsorship
+
+Regular and onetime sponsors alike help us to pay the development and service costs
+done in function of all Plabayo's Free and Open Source work.
+
+We're also a monthly sponsor of Tokio ourselves, to give back to all
+the great work done and continued effort being put in by them.
+
+You can find more about Plabayo Sponsorship at <https://github.com/sponsors/plabayo>.
 
 ## FAQ
 

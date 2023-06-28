@@ -20,13 +20,13 @@
 //! Tower Async is a fork of <https://github.com/tower-rs/tower>
 //! and makes use of `async traits` to simplify things and make it more easier
 //! to integrate async functions into middleware.
-//! 
+//!
 //! This fork is made entirely with the needs of the author in mind,
 //! and thus might not yet contain all features you might need.
-//! 
+//!
 //! Come join us at discord at <https://discord.com/channels/1114459060050333696/1123537825929900113>
 //! or tag `@glendc` at Tokio's Tower discord instead.
-//! 
+//!
 //! Where suitable we'll keep in sync (manually) with Tower and if the
 //! opportunity arises we'll contribute back "upstream" as well.
 //! Given however how big the diversange we aren't sure how likely that is.
@@ -126,14 +126,14 @@
 //! `Cargo.toml`:
 //!
 //! ```toml
-//! tower = { version = "0.4", features = ["full"] }
+//! tower-async = { version = "0.4", features = ["full"] }
 //! ```
 //!
-//! Alternatively, you can only enable some features. For example, to enable
-//! only the [`retry`] and [`timeout`][timeouts] middleware, write:
+//! Alternatively, you can only enable some features. For example,
+//! to enable only the [`timeout`][timeouts] middleware, write:
 //!
 //! ```toml
-//! tower = { version = "0.4", features = ["retry", "timeout"] }
+//! tower-async = { version = "0.4", features = ["timeout"] }
 //! ```
 //!
 //! See [here][all_layers] for a complete list of all middleware provided by
@@ -148,7 +148,6 @@
 //! [`tower-async`]: https://crates.io/crates/tower
 //! [`tower-async-service`]: https://crates.io/crates/tower-async-service
 //! [`tower-async-layer`]: https://crates.io/crates/tower-async-layer
-//! [`retry`]: https://docs.rs/tower-async/latest/tower-async/retry
 //! [open a PR]: https://github.com/plabayo/tower-async/compare
 //!
 //! ## Supported Rust Versions
