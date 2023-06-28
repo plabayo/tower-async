@@ -14,6 +14,7 @@ repository = "https://github.com/plabayo/async-tower"
 homepage = "https://github.com/plabayo/async-tower"
 description = """
 Trait representing an asynchronous, request / response based, client or server.
+An "Async Trait" fork from the original Tower Library.
 """
 categories = ["asynchronous", "network-programming"]
 edition = "2021"

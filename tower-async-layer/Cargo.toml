@@ -14,6 +14,7 @@ repository = "https://github.com/plabayo/async-tower"
 homepage = "https://github.com/plabayo/async-tower"
 description = """
 Decorates a `Service` to allow easy composition between `Service`s.
+ An "Async Trait" fork from the original Tower Library.
 """
 categories = ["asynchronous", "network-programming"]
 edition = "2021"
