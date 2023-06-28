@@ -11,6 +11,8 @@ mod map_result;
 mod service_fn;
 mod then;
 
+use tower_async_service::Service;
+
 pub use self::{
     and_then::{AndThen, AndThenLayer},
     either::Either,
@@ -29,6 +31,14 @@ use crate::layer::util::Identity;
 /// An extension trait for `Service`s that provides a variety of convenient
 /// adapters
 pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
+    /// Consume this `Service`, calling it with the provided request once and only once.
+    async fn oneshot(mut self, req: Request) -> Result<Self::Response, Self::Error>
+    where
+        Self: Sized,
+    {
+        Service::call(&mut self, req).await
+    }
+
     /// Executes a new future after this service's future resolves.
     ///
     /// This method can be used to change the [`Response`] type of the service

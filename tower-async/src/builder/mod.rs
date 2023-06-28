@@ -179,7 +179,7 @@ impl<L> ServiceBuilder<L> {
     ///     .service(string_svc);
     ///
     /// // Now, we can call that service with a `usize`:
-    /// usize_svc.call(42).await?;
+    /// usize_svc.oneshot(42).await?;
     /// # Ok(())
     /// # }
     /// ```
@@ -204,7 +204,7 @@ impl<L> ServiceBuilder<L> {
     ///     .map_request(|request: usize| request + 1)
     ///     .service(svc);
     ///
-    /// let response = svc.call(1).await?;
+    /// let response = svc.oneshot(1).await?;
     /// assert_eq!(response, 2);
     /// # Ok(())
     /// # }
@@ -366,7 +366,7 @@ impl<L> ServiceBuilder<L> {
     ///     .timeout(Duration::from_secs(10))
     ///     .service_fn(handle);
     ///
-    /// let response = svc.call("foo").await?;
+    /// let response = svc.oneshot("foo").await?;
     ///
     /// assert_eq!(response, "foo");
     /// # Ok(())
