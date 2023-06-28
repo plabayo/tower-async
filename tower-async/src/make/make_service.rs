@@ -36,6 +36,8 @@ pub trait MakeService<Target, Request>: Sealed<(Target, Request)> {
     ///
     /// # Example
     /// ```
+    /// # #![allow(incomplete_features)]
+    /// # #![feature(async_fn_in_trait)]
     /// use std::convert::Infallible;
     /// use tower_async::Service;
     /// use tower_async::make::MakeService;
@@ -75,6 +77,8 @@ pub trait MakeService<Target, Request>: Sealed<(Target, Request)> {
     ///
     /// # Example
     /// ```
+    /// # #![allow(incomplete_features)]
+    /// # #![feature(async_fn_in_trait)]
     /// use std::convert::Infallible;
     /// use tower_async::Service;
     /// use tower_async::make::MakeService;

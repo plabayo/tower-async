@@ -4,63 +4,6 @@ use tower_async_service::Service;
 /// A [`MakeService`] that produces services by cloning an inner service.
 ///
 /// [`MakeService`]: super::MakeService
-///
-/// # Example
-///
-/// ```
-/// # use std::task::{Context, Poll};
-/// # use std::pin::Pin;
-/// # use std::convert::Infallible;
-/// use tower_async::make::{MakeService, Shared};
-/// use tower_async::buffer::Buffer;
-/// use tower_async::Service;
-///
-/// // An example connection type
-/// struct Connection {}
-///
-/// // An example request type
-/// struct Request {}
-///
-/// // An example response type
-/// struct Response {}
-///
-/// // Some service that doesn't implement `Clone`
-/// struct MyService;
-///
-/// impl Service<Request> for MyService {
-///     type Response = Response;
-///     type Error = Infallible;
-///
-///     async fn call(&mut self, req: Request) -> Result<Response, Infallible> {
-///         Ok(Response {})
-///     }
-/// }
-///
-/// // Example function that runs a service by accepting new connections and using
-/// // `Make` to create new services that might be bound to the connection.
-/// //
-/// // This is similar to what you might find in hyper.
-/// async fn serve_make_service<Make>(make: Make)
-/// where
-///     Make: MakeService<Connection, Request>
-/// {
-///     // ...
-/// }
-///
-/// # async {
-/// // Our service
-/// let svc = MyService;
-///
-/// // Make it `Clone` by putting a channel in front
-/// let buffered = Buffer::new(svc, 1024);
-///
-/// // Convert it into a `MakeService`
-/// let make = Shared::new(buffered);
-///
-/// // Run the service and just ignore the `Connection`s as `MyService` doesn't need them
-/// serve_make_service(make).await;
-/// # };
-/// ```
 #[derive(Debug, Clone, Copy)]
 pub struct Shared<S> {
     service: S,

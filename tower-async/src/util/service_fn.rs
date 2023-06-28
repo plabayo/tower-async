@@ -9,6 +9,8 @@ use tower_async_service::Service;
 /// # Example
 ///
 /// ```
+/// # #![allow(incomplete_features)]
+/// # #![feature(async_fn_in_trait)]
 /// use tower_async::{service_fn, Service, ServiceExt, BoxError};
 /// # struct Request;
 /// # impl Request {

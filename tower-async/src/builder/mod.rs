@@ -27,80 +27,6 @@ use std::fmt;
 /// that are added first will be called with the request first. The argument to
 /// `service` will be last to see the request.
 ///
-/// ```
-/// # // this (and other) doctest is ignored because we don't have a way
-/// # // to say that it should only be run with cfg(feature = "...")
-/// # use tower_async::Service;
-/// # use tower_async::builder::ServiceBuilder;
-/// # #[cfg(all(feature = "buffer", feature = "limit"))]
-/// # async fn wrap<S>(svc: S) where S: Service<(), Error = &'static str> + 'static + Send, S::Future: Send {
-/// ServiceBuilder::new()
-///     .buffer(100)
-///     .concurrency_limit(10)
-///     .service(svc)
-/// # ;
-/// # }
-/// ```
-///
-/// In the above example, the buffer layer receives the request first followed
-/// by `concurrency_limit`. `buffer` enables up to 100 request to be in-flight
-/// **on top of** the requests that have already been forwarded to the next
-/// layer. Combined with `concurrency_limit`, this allows up to 110 requests to be
-/// in-flight.
-///
-/// ```
-/// # use tower_async::Service;
-/// # use tower_async::builder::ServiceBuilder;
-/// # #[cfg(all(feature = "buffer", feature = "limit"))]
-/// # async fn wrap<S>(svc: S) where S: Service<(), Error = &'static str> + 'static + Send, S::Future: Send {
-/// ServiceBuilder::new()
-///     .concurrency_limit(10)
-///     .buffer(100)
-///     .service(svc)
-/// # ;
-/// # }
-/// ```
-///
-/// The above example is similar, but the order of layers is reversed. Now,
-/// `concurrency_limit` applies first and only allows 10 requests to be in-flight
-/// total.
-///
-/// # Examples
-///
-/// A [`Service`] stack with a single layer:
-///
-/// ```
-/// # use tower_async::Service;
-/// # use tower_async::builder::ServiceBuilder;
-/// # #[cfg(feature = "limit")]
-/// # use tower_async::limit::concurrency::ConcurrencyLimitLayer;
-/// # #[cfg(feature = "limit")]
-/// # async fn wrap<S>(svc: S) where S: Service<(), Error = &'static str> + 'static + Send, S::Future: Send {
-/// ServiceBuilder::new()
-///     .concurrency_limit(5)
-///     .service(svc);
-/// # ;
-/// # }
-/// ```
-///
-/// A [`Service`] stack with _multiple_ layers that contain rate limiting,
-/// in-flight request limits, and a channel-backed, clonable [`Service`]:
-///
-/// ```
-/// # use tower_async::Service;
-/// # use tower_async::builder::ServiceBuilder;
-/// # use std::time::Duration;
-/// # #[cfg(all(feature = "buffer", feature = "limit"))]
-/// # async fn wrap<S>(svc: S) where S: Service<(), Error = &'static str> + 'static + Send, S::Future: Send {
-/// ServiceBuilder::new()
-///     .buffer(5)
-///     .concurrency_limit(5)
-///     .rate_limit(5, Duration::from_secs(1))
-///     .service(svc);
-/// # ;
-/// # }
-/// ```
-///
 /// [`Service`]: crate::Service
 #[derive(Clone)]
 pub struct ServiceBuilder<L> {
@@ -138,11 +64,13 @@ impl<L> ServiceBuilder<L> {
     /// Optionally add a new layer `T` into the [`ServiceBuilder`].
     ///
     /// ```
+    /// # #![allow(incomplete_features)]
+    /// # #![feature(async_fn_in_trait)]
     /// # use std::time::Duration;
     /// # use tower_async::Service;
     /// # use tower_async::builder::ServiceBuilder;
     /// # use tower_async::timeout::TimeoutLayer;
-    /// # async fn wrap<S>(svc: S) where S: Service<(), Error = &'static str> + 'static + Send, S::Future: Send {
+    /// # async fn wrap<S>(svc: S) where S: Service<(), Error = &'static str> + 'static + Send {
     /// # let timeout = Some(Duration::new(10, 0));
     /// // Apply a timeout if configured
     /// ServiceBuilder::new()
@@ -229,6 +157,8 @@ impl<L> ServiceBuilder<L> {
     /// Changing the type of a request:
     ///
     /// ```rust
+    /// # #![allow(incomplete_features)]
+    /// # #![feature(async_fn_in_trait)]
     /// use tower_async::ServiceBuilder;
     /// use tower_async::ServiceExt;
     ///
@@ -249,7 +179,7 @@ impl<L> ServiceBuilder<L> {
     ///     .service(string_svc);
     ///
     /// // Now, we can call that service with a `usize`:
-    /// usize_svc.oneshot(42).await?;
+    /// usize_svc.call(42).await?;
     /// # Ok(())
     /// # }
     /// ```
@@ -257,6 +187,8 @@ impl<L> ServiceBuilder<L> {
     /// Modifying the request value:
     ///
     /// ```rust
+    /// # #![allow(incomplete_features)]
+    /// # #![feature(async_fn_in_trait)]
     /// use tower_async::ServiceBuilder;
     /// use tower_async::ServiceExt;
     ///
@@ -272,7 +204,7 @@ impl<L> ServiceBuilder<L> {
     ///     .map_request(|request: usize| request + 1)
     ///     .service(svc);
     ///
-    /// let response = svc.oneshot(1).await?;
+    /// let response = svc.call(1).await?;
     /// assert_eq!(response, 2);
     /// # Ok(())
     /// # }
@@ -405,6 +337,8 @@ impl<L> ServiceBuilder<L> {
     /// [`ServiceBuilder::service`] with a [`service_fn`], like this:
     ///
     /// ```rust
+    /// # #![allow(incomplete_features)]
+    /// # #![feature(async_fn_in_trait)]
     /// # use tower_async::{ServiceBuilder, service_fn};
     /// # async fn handler_fn(_: ()) -> Result<(), ()> { Ok(()) }
     /// # let _ = {
@@ -417,6 +351,8 @@ impl<L> ServiceBuilder<L> {
     /// # Example
     ///
     /// ```rust
+    /// # #![allow(incomplete_features)]
+    /// # #![feature(async_fn_in_trait)]
     /// use std::time::Duration;
     /// use tower_async::{ServiceBuilder, ServiceExt, BoxError, service_fn};
     ///
@@ -427,11 +363,10 @@ impl<L> ServiceBuilder<L> {
     /// }
     ///
     /// let svc = ServiceBuilder::new()
-    ///     .buffer(1024)
     ///     .timeout(Duration::from_secs(10))
     ///     .service_fn(handle);
     ///
-    /// let response = svc.oneshot("foo").await?;
+    /// let response = svc.call("foo").await?;
     ///
     /// assert_eq!(response, "foo");
     /// # Ok(())
@@ -458,6 +393,8 @@ impl<L> ServiceBuilder<L> {
     /// # Example
     ///
     /// ```rust
+    /// # #![allow(incomplete_features)]
+    /// # #![feature(async_fn_in_trait)]
     /// use tower_async::ServiceBuilder;
     ///
     /// let builder = ServiceBuilder::new()
@@ -492,6 +429,8 @@ impl<L> ServiceBuilder<L> {
     /// # Example
     ///
     /// ```rust
+    /// # #![allow(incomplete_features)]
+    /// # #![feature(async_fn_in_trait)]
     /// use tower_async::ServiceBuilder;
     ///
     /// # #[derive(Clone)]
@@ -530,6 +469,8 @@ impl<L> ServiceBuilder<L> {
     /// # Example
     ///
     /// ```rust
+    /// # #![allow(incomplete_features)]
+    /// # #![feature(async_fn_in_trait)]
     /// use tower_async::ServiceBuilder;
     /// use std::task::{Poll, Context};
     /// use tower_async::{Service, ServiceExt};
@@ -540,14 +481,8 @@ impl<L> ServiceBuilder<L> {
     /// impl Service<Request> for MyService {
     ///   type Response = Response;
     ///   type Error = Error;
-    ///   type Future = futures_util::future::Ready<Result<Response, Error>>;
     ///
-    ///   fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-    ///       // ...
-    ///       # todo!()
-    ///   }
-    ///
-    ///   fn call(&mut self, request: Request) -> Self::Future {
+    ///   async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
     ///       // ...
     ///       # todo!()
     ///   }
