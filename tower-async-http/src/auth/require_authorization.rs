@@ -52,6 +52,7 @@
 //! Custom validation can be made by implementing [`ValidateRequest`].
 
 use crate::validate_request::{ValidateRequest, ValidateRequestHeader, ValidateRequestHeaderLayer};
+use base64::{engine::general_purpose::STANDARD as base64, Engine};
 use http::{
     header::{self, HeaderValue},
     Request, Response, StatusCode,
@@ -193,7 +194,7 @@ impl<ResBody> Basic<ResBody> {
     where
         ResBody: Body + Default,
     {
-        let encoded = base64::encode(format!("{}:{}", username, password));
+        let encoded = base64.encode(format!("{}:{}", username, password));
         let header_value = format!("Basic {}", encoded).parse().unwrap();
         Self {
             header_value,
@@ -247,7 +248,7 @@ mod tests {
     use super::*;
     use http::header;
     use hyper::Body;
-    use tower_async::{BoxError, ServiceBuilder, ServiceExt};
+    use tower_async::{BoxError, ServiceBuilder};
     use tower_async_service::Service;
 
     #[tokio::test]
@@ -259,7 +260,7 @@ mod tests {
         let request = Request::get("/")
             .header(
                 header::AUTHORIZATION,
-                format!("Basic {}", base64::encode("foo:bar")),
+                format!("Basic {}", base64.encode("foo:bar")),
             )
             .body(Body::empty())
             .unwrap();
@@ -278,7 +279,7 @@ mod tests {
         let request = Request::get("/")
             .header(
                 header::AUTHORIZATION,
-                format!("Basic {}", base64::encode("wrong:credentials")),
+                format!("Basic {}", base64.encode("wrong:credentials")),
             )
             .body(Body::empty())
             .unwrap();
@@ -316,7 +317,7 @@ mod tests {
         let request = Request::get("/")
             .header(
                 header::AUTHORIZATION,
-                format!("basic {}", base64::encode("foo:bar")),
+                format!("basic {}", base64.encode("foo:bar")),
             )
             .body(Body::empty())
             .unwrap();
@@ -335,7 +336,7 @@ mod tests {
         let request = Request::get("/")
             .header(
                 header::AUTHORIZATION,
-                format!("Basic {}", base64::encode("Foo:bar")),
+                format!("Basic {}", base64.encode("Foo:bar")),
             )
             .body(Body::empty())
             .unwrap();

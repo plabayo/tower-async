@@ -34,10 +34,7 @@ use http::{header, HeaderValue, Response, StatusCode, Uri};
 use std::{
     convert::{Infallible, TryFrom},
     fmt,
-    future::Future,
     marker::PhantomData,
-    pin::Pin,
-    task::{Context, Poll},
 };
 use tower_async_service::Service;
 
@@ -95,19 +92,13 @@ where
 {
     type Response = Response<ResBody>;
     type Error = Infallible;
-    type Future = ResponseFuture<ResBody>;
 
-    #[inline]
-    fn poll_ready(&mut self, _cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        Poll::Ready(Ok(()))
-    }
-
-    fn call(&mut self, _req: R) -> Self::Future {
-        ResponseFuture {
-            status_code: self.status_code,
-            location: Some(self.location.clone()),
-            _marker: PhantomData,
-        }
+    async fn call(&mut self, _req: R) -> Result<Self::Response, Self::Error> {
+        let mut res = Response::default();
+        *res.status_mut() = self.status_code;
+        res.headers_mut()
+            .insert(header::LOCATION, self.location.take().unwrap());
+        Ok(res)
     }
 }
 
@@ -127,32 +118,5 @@ impl<ResBody> Clone for Redirect<ResBody> {
             location: self.location.clone(),
             _marker: PhantomData,
         }
-    }
-}
-
-/// Response future of [`Redirect`].
-#[derive(Debug)]
-pub struct ResponseFuture<ResBody> {
-    location: Option<HeaderValue>,
-    status_code: StatusCode,
-    // Covariant over ResBody, no dropping of ResBody
-    _marker: PhantomData<fn() -> ResBody>,
-}
-
-impl<ResBody> Future for ResponseFuture<ResBody>
-where
-    ResBody: Default,
-{
-    type Output = Result<Response<ResBody>, Infallible>;
-
-    fn poll(mut self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<Self::Output> {
-        let mut res = Response::default();
-
-        *res.status_mut() = self.status_code;
-
-        res.headers_mut()
-            .insert(header::LOCATION, self.location.take().unwrap());
-
-        Poll::Ready(Ok(res))
     }
 }

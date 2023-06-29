@@ -209,18 +209,12 @@ where
 {
     type Response = Response<ResponseBody<ResBody>>;
     type Error = S::Error;
-    type Future = ResponseFuture<S::Future>;
 
-    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        self.inner.poll_ready(cx)
-    }
-
-    fn call(&mut self, req: Request<R>) -> Self::Future {
+    async fn call(&mut self, req: Request<R>) -> Result<Self::Response, Self::Error> {
         let guard = self.counter.increment();
-        ResponseFuture {
-            inner: self.inner.call(req),
-            guard: Some(guard),
-        }
+        let response = self.inner.call(req).await?;
+        let response = response.map(move |body| ResponseBody { inner: body, guard });
+        Ok(response)
     }
 }
 
