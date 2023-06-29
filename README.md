@@ -122,6 +122,13 @@ No, not at the moment.
 
 We welcome however contributions to make this opt-in bridge a possibility.
 
+> Where is the `tower-async-http` Classifier and Tracing code?
+
+As this feature requires on the Retry functionality of `tower`,
+which we have yet to port to `tower-async`, it is not yet available.
+
+We very much welcome contributions to make this a possibility.
+
 ## License
 
 This project is licensed under the [MIT license](LICENSE).
