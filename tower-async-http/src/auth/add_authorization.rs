@@ -37,11 +37,9 @@
 //! # }
 //! ```
 
+use base64::{engine::general_purpose::STANDARD as base64, Engine};
 use http::{HeaderValue, Request, Response};
-use std::{
-    convert::TryFrom,
-    task::{Context, Poll},
-};
+use std::convert::TryFrom;
 use tower_async_layer::Layer;
 use tower_async_service::Service;
 
@@ -69,7 +67,7 @@ impl AddAuthorizationLayer {
     /// Since the username and password is sent in clear text it is recommended to use HTTPS/TLS
     /// with this method. However use of HTTPS/TLS is not enforced by this middleware.
     pub fn basic(username: &str, password: &str) -> Self {
-        let encoded = base64::encode(format!("{}:{}", username, password));
+        let encoded = base64.encode(format!("{}:{}", username, password));
         let value = HeaderValue::try_from(format!("Basic {}", encoded)).unwrap();
         Self { value }
     }
@@ -168,16 +166,11 @@ where
 {
     type Response = S::Response;
     type Error = S::Error;
-    type Future = S::Future;
 
-    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        self.inner.poll_ready(cx)
-    }
-
-    fn call(&mut self, mut req: Request<ReqBody>) -> Self::Future {
+    async fn call(&mut self, mut req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
         req.headers_mut()
             .insert(http::header::AUTHORIZATION, self.value.clone());
-        self.inner.call(req)
+        self.inner.call(req).await
     }
 }
 
@@ -189,7 +182,7 @@ mod tests {
     use super::*;
     use http::{Response, StatusCode};
     use hyper::Body;
-    use tower_async::{BoxError, Service, ServiceBuilder, ServiceExt};
+    use tower_async::{BoxError, Service, ServiceBuilder};
 
     #[tokio::test]
     async fn basic() {
@@ -202,7 +195,6 @@ mod tests {
         let mut client = AddAuthorization::basic(svc, "foo", "bar");
 
         let res = client
-
             .unwrap()
             .call(Request::new(Body::empty()))
             .await
@@ -222,7 +214,6 @@ mod tests {
         let mut client = AddAuthorization::bearer(svc, "foo");
 
         let res = client
-
             .unwrap()
             .call(Request::new(Body::empty()))
             .await
@@ -245,7 +236,6 @@ mod tests {
         let mut client = AddAuthorization::bearer(svc, "foo").as_sensitive(true);
 
         let res = client
-
             .unwrap()
             .call(Request::new(Body::empty()))
             .await

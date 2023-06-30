@@ -8,7 +8,6 @@ use crate::{
 use bytes::Buf;
 use http::{header, Request, Response};
 use http_body::{combinators::UnsyncBoxBody, Body};
-use std::task::{Context, Poll};
 use tower_async_service::Service;
 
 #[cfg(any(
@@ -48,13 +47,8 @@ where
 {
     type Response = Response<UnsyncBoxBody<D, BoxError>>;
     type Error = BoxError;
-    type Future = ResponseFuture<S::Future, ResBody, S::Error>;
 
-    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        self.inner.poll_ready(cx).map_err(Into::into)
-    }
-
-    fn call(&mut self, req: Request<ReqBody>) -> Self::Future {
+    async fn call(&mut self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
         let (mut parts, body) = req.into_parts();
 
         let body =
@@ -98,14 +92,14 @@ where
                     }
                     b"identity" => BodyInner::identity(body),
                     _ if self.pass_through_unaccepted => BodyInner::identity(body),
-                    _ => return ResponseFuture::unsupported_encoding(self.accept),
+                    _ => return ResponseFuture::unsupported_encoding(self.accept).await,
                 }
             } else {
                 BodyInner::identity(body)
             };
         let body = DecompressionBody::new(body);
         let req = Request::from_parts(parts, body);
-        ResponseFuture::inner(self.inner.call(req))
+        ResponseFuture::inner(self.inner.call(req)).await
     }
 }
 
@@ -123,7 +117,7 @@ impl<S> RequestDecompression<S> {
 
     /// Returns a new [`Layer`] that wraps services with a `RequestDecompression` middleware.
     ///
-    /// [`Layer`]: tower_async_layer::Layer
+    /// [`Layer`]: tower_layer::Layer
     pub fn layer() -> RequestDecompressionLayer {
         RequestDecompressionLayer::new()
     }

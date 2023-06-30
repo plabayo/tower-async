@@ -417,7 +417,7 @@ where
                 let current_id = current_id.clone();
                 response.extensions_mut().insert(RequestId::new(current_id));
             }
-        } else if let Some(request_id) = self.request_id.take() {
+        } else if let Some(request_id) = request_id {
             response
                 .headers_mut()
                 .insert(self.header_name.clone(), request_id.0.clone());

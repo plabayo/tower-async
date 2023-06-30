@@ -91,12 +91,12 @@ mod tests {
     use flate2::read::GzDecoder;
     use http::header::{ACCEPT_ENCODING, CONTENT_ENCODING, CONTENT_TYPE};
     use http_body::Body as _;
-    use hyper::{Body, Error, Request, Response, Server};
+    use hyper::{Body, Error, Request, Response};
+    use std::io::Read;
     use std::sync::{Arc, RwLock};
-    use std::{io::Read, net::SocketAddr};
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
     use tokio_util::io::StreamReader;
-    use tower_async::{make::Shared, service_fn, Service, ServiceExt};
+    use tower_async::{service_fn, Service, ServiceExt};
 
     // Compression filter allows every other request to be compressed
     #[derive(Clone)]
@@ -168,18 +168,6 @@ mod tests {
         let decompressed = String::from_utf8(decompressed).unwrap();
 
         assert_eq!(decompressed, "Hello, World!");
-    }
-
-    #[allow(dead_code)]
-    async fn is_compatible_with_hyper() {
-        let svc = service_fn(handle);
-        let svc = Compression::new(svc);
-
-        let make_service = Shared::new(svc);
-
-        let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
-        let server = Server::bind(&addr).serve(make_service);
-        server.await.unwrap();
     }
 
     #[tokio::test]

@@ -344,7 +344,6 @@ impl<F> ServeDir<F> {
     ) -> ResponseFuture<ReqBody, F>
     where
         F: Service<Request<ReqBody>, Response = Response<FResBody>, Error = Infallible> + Clone,
-        F::Future: Send + 'static,
         FResBody: http_body::Body<Data = Bytes> + Send + 'static,
         FResBody::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
     {
@@ -423,26 +422,14 @@ impl<F> ServeDir<F> {
 impl<ReqBody, F, FResBody> Service<Request<ReqBody>> for ServeDir<F>
 where
     F: Service<Request<ReqBody>, Response = Response<FResBody>, Error = Infallible> + Clone,
-    F::Future: Send + 'static,
     FResBody: http_body::Body<Data = Bytes> + Send + 'static,
     FResBody::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
 {
     type Response = Response<ResponseBody>;
     type Error = Infallible;
-    type Future = InfallibleResponseFuture<ReqBody, F>;
 
-    #[inline]
-    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        if let Some(fallback) = &mut self.fallback {
-            fallback.poll_ready(cx)
-        } else {
-            Poll::Ready(Ok(()))
-        }
-    }
-
-    fn call(&mut self, req: Request<ReqBody>) -> Self::Future {
-        let future = self
-            .try_call(req)
+    async fn call(&mut self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
+        self.try_call(req)
             .map(|result: Result<_, _>| -> Result<_, Infallible> {
                 let response = result.unwrap_or_else(|err| {
                     tracing::error!(error = %err, "Failed to read file");
@@ -455,9 +442,8 @@ where
                         .unwrap()
                 });
                 Ok(response)
-            } as _);
-
-        InfallibleResponseFuture::new(future)
+            } as _)
+            .await
     }
 }
 
@@ -536,13 +522,8 @@ where
 {
     type Response = Response<ResponseBody>;
     type Error = Infallible;
-    type Future = InfallibleResponseFuture<ReqBody, Self>;
 
-    fn poll_ready(&mut self, _cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        match self.0 {}
-    }
-
-    fn call(&mut self, _req: Request<ReqBody>) -> Self::Future {
+    async fn call(&mut self, _req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
         match self.0 {}
     }
 }

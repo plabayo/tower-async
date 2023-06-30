@@ -3,10 +3,7 @@
 use super::ServeDir;
 use http::{HeaderValue, Request};
 use mime::Mime;
-use std::{
-    path::Path,
-    task::{Context, Poll},
-};
+use std::path::Path;
 use tower_async_service::Service;
 
 /// Service that serves a file.
@@ -112,16 +109,10 @@ where
 {
     type Error = <ServeDir as Service<Request<ReqBody>>>::Error;
     type Response = <ServeDir as Service<Request<ReqBody>>>::Response;
-    type Future = <ServeDir as Service<Request<ReqBody>>>::Future;
 
     #[inline]
-    fn poll_ready(&mut self, _cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        Poll::Ready(Ok(()))
-    }
-
-    #[inline]
-    fn call(&mut self, req: Request<ReqBody>) -> Self::Future {
-        self.0.call(req)
+    async fn call(&mut self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
+        self.0.call(req).await
     }
 }
 

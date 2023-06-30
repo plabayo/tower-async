@@ -10,8 +10,8 @@
 //! use http_body::Body as _; // for Body::data
 //! use hyper::Body;
 //! use std::{error::Error, io::Write};
-//! use tower_async::{Service, ServiceBuilder, service_fn, ServiceExt};
-//! use tower_async_http::{BoxError, decompression::{DecompressionBody, RequestDecompressionLayer}};
+//! use tower::{Service, ServiceBuilder, service_fn, ServiceExt};
+//! use tower_http::{BoxError, decompression::{DecompressionBody, RequestDecompressionLayer}};
 //!
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), BoxError> {
@@ -29,7 +29,7 @@
 //!     .service(service_fn(handler));
 //!
 //! // Send the request, with the gzip encoded body, to our server.
-//! let _response = server.call(request).await?;
+//! let _response = server.ready().await?.call(request).await?;
 //!
 //! // Handler receives request whose body is decoded when read
 //! async fn handler(mut req: Request<DecompressionBody<Body>>) -> Result<Response<Body>, BoxError>{
@@ -52,11 +52,11 @@
 //! use http_body::Body as _; // for Body::data
 //! use hyper::Body;
 //! use std::convert::Infallible;
-//! use tower_async::{Service, ServiceExt, ServiceBuilder, service_fn};
-//! use tower_async_http::{compression::Compression, decompression::DecompressionLayer, BoxError};
+//! use tower::{Service, ServiceExt, ServiceBuilder, service_fn};
+//! use tower_http::{compression::Compression, decompression::DecompressionLayer, BoxError};
 //! #
 //! # #[tokio::main]
-//! # async fn main() -> Result<(), tower_async_http::BoxError> {
+//! # async fn main() -> Result<(), tower_http::BoxError> {
 //! # async fn handle(req: Request<Body>) -> Result<Response<Body>, Infallible> {
 //! #     let body = Body::from("Hello, World!");
 //! #     Ok(Response::new(body))
@@ -77,7 +77,8 @@
 //! let request = Request::new(Body::empty());
 //!
 //! let response = client
-
+//!     .ready()
+//!     .await?
 //!     .call(request)
 //!     .await?;
 //!
@@ -99,11 +100,12 @@
 mod request;
 
 mod body;
+mod future;
 mod layer;
 mod service;
 
 pub use self::{
-    body::DecompressionBody, layer::DecompressionLayer,
+    body::DecompressionBody, future::ResponseFuture, layer::DecompressionLayer,
     service::Decompression,
 };
 
@@ -122,7 +124,7 @@ mod tests {
     use http::Response;
     use http_body::Body as _;
     use hyper::{Body, Client, Error, Request};
-    use tower_async::{service_fn, Service};
+    use tower::{service_fn, Service, ServiceExt};
 
     #[tokio::test]
     async fn works() {
@@ -132,7 +134,7 @@ mod tests {
             .header("accept-encoding", "gzip")
             .body(Body::empty())
             .unwrap();
-        let res = client.call(req).await.unwrap();
+        let res = client.ready().await.unwrap().call(req).await.unwrap();
 
         // read the body, it will be decompressed automatically
         let mut body = res.into_body();
@@ -154,7 +156,7 @@ mod tests {
             .header("accept-encoding", "gzip")
             .body(Body::empty())
             .unwrap();
-        let res = client.call(req).await.unwrap();
+        let res = client.ready().await.unwrap().call(req).await.unwrap();
 
         // read the body, it will be decompressed automatically
         let mut body = res.into_body();
@@ -195,6 +197,6 @@ mod tests {
         let req = Request::new(Body::empty());
 
         let _: Response<DecompressionBody<Body>> =
-            client.call(req).await.unwrap();
+            client.ready().await.unwrap().call(req).await.unwrap();
     }
 }

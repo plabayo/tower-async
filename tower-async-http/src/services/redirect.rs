@@ -97,7 +97,7 @@ where
         let mut res = Response::default();
         *res.status_mut() = self.status_code;
         res.headers_mut()
-            .insert(header::LOCATION, self.location.take().unwrap());
+            .insert(header::LOCATION, self.location.clone());
         Ok(res)
     }
 }

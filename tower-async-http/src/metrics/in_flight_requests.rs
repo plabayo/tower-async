@@ -303,12 +303,6 @@ mod tests {
             .service_fn(echo);
         assert_eq!(counter.get(), 0);
 
-        // driving service to ready shouldn't increment the counter
-        futures::future::poll_fn(|cx| service.poll_ready(cx))
-            .await
-            .unwrap();
-        assert_eq!(counter.get(), 0);
-
         // creating the response future should increment the count
         let response_future = service.call(Request::new(Body::empty()));
         assert_eq!(counter.get(), 1);

@@ -329,13 +329,12 @@ mod tests {
     use super::{policy::*, *};
     use hyper::{header::LOCATION, Body};
     use std::convert::Infallible;
-    use tower_async::{ServiceBuilder, ServiceExt};
+    use tower_async::ServiceBuilder;
 
     #[tokio::test]
     async fn follows() {
         let svc = ServiceBuilder::new()
             .layer(FollowRedirectLayer::with_policy(Action::Follow))
-            .buffer(1)
             .service_fn(handle);
         let req = Request::builder()
             .uri("http://example.com/42")
@@ -353,7 +352,6 @@ mod tests {
     async fn stops() {
         let svc = ServiceBuilder::new()
             .layer(FollowRedirectLayer::with_policy(Action::Stop))
-            .buffer(1)
             .service_fn(handle);
         let req = Request::builder()
             .uri("http://example.com/42")
@@ -371,7 +369,6 @@ mod tests {
     async fn limited() {
         let svc = ServiceBuilder::new()
             .layer(FollowRedirectLayer::with_policy(Limited::new(10)))
-            .buffer(1)
             .service_fn(handle);
         let req = Request::builder()
             .uri("http://example.com/42")

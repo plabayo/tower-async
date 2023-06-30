@@ -115,14 +115,8 @@
 //! # }
 //! ```
 
-use futures_core::ready;
 use http::{Request, Response};
-use pin_project_lite::pin_project;
-use std::{
-    future::Future,
-    pin::Pin,
-    task::{Context, Poll},
-};
+use std::future::Future;
 use tower_async_layer::Layer;
 use tower_async_service::Service;
 
@@ -194,79 +188,10 @@ where
 {
     type Response = Response<ResBody>;
     type Error = S::Error;
-    type Future = ResponseFuture<Auth, S, ReqBody>;
 
-    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        self.inner.poll_ready(cx)
-    }
-
-    fn call(&mut self, req: Request<ReqBody>) -> Self::Future {
-        let inner = self.inner.clone();
-        let authorize = self.auth.authorize(req);
-
-        ResponseFuture {
-            state: State::Authorize { authorize },
-            service: inner,
-        }
-    }
-}
-
-pin_project! {
-    /// Response future for [`AsyncRequireAuthorization`].
-    pub struct ResponseFuture<Auth, S, ReqBody>
-    where
-        Auth: AsyncAuthorizeRequest<ReqBody>,
-        S: Service<Request<Auth::RequestBody>>,
-    {
-        #[pin]
-        state: State<Auth::Future, S::Future>,
-        service: S,
-    }
-}
-
-pin_project! {
-    #[project = StateProj]
-    enum State<A, SFut> {
-        Authorize {
-            #[pin]
-            authorize: A,
-        },
-        Authorized {
-            #[pin]
-            fut: SFut,
-        },
-    }
-}
-
-impl<Auth, S, ReqBody, B> Future for ResponseFuture<Auth, S, ReqBody>
-where
-    Auth: AsyncAuthorizeRequest<ReqBody, ResponseBody = B>,
-    S: Service<Request<Auth::RequestBody>, Response = Response<B>>,
-{
-    type Output = Result<Response<B>, S::Error>;
-
-    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-        let mut this = self.project();
-
-        loop {
-            match this.state.as_mut().project() {
-                StateProj::Authorize { authorize } => {
-                    let auth = ready!(authorize.poll(cx));
-                    match auth {
-                        Ok(req) => {
-                            let fut = this.service.call(req);
-                            this.state.set(State::Authorized { fut })
-                        }
-                        Err(res) => {
-                            return Poll::Ready(Ok(res));
-                        }
-                    };
-                }
-                StateProj::Authorized { fut } => {
-                    return fut.poll(cx);
-                }
-            }
-        }
+    async fn call(&mut self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
+        let req = self.auth.authorize(req).await?;
+        self.inner.call(req).await
     }
 }
 
@@ -280,13 +205,13 @@ pub trait AsyncAuthorizeRequest<B> {
     /// The body type used for responses to unauthorized requests.
     type ResponseBody;
 
-    /// The Future type returned by `authorize`
-    type Future: Future<Output = Result<Request<Self::RequestBody>, Response<Self::ResponseBody>>>;
-
     /// Authorize the request.
     ///
     /// If the future resolves to `Ok(request)` then the request is allowed through, otherwise not.
-    fn authorize(&mut self, request: Request<B>) -> Self::Future;
+    async fn authorize(
+        &mut self,
+        request: Request<B>,
+    ) -> Result<Request<Self::RequestBody>, Response<Self::ResponseBody>>;
 }
 
 impl<B, F, Fut, ReqBody, ResBody> AsyncAuthorizeRequest<B> for F
@@ -296,10 +221,12 @@ where
 {
     type RequestBody = ReqBody;
     type ResponseBody = ResBody;
-    type Future = Fut;
 
-    fn authorize(&mut self, request: Request<B>) -> Self::Future {
-        self(request)
+    async fn authorize(
+        &mut self,
+        request: Request<B>,
+    ) -> Result<Request<Self::RequestBody>, Response<Self::ResponseBody>> {
+        self(request).await
     }
 }
 
@@ -307,7 +234,6 @@ where
 mod tests {
     #[allow(unused_imports)]
     use super::*;
-    use futures_util::future::BoxFuture;
     use http::{header, StatusCode};
     use hyper::Body;
     use tower_async::{BoxError, ServiceBuilder, ServiceExt};
@@ -321,29 +247,29 @@ mod tests {
     {
         type RequestBody = B;
         type ResponseBody = Body;
-        type Future = BoxFuture<'static, Result<Request<B>, Response<Self::ResponseBody>>>;
 
-        fn authorize(&mut self, mut request: Request<B>) -> Self::Future {
-            Box::pin(async move {
-                let authorized = request
-                    .headers()
-                    .get(header::AUTHORIZATION)
-                    .and_then(|it| it.to_str().ok())
-                    .and_then(|it| it.strip_prefix("Bearer "))
-                    .map(|it| it == "69420")
-                    .unwrap_or(false);
+        async fn authorize(
+            &mut self,
+            mut request: Request<B>,
+        ) -> Result<Self::RequestBody, Response<Self::ResponseBody>> {
+            let authorized = request
+                .headers()
+                .get(header::AUTHORIZATION)
+                .and_then(|it: &http::HeaderValue| it.to_str().ok())
+                .and_then(|it| it.strip_prefix("Bearer "))
+                .map(|it| it == "69420")
+                .unwrap_or(false);
 
-                if authorized {
-                    let user_id = UserId("6969".to_owned());
-                    request.extensions_mut().insert(user_id);
-                    Ok(request)
-                } else {
-                    Err(Response::builder()
-                        .status(StatusCode::UNAUTHORIZED)
-                        .body(Body::empty())
-                        .unwrap())
-                }
-            })
+            if authorized {
+                let user_id = UserId("6969".to_owned());
+                request.extensions_mut().insert(user_id);
+                Ok(request)
+            } else {
+                Err(Response::builder()
+                    .status(StatusCode::UNAUTHORIZED)
+                    .body(Body::empty())
+                    .unwrap())
+            }
         }
     }
 

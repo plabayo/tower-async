@@ -112,11 +112,7 @@
 use http::{header, Request, Response, StatusCode};
 use http_body::Body;
 use mime::{Mime, MimeIter};
-use std::{
-    fmt,
-    marker::PhantomData,
-    sync::Arc,
-};
+use std::{fmt, marker::PhantomData, sync::Arc};
 use tower_async_layer::Layer;
 use tower_async_service::Service;
 

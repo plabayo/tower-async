@@ -320,7 +320,7 @@ where
         let mut res = self.inner.call(req).await?;
 
         let headers = res.headers_mut();
-        for header in &self.headers {
+        for header in self.headers.iter() {
             if let http::header::Entry::Occupied(mut entry) = headers.entry(header) {
                 for value in entry.iter_mut() {
                     value.set_sensitive(true);

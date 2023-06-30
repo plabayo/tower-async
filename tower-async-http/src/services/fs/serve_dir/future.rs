@@ -80,7 +80,6 @@ pin_project! {
 impl<F, ReqBody, ResBody> Future for ResponseFuture<ReqBody, F>
 where
     F: Service<Request<ReqBody>, Response = Response<ResBody>, Error = Infallible> + Clone,
-    F::Future: Send + 'static,
     ResBody: http_body::Body<Data = Bytes> + Send + 'static,
     ResBody::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
 {
@@ -193,7 +192,6 @@ pub(super) fn call_fallback<F, B, FResBody>(
 ) -> ResponseFutureInner<B, F>
 where
     F: Service<Request<B>, Response = Response<FResBody>, Error = Infallible> + Clone,
-    F::Future: Send + 'static,
     FResBody: http_body::Body<Data = Bytes> + Send + 'static,
     FResBody::Error: Into<BoxError>,
 {

@@ -150,7 +150,6 @@ mod tests {
             .service_fn(handle);
 
         let body = svc
-            .unwrap()
             .call(Request::builder().uri("/foo/").body(()).unwrap())
             .await
             .unwrap()

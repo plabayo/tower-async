@@ -247,7 +247,7 @@ where
     type Error = S::Error;
 
     async fn call(&mut self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
-        let make = self.make.clone();
+        let mut make = self.make.clone();
         let mut res = self.inner.call(req).await?;
         self.mode.apply(&self.header_name, &mut res, &mut make);
         Ok(res)

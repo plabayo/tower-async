@@ -165,14 +165,8 @@ where
 {
     type Response = Response<CompressionBody<ResBody>>;
     type Error = S::Error;
-    type Future = ResponseFuture<S::Future, P>;
 
-    #[inline]
-    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        self.inner.poll_ready(cx)
-    }
-
-    fn call(&mut self, req: Request<ReqBody>) -> Self::Future {
+    async fn call(&mut self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
         let encoding = Encoding::from_headers(req.headers(), self.accept);
 
         ResponseFuture {
@@ -181,5 +175,6 @@ where
             predicate: self.predicate.clone(),
             quality: self.quality,
         }
+        .await
     }
 }

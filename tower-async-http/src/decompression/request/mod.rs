@@ -10,10 +10,9 @@ mod tests {
     use flate2::{write::GzEncoder, Compression};
     use http::{header, Response, StatusCode};
     use http_body::Body as _;
-    use hyper::{Body, Error, Request, Server};
+    use hyper::{Body, Error, Request};
     use std::io::Write;
-    use std::net::SocketAddr;
-    use tower_async::{make::Shared, service_fn, Service, ServiceExt};
+    use tower_async::{service_fn, Service};
 
     #[tokio::test]
     async fn decompress_accepted_encoding() {
@@ -93,17 +92,5 @@ mod tests {
             data.extend_from_slice(&chunk[..]);
         }
         data.freeze().to_vec()
-    }
-
-    #[allow(dead_code)]
-    async fn is_compatible_with_hyper() {
-        let svc = service_fn(assert_request_is_decompressed);
-        let svc = RequestDecompression::new(svc);
-
-        let make_service = Shared::new(svc);
-
-        let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
-        let server = Server::bind(&addr).serve(make_service);
-        server.await.unwrap();
     }
 }
