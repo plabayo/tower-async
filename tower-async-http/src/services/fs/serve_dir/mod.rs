@@ -429,21 +429,15 @@ where
     type Error = Infallible;
 
     async fn call(&mut self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
-        self.try_call(req)
-            .map(|result: Result<_, _>| -> Result<_, Infallible> {
-                let response = result.unwrap_or_else(|err| {
-                    tracing::error!(error = %err, "Failed to read file");
+        Ok(self.try_call(req).await.unwrap_or_else(|err| {
+            tracing::error!(error = %err, "Failed to read file");
 
-                    let body =
-                        ResponseBody::new(Empty::new().map_err(|err| match err {}).boxed_unsync());
-                    Response::builder()
-                        .status(StatusCode::INTERNAL_SERVER_ERROR)
-                        .body(body)
-                        .unwrap()
-                });
-                Ok(response)
-            } as _)
-            .await
+            let body = ResponseBody::new(Empty::new().map_err(|err| match err {}).boxed_unsync());
+            Response::builder()
+                .status(StatusCode::INTERNAL_SERVER_ERROR)
+                .body(body)
+                .unwrap()
+        }))
     }
 }
 

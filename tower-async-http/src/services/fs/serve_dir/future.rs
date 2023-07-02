@@ -207,10 +207,9 @@ where
                     .boxed_unsync()
                 })
                 .map(ResponseBody::new)
-        })
-        .boxed();
+        });
 
-    ResponseFutureInner::FallbackFuture { future }
+    future.await.map_err(|err| match err {})
 }
 
 fn build_response(output: FileOpened) -> Response<ResponseBody> {

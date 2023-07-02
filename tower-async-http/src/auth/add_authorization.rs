@@ -195,7 +195,6 @@ mod tests {
         let mut client = AddAuthorization::basic(svc, "foo", "bar");
 
         let res = client
-            .unwrap()
             .call(Request::new(Body::empty()))
             .await
             .unwrap();
@@ -214,7 +213,6 @@ mod tests {
         let mut client = AddAuthorization::bearer(svc, "foo");
 
         let res = client
-            .unwrap()
             .call(Request::new(Body::empty()))
             .await
             .unwrap();
@@ -236,7 +234,6 @@ mod tests {
         let mut client = AddAuthorization::bearer(svc, "foo").as_sensitive(true);
 
         let res = client
-            .unwrap()
             .call(Request::new(Body::empty()))
             .await
             .unwrap();

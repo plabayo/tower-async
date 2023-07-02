@@ -86,7 +86,7 @@ use bytes::Bytes;
 use futures_util::future::FutureExt;
 use http::{HeaderValue, Request, Response, StatusCode};
 use http_body::{combinators::UnsyncBoxBody, Body, Full};
-use std::any::Any;
+use std::{any::Any, panic::AssertUnwindSafe};
 use tower_async_layer::Layer;
 use tower_async_service::Service;
 
@@ -181,8 +181,20 @@ where
     type Error = S::Error;
 
     async fn call(&mut self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
-        match self.inner.call(req).catch_unwind().await {
-            Ok(res) => Ok(res.map(|body| body.map_err(Into::into).boxed_unsync())),
+        let future = match std::panic::catch_unwind(AssertUnwindSafe(|| self.inner.call(req))) {
+            Ok(future) => future,
+            Err(panic_err) => {
+                return Ok(self
+                    .panic_handler
+                    .response_for_panic(panic_err)
+                    .map(|body| body.map_err(Into::into).boxed_unsync()))
+            }
+        };
+        match AssertUnwindSafe(future).catch_unwind().await {
+            Ok(res) => match res {
+                Ok(res) => Ok(res.map(|body| body.map_err(Into::into).boxed_unsync())),
+                Err(err) => Err(err),
+            },
             Err(panic_err) => Ok(self
                 .panic_handler
                 .response_for_panic(panic_err)

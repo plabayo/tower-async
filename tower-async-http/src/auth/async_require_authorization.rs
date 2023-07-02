@@ -190,7 +190,10 @@ where
     type Error = S::Error;
 
     async fn call(&mut self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
-        let req = self.auth.authorize(req).await?;
+        let req = match self.auth.authorize(req).await {
+            Ok(req) => req,
+            Err(res) => return Ok(res),
+        };
         self.inner.call(req).await
     }
 }
@@ -236,7 +239,7 @@ mod tests {
     use super::*;
     use http::{header, StatusCode};
     use hyper::Body;
-    use tower_async::{BoxError, ServiceBuilder, ServiceExt};
+    use tower_async::{BoxError, ServiceBuilder};
 
     #[derive(Clone, Copy)]
     struct MyAuth;
@@ -251,7 +254,7 @@ mod tests {
         async fn authorize(
             &mut self,
             mut request: Request<B>,
-        ) -> Result<Self::RequestBody, Response<Self::ResponseBody>> {
+        ) -> Result<Request<Self::RequestBody>, Response<Self::ResponseBody>> {
             let authorized = request
                 .headers()
                 .get(header::AUTHORIZATION)

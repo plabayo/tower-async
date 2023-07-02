@@ -46,13 +46,12 @@ where
             .and_then(|value| value.to_str().ok()?.parse::<usize>().ok());
 
         let body_limit = match content_length {
-            Some(len) if len > self.limit => return create_error_response(),
+            Some(len) if len > self.limit => return Ok(create_error_response()),
             Some(len) => self.limit.min(len),
             None => self.limit,
         };
 
         let req = req.map(|body| Limited::new(body, body_limit));
-
-        self.inner.call(req).await
+        Ok(self.inner.call(req).await?.map(ResponseBody::new))
     }
 }

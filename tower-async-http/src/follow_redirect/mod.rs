@@ -187,7 +187,7 @@ where
     type Error = S::Error;
 
     async fn call(&mut self, mut req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
-        let method = req.method().clone();
+        let mut method = req.method().clone();
         let uri = req.uri().clone();
         let version = req.version().clone();
         let headers = req.headers().clone();
@@ -196,7 +196,7 @@ where
         body.try_clone_from(req.body(), &policy);
         policy.on_request(&mut req);
 
-        let res = self.inner.call(req).await?;
+        let mut res = self.inner.call(req).await?;
         res.extensions_mut().insert(RequestUri(uri.clone()));
 
         match res.status() {
@@ -242,11 +242,8 @@ where
         };
         match policy.redirect(&attempt)? {
             Action::Follow => {
-                uri = location;
-                body.try_clone_from(&body, &policy);
-
                 let mut req = Request::new(body);
-                *req.uri_mut() = uri;
+                *req.uri_mut() = location;
                 *req.method_mut() = method;
                 *req.version_mut() = version;
                 *req.headers_mut() = headers;
@@ -329,7 +326,7 @@ mod tests {
     use super::{policy::*, *};
     use hyper::{header::LOCATION, Body};
     use std::convert::Infallible;
-    use tower_async::ServiceBuilder;
+    use tower_async::{ServiceBuilder, ServiceExt};
 
     #[tokio::test]
     async fn follows() {
