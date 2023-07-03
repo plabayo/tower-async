@@ -7,6 +7,8 @@ use tower::ServiceExt;
 /// [`Service`]: https://docs.rs/tower-async/*/tower_async/trait.Service.html
 pub trait AsyncServiceExt<Request>: tower_service::Service<Request> {
     /// Turn this [`tower::Service`] into an async [`Service`].
+    ///
+    /// [`Service`]: https://docs.rs/tower-async/*/tower_async/trait.Service.html
     fn into_async(self) -> AsyncService<Self, Request>
     where
         Self: Sized,
