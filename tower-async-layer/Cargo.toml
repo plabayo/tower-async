@@ -10,8 +10,8 @@ version = "0.1.0"
 authors = ["Glen De Cauwsemaecker <glen@plabayo.tech>"]
 license = "MIT"
 readme = "README.md"
-repository = "https://github.com/plabayo/async-tower"
-homepage = "https://github.com/plabayo/async-tower"
+repository = "https://github.com/plabayo/tower-async"
+homepage = "https://github.com/plabayo/tower-async"
 description = """
 Decorates a `Service` to allow easy composition between `Service`s.
  An "Async Trait" fork from the original Tower Library.
