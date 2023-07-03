@@ -17,5 +17,7 @@
 //! [`Service`]: https://docs.rs/tower-async/*/tower_async/trait.Service.html
 
 mod async_service;
+mod classic_service;
 
 pub use async_service::{AsyncService, AsyncServiceExt};
+pub use classic_service::{ClassicService, ClassicServiceExt};
