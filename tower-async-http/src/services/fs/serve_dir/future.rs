@@ -195,19 +195,17 @@ where
     FResBody: http_body::Body<Data = Bytes> + Send + 'static,
     FResBody::Error: Into<BoxError>,
 {
-    let future = fallback
-        .call(req)
-        .map_ok(|response| {
-            response
-                .map(|body| {
-                    body.map_err(|err| match err.into().downcast::<io::Error>() {
-                        Ok(err) => *err,
-                        Err(err) => io::Error::new(io::ErrorKind::Other, err),
-                    })
-                    .boxed_unsync()
+    let future = fallback.call(req).map_ok(|response| {
+        response
+            .map(|body| {
+                body.map_err(|err| match err.into().downcast::<io::Error>() {
+                    Ok(err) => *err,
+                    Err(err) => io::Error::new(io::ErrorKind::Other, err),
                 })
-                .map(ResponseBody::new)
-        });
+                .boxed_unsync()
+            })
+            .map(ResponseBody::new)
+    });
 
     future.await.map_err(|err| match err {})
 }
