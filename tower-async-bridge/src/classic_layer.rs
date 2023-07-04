@@ -43,6 +43,18 @@ where
     }
 }
 
+impl<L, S> Clone for ClassicLayer<L, S>
+where
+    L: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            inner: self.inner.clone(),
+            _marker: std::marker::PhantomData,
+        }
+    }
+}
+
 impl<L, S> ClassicLayer<L, S> {
     /// Create a new [ClassicLayer] wrapping `inner`.
     pub fn new(inner: L) -> Self {

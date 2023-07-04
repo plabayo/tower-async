@@ -43,6 +43,18 @@ where
     }
 }
 
+impl<L, S> Clone for AsyncLayer<L, S>
+where
+    L: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            inner: self.inner.clone(),
+            _marker: std::marker::PhantomData,
+        }
+    }
+}
+
 impl<L, S> AsyncLayer<L, S> {
     /// Create a new [AsyncLayer] wrapping `inner`.
     pub fn new(inner: L) -> Self {
