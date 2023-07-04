@@ -9,12 +9,29 @@
 #![feature(async_fn_in_trait)]
 // `rustdoc::broken_intra_doc_links` is checked on CI
 
-//! Bridge traits and extensions.
+//! Tower Async Bridge traits and extensions.
 //!
-//! A bridge decorates an service and provides additional functionality.
-//! It allows a class Tower Service to be used as an Async [`Service`].
+//! You can make use of this crate in order to:
 //!
-//! [`Service`]: https://docs.rs/tower-async/*/tower_async/trait.Service.html
+//! - Turn a [`tower::Service`] into a [`tower_async::Service`];
+//! - Turn a [`tower_async::Service`] into a [`tower::Service`];
+//! - Use a [`tower_async::Layer`] within a [`tower`] environment (e.g. [`tower::ServiceBuilder`]);
+//! - Use a [`tower::Layer`] within a [`tower_async`] environment (e.g. [`tower_async::ServiceBuilder`]);
+//!
+//! Please check the crate's unit tests and examples to see specifically how to use the crate in order to achieve this.
+//!
+//! Furthermore we also urge you to only use this kind of approach for transition purposes and not as a permanent way of life.
+//! Best in our opinion is to use one or the other and not to combine the two. But if you do absolutely must
+//! use one combined with the other, this crate should allow you to do exactly that.
+//!
+//! [`tower`]: https://docs.rs/tower/*/t
+//! [`tower::Service`]: https://docs.rs/tower/*/tower/trait.Service.html
+//! [`tower::ServiceBuilder`]: https://docs.rs/tower/*/tower/builder/struct.ServiceBuilder.html
+//! [`tower::Layer`]: https://docs.rs/tower/*/tower/trait.Layer.html
+//! [`tower_async`]: https://docs.rs/tower-async/*/tower_async
+//! [`tower_async::Service`]: https://docs.rs/tower-async/*/tower_async/trait.Service.html
+//! [`tower_async::ServiceBuilder`]: https://docs.rs/tower-async/*/tower_async/builder/struct.ServiceBuilder.html
+//! [`tower_async::Layer`]: https://docs.rs/tower-async/*/tower_async/trait.Layer.html
 
 mod async_service;
 mod async_wrapper;

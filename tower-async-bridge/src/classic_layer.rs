@@ -26,7 +26,7 @@ where
 
 /// A wrapper around a [tower_layer::Layer] that implements
 /// [tower_async_layer::Layer] and is the type returned
-/// by [ClassicLayerExt::async_layer].
+/// by [ClassicLayerExt::into_classic].
 pub struct ClassicLayer<L, S> {
     inner: L,
     _marker: std::marker::PhantomData<S>,
