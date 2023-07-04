@@ -1,4 +1,4 @@
-# Tower Layer
+# Tower Async Layer
 
 Decorates a [Tower Async] `Service`, transforming either the request or the response.
 
