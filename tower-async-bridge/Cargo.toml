@@ -1,0 +1,36 @@
+[package]
+name = "tower-async-bridge"
+# When releasing to crates.io:
+# - Update doc url
+#   - Cargo.toml
+#   - README.md
+# - Update CHANGELOG.md.
+# - Create "v0.1.x" git tag.
+version = "0.1.0"
+authors = ["Glen De Cauwsemaecker <glen@plabayo.tech>"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/plabayo/tower-async"
+homepage = "https://github.com/plabayo/tower-async"
+description = """
+Bridges a `tower-async` `Service` to be used within a `tower` (classic) environment,
+and also the other way around.
+"""
+categories = ["asynchronous", "network-programming"]
+edition = "2021"
+
+[dependencies]
+tower-async-service = { version = "0.1", path = "../tower-async-service" }
+tower-service = { version = "0.3" }
+tower-async-layer = { version = "0.1", path = "../tower-async-layer" }
+tower-layer = { version = "0.3" }
+tower = { version = "0.4", features = ["util"] }
+
+[dev-dependencies]
+tokio = { version = "1.11", features = ["macros", "rt-multi-thread"] }
+tokio-test = { version = "0.4"  }
+tower = { version = "0.4", features = ["buffer", "limit", "timeout"] }
+tower-async = { version = "0.1", path = "../tower-async", features = ["full"] }
+pin-project-lite = "0.2"
+futures-core = "0.3"
+hyper = { version = "0.14", features = ["full"] }

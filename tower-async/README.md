@@ -57,11 +57,40 @@ a function taking a [`Service`] of one type and returning a [`Service`] of a
 different type. The [`ServiceBuilder`] type is used to add middleware to a
 service by composing it with multiple [`Layer`]s.
 
+## Difference with Tokio's official Tower Ecosystem?
+
+- Make use of `Async Traits`
+  ([RFC-3185: Static async fn in traits](https://rust-lang.github.io/rfcs/3185-static-async-fn-in-trait.html))
+  instead of requiring the user to manually implement Futures;
+  - Which in fact forces users to Box Services that rely on futures which cannot be named,
+    e.g. those returned by `async functions` that the user might have to face by using
+    common utility functions from the wider _Tokio_ ecosystem;
+- Drop the notion of `poll_ready` (See [the FAQ](#faq)).
+
+## Bridging to Tokio's official Tower Ecosystem
+
+You can make use of the `tower-async-bridge` crate as found in this repo in the [./tower-async-bridge](./tower-async-bridge/) directory,
+and published at [crates.io](https://crates.io/) under the same name.
+
+At a high level it allows you to:
+
+- Turn a [`tower::Service`] into a [`tower_async::Service`];
+- Turn a [`tower_async::Service`] into a [`tower::Service`];
+- Use a [`tower_async::Layer`] within a [`tower`] environment (e.g. [`tower::ServiceBuilder`]);
+- Use a [`tower::Layer`] within a [`tower_async`] environment (e.g. [`tower_async::ServiceBuilder`]);
+
+Please check the crate's unit tests and examples to see specifically how to use the crate in order to achieve this.
+
+Furthermore we also urge you to only use this kind of approach for transition purposes and not as a permanent way of life.
+Best in our opinion is to use one or the other and not to combine the two. But if you do absolutely must
+use one combined with the other, `tower-async-bridge` should allow you to do exactly that.
+
 ### The Tower Ecosystem
 
 Tower is made up of the following crates:
 
 * [`tower-async`] (this crate)
+* [`tower-async-bridge`]
 * [`tower-async-service`]
 * [`tower-async-layer`]
 
@@ -71,6 +100,9 @@ breaking changes are made rarely. Therefore, they are defined in separate
 crates, [`tower-async-service`] and [`tower-async-layer`]. This crate contains
 re-exports of those core traits, implementations of commonly-used
 middleware, and [utilities] for working with [`Service`]s and [`Layer`]s.
+
+[`tower-async-bridge`] is there to bridge Tokio's official Tower ecosystem
+with this (Aync Trait) version (Fork).
 
 ## Usage
 
@@ -148,9 +180,19 @@ Tower.
 [`ServiceBuilder`]: https://docs.rs/tower-async/latest/tower-async/struct.ServiceBuilder.html
 [utilities]: https://docs.rs/tower-async/latest/tower-async/trait.ServiceExt.html
 [`tower-async`]: https://crates.io/crates/tower
+[`tower-async-bridge`]: https://crates.io/crates/tower-async-bridge
 [`tower-async-service`]: https://crates.io/crates/tower-async-service
 [`tower-async-layer`]: https://crates.io/crates/tower-async-layer
 [open a PR]: https://github.com/plabayo/tower-async/compare
+
+[`tower`]: https://docs.rs/tower/*/t
+[`tower::Service`]: https://docs.rs/tower/*/tower/trait.Service.html
+[`tower::ServiceBuilder`]: https://docs.rs/tower/*/tower/builder/struct.ServiceBuilder.html
+[`tower::Layer`]: https://docs.rs/tower/*/tower/trait.Layer.html
+[`tower_async`]: https://docs.rs/tower-async/*/tower_async
+[`tower_async::Service`]: https://docs.rs/tower-async/*/tower_async/trait.Service.html
+[`tower_async::ServiceBuilder`]: https://docs.rs/tower-async/*/tower_async/builder/struct.ServiceBuilder.html
+[`tower_async::Layer`]: https://docs.rs/tower-async/*/tower_async/trait.Layer.html
 
 
 ## Supported Rust Versions
@@ -221,12 +263,6 @@ here do we welcome contributions.
 
 And in general welcome any contributions.
 Best to do come and chat with us prior to starting any big endavours.
-
-> Are these crates compatible with the original Tower Ecosystem
-
-No, not at the moment.
-
-We welcome however contributions to make this opt-in bridge a possibility.
 
 ## License
 
