@@ -7,6 +7,8 @@
 #![forbid(unsafe_code)]
 #![allow(incomplete_features)]
 #![feature(async_fn_in_trait)]
+#![feature(associated_type_bounds)]
+#![feature(return_type_notation)]
 // `rustdoc::broken_intra_doc_links` is checked on CI
 
 //! Tower Async Bridge traits and extensions.

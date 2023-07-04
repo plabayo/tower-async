@@ -11,16 +11,29 @@ impl<S> ClassicServiceWrapper<S> {
     }
 }
 
+impl<S> Clone for ClassicServiceWrapper<S>
+where
+    S: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            inner: self.inner.clone(),
+        }
+    }
+}
+
 impl<S, Request> tower_service::Service<Request> for ClassicServiceWrapper<S>
 where
-    S: tower_async_service::Service<Request> + 'static,
-    S::Error: 'static,
-    Request: 'static,
+    S: tower_async_service::Service<Request, call(): Send> + Send + 'static,
+    S::Response: Send + 'static,
+    S::Error: Send + 'static,
+    Request: Send + 'static,
 {
     type Response = S::Response;
     type Error = ClassicServiceError<S::Error>;
-    type Future =
-        std::pin::Pin<Box<dyn std::future::Future<Output = Result<Self::Response, Self::Error>>>>;
+    type Future = std::pin::Pin<
+        Box<dyn std::future::Future<Output = Result<Self::Response, Self::Error>> + Send + 'static>,
+    >;
 
     fn poll_ready(
         &mut self,
@@ -34,14 +47,15 @@ where
     }
 
     fn call(&mut self, request: Request) -> Self::Future {
-        let mut service = self.inner.take().expect("service must be present");
+        let service = self.inner.take().expect("service must be present");
+
         let future = async move {
-            let request = request;
-            service
-                .call(request)
-                .await
-                .map_err(ClassicServiceError::ServiceError)
+            let mut service = service;
+
+            let future = service.call(request);
+            future.await.map_err(ClassicServiceError::ServiceError)
         };
+
         Box::pin(future)
     }
 }
