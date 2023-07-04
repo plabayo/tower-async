@@ -17,7 +17,15 @@
 //! [`Service`]: https://docs.rs/tower-async/*/tower_async/trait.Service.html
 
 mod async_service;
-mod classic_service;
+mod async_wrapper;
 
-pub use async_service::{AsyncService, AsyncServiceExt};
-pub use classic_service::{ClassicService, ClassicServiceExt};
+mod classic_layer;
+mod classic_service;
+mod classic_wrapper;
+
+pub use async_service::AsyncServiceExt;
+pub use async_wrapper::AsyncServiceWrapper;
+
+pub use classic_layer::{ClassicLayer, ClassicLayerExt};
+pub use classic_service::ClassicServiceExt;
+pub use classic_wrapper::{ClassicServiceError, ClassicServiceWrapper};

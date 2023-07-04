@@ -31,5 +31,5 @@ pin-project-lite = "0.2"
 [dev-dependencies]
 tokio = { version = "1.11", features = ["macros"] }
 tokio-test = { version = "0.4"  }
-tower = { version = "0.4", features = ["buffer", "limit"] }
+tower = { version = "0.4", features = ["buffer", "limit", "timeout"] }
 tower-async = { version = "0.1", path = "../tower-async", features = ["full"] }
