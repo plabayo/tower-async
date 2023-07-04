@@ -17,7 +17,7 @@ impl<L, S> ClassicLayerExt<S> for L where L: tower_async_layer::Layer<S> + Sized
 
 impl<L, S> From<L> for ClassicLayer<L, S>
 where
-    L: tower_async_layer::Layer<AsyncServiceWrapper<S>>,
+    L: tower_async_layer::Layer<S>,
 {
     fn from(inner: L) -> Self {
         Self::new(inner)
@@ -53,7 +53,7 @@ impl<L, S> ClassicLayer<L, S> {
     }
 }
 
-impl<L, S> tower::layer::Layer<S> for ClassicLayer<L, S>
+impl<L, S> tower_layer::Layer<S> for ClassicLayer<L, S>
 where
     L: tower_async_layer::Layer<AsyncServiceWrapper<S>>,
 {

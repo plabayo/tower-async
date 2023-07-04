@@ -33,6 +33,7 @@
 //! [`tower_async::ServiceBuilder`]: https://docs.rs/tower-async/*/tower_async/builder/struct.ServiceBuilder.html
 //! [`tower_async::Layer`]: https://docs.rs/tower-async/*/tower_async/trait.Layer.html
 
+mod async_layer;
 mod async_service;
 mod async_wrapper;
 
@@ -40,6 +41,7 @@ mod classic_layer;
 mod classic_service;
 mod classic_wrapper;
 
+pub use async_layer::{AsyncLayer, AsyncLayerExt};
 pub use async_service::AsyncServiceExt;
 pub use async_wrapper::AsyncServiceWrapper;
 
