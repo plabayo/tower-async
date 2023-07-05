@@ -33,6 +33,7 @@ where
     type Response = S::Response;
     type Error = S::Error;
 
+    #[inline]
     async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
         use tower::ServiceExt;
         self.inner.ready().await?.call(request).await

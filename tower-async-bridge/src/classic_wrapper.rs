@@ -35,6 +35,7 @@ where
         Box<dyn std::future::Future<Output = Result<Self::Response, Self::Error>> + Send + 'static>,
     >;
 
+    #[inline]
     fn poll_ready(
         &mut self,
         _cx: &mut std::task::Context<'_>,
@@ -46,6 +47,7 @@ where
         })
     }
 
+    #[inline]
     fn call(&mut self, request: Request) -> Self::Future {
         let service = self.inner.take().expect("service must be present");
 
