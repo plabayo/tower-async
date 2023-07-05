@@ -72,6 +72,7 @@ where
     type Service =
         ClassicServiceWrapper<<L as tower_async_layer::Layer<AsyncServiceWrapper<S>>>::Service>;
 
+    #[inline]
     fn layer(&self, service: S) -> Self::Service {
         let service = AsyncServiceWrapper::new(service);
         let service = self.inner.layer(service);
