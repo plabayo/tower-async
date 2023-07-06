@@ -294,24 +294,9 @@ impl<S, E> StreamErrorIntoIoError<S, E> {
         Self { inner, error: None }
     }
 
-    /// Get a reference to the inner body
-    pub(crate) fn get_ref(&self) -> &S {
-        &self.inner
-    }
-
-    /// Get a mutable reference to the inner inner
-    pub(crate) fn get_mut(&mut self) -> &mut S {
-        &mut self.inner
-    }
-
     /// Get a pinned mutable reference to the inner inner
     pub(crate) fn get_pin_mut(self: Pin<&mut Self>) -> Pin<&mut S> {
         self.project().inner
-    }
-
-    /// Consume `self`, returning the inner inner
-    pub(crate) fn into_inner(self) -> S {
-        self.inner
     }
 }
 
@@ -338,25 +323,20 @@ pub(crate) const SENTINEL_ERROR_CODE: i32 = -837459418;
 
 /// Level of compression data should be compressed with.
 #[non_exhaustive]
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Default, Clone, Copy, Debug, Eq, PartialEq)]
 pub enum CompressionLevel {
     /// Fastest quality of compression, usually produces bigger size.
     Fastest,
     /// Best quality of compression, usually produces the smallest size.
     Best,
     /// Default quality of compression defined by the selected compression algorithm.
+    #[default]
     Default,
     /// Precise quality based on the underlying compression algorithms'
     /// qualities. The interpretation of this depends on the algorithm chosen
     /// and the specific implementation backing it.
     /// Qualities are implicitly clamped to the algorithm's maximum.
     Precise(u32),
-}
-
-impl Default for CompressionLevel {
-    fn default() -> Self {
-        CompressionLevel::Default
-    }
 }
 
 #[cfg(any(

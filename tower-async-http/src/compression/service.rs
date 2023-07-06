@@ -4,7 +4,6 @@ use crate::compression::CompressionLevel;
 use crate::{compression_utils::AcceptEncoding, content_encoding::Encoding};
 use http::{Request, Response};
 use http_body::Body;
-use std::task::{Context, Poll};
 use tower_async_service::Service;
 
 /// Compress response bodies of the underlying service.

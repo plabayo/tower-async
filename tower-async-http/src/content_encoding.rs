@@ -148,7 +148,7 @@ impl QValue {
         let mut c = s.chars();
         // Parse "q=" (case-insensitively).
         match c.next() {
-            Some('q') | Some('Q') => (),
+            Some('q' | 'Q') => (),
             _ => return None,
         };
         match c.next() {

@@ -1,11 +1,13 @@
-use super::{DecompressionBody, DecompressionLayer, ResponseFuture};
-use crate::compression_utils::AcceptEncoding;
+use super::{body::BodyInner, DecompressionBody, DecompressionLayer};
+use crate::{
+    compression_utils::{AcceptEncoding, CompressionLevel, WrapBody},
+    content_encoding::SupportedEncodings,
+};
 use http::{
     header::{self, ACCEPT_ENCODING},
     Request, Response,
 };
 use http_body::Body;
-use std::task::{Context, Poll};
 use tower_async_service::Service;
 
 /// Decompresses response bodies of the underlying service.
@@ -114,10 +116,49 @@ where
             }
         }
 
-        ResponseFuture {
-            inner: self.inner.call(req),
-            accept: self.accept,
-        }
-        .await
+        let res = self.inner.call(req).await?;
+
+        let (mut parts, body) = res.into_parts();
+
+        let res =
+            if let header::Entry::Occupied(entry) = parts.headers.entry(header::CONTENT_ENCODING) {
+                let body = match entry.get().as_bytes() {
+                    #[cfg(feature = "decompression-gzip")]
+                    b"gzip" if self.accept.gzip() => DecompressionBody::new(BodyInner::gzip(
+                        WrapBody::new(body, CompressionLevel::default()),
+                    )),
+
+                    #[cfg(feature = "decompression-deflate")]
+                    b"deflate" if self.accept.deflate() => DecompressionBody::new(
+                        BodyInner::deflate(WrapBody::new(body, CompressionLevel::default())),
+                    ),
+
+                    #[cfg(feature = "decompression-br")]
+                    b"br" if self.accept.br() => DecompressionBody::new(BodyInner::brotli(
+                        WrapBody::new(body, CompressionLevel::default()),
+                    )),
+
+                    #[cfg(feature = "decompression-zstd")]
+                    b"zstd" if self.accept.zstd() => DecompressionBody::new(BodyInner::zstd(
+                        WrapBody::new(body, CompressionLevel::default()),
+                    )),
+
+                    _ => {
+                        return Ok(Response::from_parts(
+                            parts,
+                            DecompressionBody::new(BodyInner::identity(body)),
+                        ))
+                    }
+                };
+
+                entry.remove();
+                parts.headers.remove(header::CONTENT_LENGTH);
+
+                Response::from_parts(parts, body)
+            } else {
+                Response::from_parts(parts, DecompressionBody::new(BodyInner::identity(body)))
+            };
+
+        Ok(res)
     }
 }

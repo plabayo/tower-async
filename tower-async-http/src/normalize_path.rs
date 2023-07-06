@@ -108,11 +108,7 @@ fn normalize_trailing_slash(uri: &mut Uri) {
     let mut parts = uri.clone().into_parts();
 
     let new_path_and_query = if let Some(path_and_query) = &parts.path_and_query {
-        let new_path = if new_path.is_empty() {
-            "/"
-        } else {
-            new_path.into()
-        };
+        let new_path = if new_path.is_empty() { "/" } else { new_path };
 
         let new_path_and_query = if let Some(query) = path_and_query.query() {
             Cow::Owned(format!("{}?{}", new_path, query))

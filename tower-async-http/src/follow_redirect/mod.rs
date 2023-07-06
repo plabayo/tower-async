@@ -189,7 +189,7 @@ where
     async fn call(&mut self, mut req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
         let mut method = req.method().clone();
         let uri = req.uri().clone();
-        let version = req.version().clone();
+        let version = req.version();
         let headers = req.headers().clone();
         let mut policy = self.policy.clone();
         let mut body = BodyRepr::None;

@@ -10,8 +10,8 @@
 //! use http_body::Body as _; // for Body::data
 //! use hyper::Body;
 //! use std::{error::Error, io::Write};
-//! use tower::{Service, ServiceBuilder, service_fn, ServiceExt};
-//! use tower_http::{BoxError, decompression::{DecompressionBody, RequestDecompressionLayer}};
+//! use tower_async::{Service, ServiceBuilder, service_fn, ServiceExt};
+//! use tower_async_http::{BoxError, decompression::{DecompressionBody, RequestDecompressionLayer}};
 //!
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), BoxError> {
@@ -52,8 +52,8 @@
 //! use http_body::Body as _; // for Body::data
 //! use hyper::Body;
 //! use std::convert::Infallible;
-//! use tower::{Service, ServiceExt, ServiceBuilder, service_fn};
-//! use tower_http::{compression::Compression, decompression::DecompressionLayer, BoxError};
+//! use tower_async::{Service, ServiceExt, ServiceBuilder, service_fn};
+//! use tower_async_http::{compression::Compression, decompression::DecompressionLayer, BoxError};
 //! #
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), tower_http::BoxError> {
@@ -77,8 +77,6 @@
 //! let request = Request::new(Body::empty());
 //!
 //! let response = client
-//!     .ready()
-//!     .await?
 //!     .call(request)
 //!     .await?;
 //!
@@ -100,16 +98,11 @@
 mod request;
 
 mod body;
-mod future;
 mod layer;
 mod service;
 
-pub use self::{
-    body::DecompressionBody, future::ResponseFuture, layer::DecompressionLayer,
-    service::Decompression,
-};
+pub use self::{body::DecompressionBody, layer::DecompressionLayer, service::Decompression};
 
-pub use self::request::future::RequestDecompressionFuture;
 pub use self::request::layer::RequestDecompressionLayer;
 pub use self::request::service::RequestDecompression;
 
@@ -124,7 +117,7 @@ mod tests {
     use http::Response;
     use http_body::Body as _;
     use hyper::{Body, Client, Error, Request};
-    use tower::{service_fn, Service, ServiceExt};
+    use tower_async::{service_fn, Service};
 
     #[tokio::test]
     async fn works() {
@@ -134,7 +127,7 @@ mod tests {
             .header("accept-encoding", "gzip")
             .body(Body::empty())
             .unwrap();
-        let res = client.ready().await.unwrap().call(req).await.unwrap();
+        let res = client.call(req).await.unwrap();
 
         // read the body, it will be decompressed automatically
         let mut body = res.into_body();
@@ -156,7 +149,7 @@ mod tests {
             .header("accept-encoding", "gzip")
             .body(Body::empty())
             .unwrap();
-        let res = client.ready().await.unwrap().call(req).await.unwrap();
+        let res = client.call(req).await.unwrap();
 
         // read the body, it will be decompressed automatically
         let mut body = res.into_body();
@@ -192,11 +185,11 @@ mod tests {
 
     #[allow(dead_code)]
     async fn is_compatible_with_hyper() {
-        let mut client = Decompression::new(Client::new());
+        use tower_async_bridge::AsyncServiceExt;
+        let mut client = Decompression::new(Client::new().into_async());
 
         let req = Request::new(Body::empty());
 
-        let _: Response<DecompressionBody<Body>> =
-            client.ready().await.unwrap().call(req).await.unwrap();
+        let _: Response<DecompressionBody<Body>> = client.call(req).await.unwrap();
     }
 }

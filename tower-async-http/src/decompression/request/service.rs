@@ -1,4 +1,3 @@
-use super::future::RequestDecompressionFuture as ResponseFuture;
 use super::layer::RequestDecompressionLayer;
 use crate::compression_utils::CompressionLevel;
 use crate::{
@@ -6,7 +5,8 @@ use crate::{
     decompression::DecompressionBody, BoxError,
 };
 use bytes::Buf;
-use http::{header, Request, Response};
+use http::{header, HeaderValue, Request, Response, StatusCode};
+use http_body::Empty;
 use http_body::{combinators::UnsyncBoxBody, Body};
 use tower_async_service::Service;
 
@@ -92,15 +92,38 @@ where
                     }
                     b"identity" => BodyInner::identity(body),
                     _ if self.pass_through_unaccepted => BodyInner::identity(body),
-                    _ => return ResponseFuture::unsupported_encoding(self.accept).await,
+                    _ => return unsupported_encoding(self.accept).await,
                 }
             } else {
                 BodyInner::identity(body)
             };
         let body = DecompressionBody::new(body);
         let req = Request::from_parts(parts, body);
-        ResponseFuture::inner(self.inner.call(req)).await
+        self.inner
+            .call(req)
+            .await
+            .map(|res| res.map(|body| body.map_err(Into::into).boxed_unsync()))
+            .map_err(Into::into)
     }
+}
+
+async fn unsupported_encoding<D>(
+    accept: AcceptEncoding,
+) -> Result<Response<UnsyncBoxBody<D, BoxError>>, BoxError>
+where
+    D: Buf + 'static,
+{
+    let res = Response::builder()
+        .header(
+            header::ACCEPT_ENCODING,
+            accept
+                .to_header_value()
+                .unwrap_or(HeaderValue::from_static("identity")),
+        )
+        .status(StatusCode::UNSUPPORTED_MEDIA_TYPE)
+        .body(Empty::new().map_err(Into::into).boxed_unsync())
+        .unwrap();
+    Ok(res)
 }
 
 impl<S> RequestDecompression<S> {

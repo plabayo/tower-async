@@ -38,6 +38,7 @@ tower-async = { version = "0.1", path = "../tower-async", optional = true }
 tracing = { version = "0.1", default_features = false, optional = true }
 httpdate = { version = "1.0", optional = true }
 uuid = { version = "1.0", features = ["v4"], optional = true }
+tower-async-bridge = { version = "0.1", path = "../tower-async-bridge" }
 
 [dev-dependencies]
 bytes = "1"
