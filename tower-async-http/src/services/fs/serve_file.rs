@@ -1,7 +1,7 @@
 //! Service that serves a file.
 
 use super::ServeDir;
-use http::{HeaderValue, Request};
+use http::{HeaderValue, Request, Response};
 use mime::Mime;
 use std::path::Path;
 use tower_async_service::Service;
@@ -92,14 +92,15 @@ impl ServeFile {
     /// happened.
     ///
     /// See [`ServeDir::try_call`] for more details.
-    pub fn try_call<ReqBody>(
+    #[inline]
+    pub async fn try_call<ReqBody>(
         &mut self,
         req: Request<ReqBody>,
-    ) -> super::serve_dir::future::ResponseFuture<ReqBody>
+    ) -> Result<Response<super::serve_dir::ResponseBody>, std::io::Error>
     where
         ReqBody: Send + 'static,
     {
-        self.0.try_call(req)
+        self.0.try_call(req).await
     }
 }
 

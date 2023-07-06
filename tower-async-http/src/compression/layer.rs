@@ -131,7 +131,7 @@ mod tests {
     use bytes::{Bytes, BytesMut};
     use std::convert::Infallible;
     use tokio_util::io::ReaderStream;
-    use tower_async::{Service, ServiceBuilder, ServiceExt};
+    use tower_async::{Service, ServiceBuilder};
 
     async fn handle(_req: Request<Body>) -> Result<Response<Body>, Infallible> {
         // Open the file.

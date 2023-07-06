@@ -1,10 +1,8 @@
-use self::future::ResponseFuture;
 use crate::{
     content_encoding::{encodings, SupportedEncodings},
     set_status::SetStatus,
 };
 use bytes::Bytes;
-use futures_util::FutureExt;
 use http::{header, HeaderValue, Method, Request, Response, StatusCode};
 use http_body::{combinators::UnsyncBoxBody, Body, Empty};
 use percent_encoding::percent_decode;
@@ -12,7 +10,6 @@ use std::{
     convert::Infallible,
     io,
     path::{Component, Path, PathBuf},
-    task::{Context, Poll},
 };
 use tower_async_service::Service;
 
@@ -338,10 +335,10 @@ impl<F> ServeDir<F> {
     ///     .expect("server error");
     /// # };
     /// ```
-    pub fn try_call<ReqBody, FResBody>(
+    pub async fn try_call<ReqBody, FResBody>(
         &mut self,
         req: Request<ReqBody>,
-    ) -> ResponseFuture<ReqBody, F>
+    ) -> Result<Response<ResponseBody>, std::io::Error>
     where
         F: Service<Request<ReqBody>, Response = Response<FResBody>, Error = Infallible> + Clone,
         FResBody: http_body::Body<Data = Bytes> + Send + 'static,
@@ -350,12 +347,10 @@ impl<F> ServeDir<F> {
         if req.method() != Method::GET && req.method() != Method::HEAD {
             if self.call_fallback_on_method_not_allowed {
                 if let Some(fallback) = &mut self.fallback {
-                    return ResponseFuture {
-                        inner: future::call_fallback(fallback, req),
-                    };
+                    return future::call_fallback(fallback, req).await;
                 }
             } else {
-                return ResponseFuture::method_not_allowed();
+                return Ok(future::method_not_allowed());
             }
         }
 
@@ -368,7 +363,7 @@ impl<F> ServeDir<F> {
         let extensions = std::mem::take(&mut parts.extensions);
         let req = Request::from_parts(parts, Empty::<Bytes>::new());
 
-        let fallback_and_request = self.fallback.as_mut().map(|fallback| {
+        let mut fallback_and_request = self.fallback.as_mut().map(|fallback| {
             let mut fallback_req = Request::new(body);
             *fallback_req.method_mut() = req.method().clone();
             *fallback_req.uri_mut() = req.uri().clone();
@@ -388,7 +383,11 @@ impl<F> ServeDir<F> {
         {
             Some(path_to_file) => path_to_file,
             None => {
-                return ResponseFuture::invalid_path(fallback_and_request);
+                return if let Some((mut fallback, request)) = fallback_and_request.take() {
+                    future::call_fallback(&mut fallback, request).await
+                } else {
+                    Ok(future::not_found())
+                };
             }
         };
 
@@ -415,7 +414,7 @@ impl<F> ServeDir<F> {
             buf_chunk_size,
         ));
 
-        ResponseFuture::open_file_future(open_file_future, fallback_and_request)
+        future::open_file(open_file_future, fallback_and_request).await
     }
 }
 
@@ -429,7 +428,8 @@ where
     type Error = Infallible;
 
     async fn call(&mut self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
-        Ok(self.try_call(req).await.unwrap_or_else(|err| {
+        let result = self.try_call(req).await;
+        Ok(result.unwrap_or_else(|err| {
             tracing::error!(error = %err, "Failed to read file");
 
             let body = ResponseBody::new(Empty::new().map_err(|err| match err {}).boxed_unsync());
@@ -439,15 +439,6 @@ where
                 .unwrap()
         }))
     }
-}
-
-opaque_future! {
-    /// Response future of [`ServeDir`].
-    pub type InfallibleResponseFuture<ReqBody, F> =
-        futures_util::future::Map<
-            ResponseFuture<ReqBody, F>,
-            fn(Result<Response<ResponseBody>, io::Error>) -> Result<Response<ResponseBody>, Infallible>,
-        >;
 }
 
 // Allow the ServeDir service to be used in the ServeFile service

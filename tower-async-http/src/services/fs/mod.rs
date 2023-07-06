@@ -18,7 +18,6 @@ mod serve_file;
 
 pub use self::{
     serve_dir::{
-        future::ResponseFuture as ServeFileSystemResponseFuture,
         DefaultServeDirFallback,
         // The response body and future are used for both ServeDir and ServeFile
         ResponseBody as ServeFileSystemResponseBody,
