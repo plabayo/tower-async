@@ -29,7 +29,6 @@ use tower_async_layer::Stack;
 ///     // Methods from tower
 ///     .timeout(Duration::from_secs(30))
 ///     // Methods from tower-http
-///     .trace_for_http()
 ///     .compression()
 ///     .propagate_header(HeaderName::from_static("x-request-id"))
 ///     .service_fn(handle);

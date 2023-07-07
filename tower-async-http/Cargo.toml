@@ -68,7 +68,6 @@ full = [
     "limit",
     "map-request-body",
     "map-response-body",
-    "metrics",
     "normalize-path",
     "propagate-header",
     "redirect",
@@ -90,7 +89,6 @@ fs = ["tokio/fs", "tokio-util/io", "tokio/io-util", "mime_guess", "mime", "perce
 limit = []
 map-request-body = []
 map-response-body = []
-metrics = ["tokio/time"]
 normalize-path = []
 propagate-header = []
 redirect = []
@@ -98,7 +96,7 @@ request-id = ["uuid"]
 sensitive-headers = []
 set-header = []
 set-status = []
-timeout = ["tokio/time"]
+timeout = ["tokio/time", "tower-async/timeout"]
 util = ["tower-async"]
 validate-request = ["mime"]
 

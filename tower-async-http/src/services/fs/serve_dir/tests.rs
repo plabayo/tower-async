@@ -8,7 +8,7 @@ use http::{Request, StatusCode};
 use http_body::Body as HttpBody;
 use hyper::Body;
 use std::convert::Infallible;
-use std::io::{self, Read};
+use std::io::Read;
 use tower_async::{service_fn, ServiceExt};
 
 #[tokio::test]
@@ -32,7 +32,7 @@ async fn basic() {
 
 #[tokio::test]
 async fn basic_with_index() {
-    let svc = ServeDir::new("../test-files");
+    let svc = ServeDir::new("./test-files");
 
     let req = Request::new(Body::empty());
     let res = svc.oneshot(req).await.unwrap();
@@ -46,7 +46,7 @@ async fn basic_with_index() {
 
 #[tokio::test]
 async fn head_request() {
-    let svc = ServeDir::new("../test-files");
+    let svc = ServeDir::new("./test-files");
 
     let req = Request::builder()
         .uri("/precompressed.txt")
@@ -65,7 +65,7 @@ async fn head_request() {
 
 #[tokio::test]
 async fn precompresed_head_request() {
-    let svc = ServeDir::new("../test-files").precompressed_gzip();
+    let svc = ServeDir::new("./test-files").precompressed_gzip();
 
     let req = Request::builder()
         .uri("/precompressed.txt")
@@ -85,7 +85,7 @@ async fn precompresed_head_request() {
 
 #[tokio::test]
 async fn with_custom_chunk_size() {
-    let svc = ServeDir::new("..").with_buf_chunk_size(1024 * 32);
+    let svc = ServeDir::new(".").with_buf_chunk_size(1024 * 32);
 
     let req = Request::builder()
         .uri("/README.md")
@@ -98,13 +98,13 @@ async fn with_custom_chunk_size() {
 
     let body = body_into_text(res.into_body()).await;
 
-    let contents = std::fs::read_to_string("../README.md").unwrap();
+    let contents = std::fs::read_to_string("./README.md").unwrap();
     assert_eq!(body, contents);
 }
 
 #[tokio::test]
 async fn precompressed_gzip() {
-    let svc = ServeDir::new("../test-files").precompressed_gzip();
+    let svc = ServeDir::new("./test-files").precompressed_gzip();
 
     let req = Request::builder()
         .uri("/precompressed.txt")
@@ -125,7 +125,7 @@ async fn precompressed_gzip() {
 
 #[tokio::test]
 async fn precompressed_br() {
-    let svc = ServeDir::new("../test-files").precompressed_br();
+    let svc = ServeDir::new("./test-files").precompressed_br();
 
     let req = Request::builder()
         .uri("/precompressed.txt")
@@ -146,7 +146,7 @@ async fn precompressed_br() {
 
 #[tokio::test]
 async fn precompressed_deflate() {
-    let svc = ServeDir::new("../test-files").precompressed_deflate();
+    let svc = ServeDir::new("./test-files").precompressed_deflate();
     let request = Request::builder()
         .uri("/precompressed.txt")
         .header("Accept-Encoding", "deflate,br")
@@ -166,7 +166,7 @@ async fn precompressed_deflate() {
 
 #[tokio::test]
 async fn unsupported_precompression_alogrithm_fallbacks_to_uncompressed() {
-    let svc = ServeDir::new("../test-files").precompressed_gzip();
+    let svc = ServeDir::new("./test-files").precompressed_gzip();
 
     let request = Request::builder()
         .uri("/precompressed.txt")
@@ -185,7 +185,7 @@ async fn unsupported_precompression_alogrithm_fallbacks_to_uncompressed() {
 
 #[tokio::test]
 async fn only_precompressed_variant_existing() {
-    let svc = ServeDir::new("../test-files").precompressed_gzip();
+    let svc = ServeDir::new("./test-files").precompressed_gzip();
 
     let request = Request::builder()
         .uri("/only_gzipped.txt")
@@ -215,7 +215,7 @@ async fn only_precompressed_variant_existing() {
 
 #[tokio::test]
 async fn missing_precompressed_variant_fallbacks_to_uncompressed() {
-    let svc = ServeDir::new("../test-files").precompressed_gzip();
+    let svc = ServeDir::new("./test-files").precompressed_gzip();
 
     let request = Request::builder()
         .uri("/missing_precompressed.txt")
@@ -235,7 +235,7 @@ async fn missing_precompressed_variant_fallbacks_to_uncompressed() {
 
 #[tokio::test]
 async fn missing_precompressed_variant_fallbacks_to_uncompressed_for_head_request() {
-    let svc = ServeDir::new("../test-files").precompressed_gzip();
+    let svc = ServeDir::new("./test-files").precompressed_gzip();
 
     let request = Request::builder()
         .uri("/missing_precompressed.txt")
@@ -258,7 +258,7 @@ async fn access_to_sub_dirs() {
     let svc = ServeDir::new("..");
 
     let req = Request::builder()
-        .uri("/tower-http/Cargo.toml")
+        .uri("/tower-async-http/Cargo.toml")
         .body(Body::empty())
         .unwrap();
     let res = svc.oneshot(req).await.unwrap();
@@ -292,7 +292,7 @@ async fn not_found() {
 #[cfg(unix)]
 #[tokio::test]
 async fn not_found_when_not_a_directory() {
-    let svc = ServeDir::new("../test-files");
+    let svc = ServeDir::new("./test-files");
 
     // `index.html` is a file, and we are trying to request
     // it as a directory.
@@ -312,7 +312,7 @@ async fn not_found_when_not_a_directory() {
 
 #[tokio::test]
 async fn not_found_precompressed() {
-    let svc = ServeDir::new("../test-files").precompressed_gzip();
+    let svc = ServeDir::new("./test-files").precompressed_gzip();
 
     let req = Request::builder()
         .uri("/not-found")
@@ -330,7 +330,7 @@ async fn not_found_precompressed() {
 
 #[tokio::test]
 async fn fallbacks_to_different_precompressed_variant_if_not_found_for_head_request() {
-    let svc = ServeDir::new("../test-files")
+    let svc = ServeDir::new("./test-files")
         .precompressed_gzip()
         .precompressed_br();
 
@@ -351,7 +351,7 @@ async fn fallbacks_to_different_precompressed_variant_if_not_found_for_head_requ
 
 #[tokio::test]
 async fn fallbacks_to_different_precompressed_variant_if_not_found() {
-    let svc = ServeDir::new("../test-files")
+    let svc = ServeDir::new("./test-files")
         .precompressed_gzip()
         .precompressed_br();
 
@@ -413,7 +413,7 @@ async fn access_cjk_percent_encoded_uri_path() {
     // percent encoding present of 你好世界.txt
     let cjk_filename_encoded = "%E4%BD%A0%E5%A5%BD%E4%B8%96%E7%95%8C.txt";
 
-    let svc = ServeDir::new("../test-files");
+    let svc = ServeDir::new("./test-files");
 
     let req = Request::builder()
         .uri(format!("/{}", cjk_filename_encoded))
@@ -429,7 +429,7 @@ async fn access_cjk_percent_encoded_uri_path() {
 async fn access_space_percent_encoded_uri_path() {
     let encoded_filename = "filename%20with%20space.txt";
 
-    let svc = ServeDir::new("../test-files");
+    let svc = ServeDir::new("./test-files");
 
     let req = Request::builder()
         .uri(format!("/{}", encoded_filename))

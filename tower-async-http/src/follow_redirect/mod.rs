@@ -93,7 +93,9 @@
 pub mod policy;
 
 use self::policy::{Action, Attempt, Policy, Standard};
-use http::{header::LOCATION, Method, Request, Response, StatusCode, Uri};
+use http::{
+    header::LOCATION, HeaderMap, HeaderValue, Method, Request, Response, StatusCode, Uri, Version,
+};
 use http_body::Body;
 use iri_string::types::{UriAbsoluteString, UriReferenceStr};
 use std::{convert::TryFrom, mem, str};
@@ -177,82 +179,93 @@ where
     define_inner_service_accessors!();
 }
 
+struct RedirectServiceState<B> {
+    method: Method,
+    uri: Uri,
+    version: Version,
+    headers: HeaderMap<HeaderValue>,
+    body: BodyRepr<B>,
+}
+
 impl<ReqBody, ResBody, S, P> Service<Request<ReqBody>> for FollowRedirect<S, P>
 where
-    S: Service<Request<ReqBody>, Response = Response<ResBody>> + Clone,
+    S: Service<Request<ReqBody>, Response = Response<ResBody>>,
     ReqBody: Body + Default,
-    P: Policy<ReqBody, S::Error> + Clone,
+    P: Policy<ReqBody, S::Error>,
 {
     type Response = Response<ResBody>;
     type Error = S::Error;
 
     async fn call(&mut self, mut req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
-        let mut method = req.method().clone();
-        let uri = req.uri().clone();
-        let version = req.version();
-        let headers = req.headers().clone();
-        let mut policy = self.policy.clone();
-        let mut body = BodyRepr::None;
-        body.try_clone_from(req.body(), &policy);
-        policy.on_request(&mut req);
+        let mut this = RedirectServiceState {
+            method: req.method().clone(),
+            uri: req.uri().clone(),
+            version: req.version(),
+            headers: req.headers().clone(),
+            body: BodyRepr::None,
+        };
+        this.body.try_clone_from(req.body(), &self.policy);
+        self.policy.on_request(&mut req);
 
-        let mut res = self.inner.call(req).await?;
-        res.extensions_mut().insert(RequestUri(uri.clone()));
+        loop {
+            let mut res = self.inner.call(req).await?;
+            res.extensions_mut().insert(RequestUri(this.uri.clone()));
 
-        match res.status() {
-            StatusCode::MOVED_PERMANENTLY | StatusCode::FOUND => {
-                // User agents MAY change the request method from POST to GET
-                // (RFC 7231 section 6.4.2. and 6.4.3.).
-                if method == Method::POST {
-                    method = Method::GET;
-                    body = BodyRepr::Empty;
+            match res.status() {
+                StatusCode::MOVED_PERMANENTLY | StatusCode::FOUND => {
+                    // User agents MAY change the request method from POST to GET
+                    // (RFC 7231 section 6.4.2. and 6.4.3.).
+                    if this.method == Method::POST {
+                        this.method = Method::GET;
+                        this.body = BodyRepr::Empty;
+                    }
                 }
-            }
-            StatusCode::SEE_OTHER => {
-                // A user agent can perform a GET or HEAD request (RFC 7231 section 6.4.4.).
-                if method != Method::HEAD {
-                    method = Method::GET;
+                StatusCode::SEE_OTHER => {
+                    // A user agent can perform a GET or HEAD request (RFC 7231 section 6.4.4.).
+                    if this.method != Method::HEAD {
+                        this.method = Method::GET;
+                    }
+                    this.body = BodyRepr::Empty;
                 }
-                body = BodyRepr::Empty;
+                StatusCode::TEMPORARY_REDIRECT | StatusCode::PERMANENT_REDIRECT => {}
+                _ => return Ok(res),
+            };
+
+            let body = if let Some(body) = this.body.take() {
+                body
+            } else {
+                return Ok(res);
+            };
+
+            let location = res
+                .headers()
+                .get(&LOCATION)
+                .and_then(|loc| resolve_uri(str::from_utf8(loc.as_bytes()).ok()?, &this.uri));
+            let location = if let Some(loc) = location {
+                loc
+            } else {
+                return Ok(res);
+            };
+
+            let attempt = Attempt {
+                status: res.status(),
+                location: &location,
+                previous: &this.uri,
+            };
+            match self.policy.redirect(&attempt)? {
+                Action::Follow => {
+                    this.uri = location;
+                    this.body.try_clone_from(&body, &self.policy);
+
+                    req = Request::new(body);
+                    *req.uri_mut() = this.uri.clone();
+                    *req.method_mut() = this.method.clone();
+                    *req.version_mut() = this.version;
+                    *req.headers_mut() = this.headers.clone();
+                    self.policy.on_request(&mut req);
+                }
+                Action::Stop => return Ok(res),
             }
-            StatusCode::TEMPORARY_REDIRECT | StatusCode::PERMANENT_REDIRECT => {}
-            _ => return Ok(res),
-        };
-
-        let body = if let Some(body) = body.take() {
-            body
-        } else {
-            return Ok(res);
-        };
-
-        let location = res
-            .headers()
-            .get(&LOCATION)
-            .and_then(|loc| resolve_uri(str::from_utf8(loc.as_bytes()).ok()?, &uri));
-        let location = if let Some(loc) = location {
-            loc
-        } else {
-            return Ok(res);
-        };
-
-        let attempt = Attempt {
-            status: res.status(),
-            location: &location,
-            previous: &uri,
-        };
-        match policy.redirect(&attempt)? {
-            Action::Follow => {
-                let mut req = Request::new(body);
-                *req.uri_mut() = location;
-                *req.method_mut() = method;
-                *req.version_mut() = version;
-                *req.headers_mut() = headers;
-
-                policy.on_request(&mut req);
-
-                self.inner.call(req).await
-            }
-            Action::Stop => Ok(res),
         }
     }
 }

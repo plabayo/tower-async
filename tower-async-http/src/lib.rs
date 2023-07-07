@@ -23,6 +23,7 @@
 //!     set_header::SetResponseHeaderLayer,
 //!     validate_request::ValidateRequestHeaderLayer,
 //! };
+//! use tower_async_bridge::ClassicServiceExt;
 //! use tower_async::{ServiceBuilder, service_fn, make::Shared};
 //! use http::{Request, Response, header::{HeaderName, CONTENT_TYPE, AUTHORIZATION}};
 //! use hyper::{Body, Error, server::Server, service::make_service_fn};
@@ -76,7 +77,7 @@
 //!     // And run our service using `hyper`
 //!     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
 //!     Server::bind(&addr)
-//!         .serve(Shared::new(service))
+//!         .serve(Shared::new(service).into_classic())
 //!         .await
 //!         .expect("server error");
 //! }
@@ -94,6 +95,7 @@
 //!     decompression::DecompressionLayer,
 //!     set_header::SetRequestHeaderLayer,
 //! };
+//! use tower_async_bridge::AsyncServiceExt;
 //! use tower_async::{ServiceBuilder, Service, ServiceExt};
 //! use hyper::Body;
 //! use http::{Request, HeaderValue, header::USER_AGENT};
@@ -111,7 +113,7 @@
 //!         // Wrap a `hyper::Client` in our middleware stack.
 //!         // This is possible because `hyper::Client` implements
 //!         // `tower_async::Service`.
-//!         .service(hyper::Client::new());
+//!         .service(hyper::Client::new().into_async());
 //!
 //!     // Make a request
 //!     let request = Request::builder()
@@ -283,9 +285,6 @@ pub mod follow_redirect;
 
 #[cfg(feature = "limit")]
 pub mod limit;
-
-#[cfg(feature = "metrics")]
-pub mod metrics;
 
 #[cfg(feature = "cors")]
 pub mod cors;

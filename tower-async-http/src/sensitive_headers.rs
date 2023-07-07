@@ -31,7 +31,6 @@
 //!
 //! // Call the service.
 //! let response = service
-
 //!     .call(Request::new(Body::empty()))
 //!     .await?;
 //! # Ok(())

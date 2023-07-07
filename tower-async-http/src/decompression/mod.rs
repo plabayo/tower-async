@@ -29,7 +29,7 @@
 //!     .service(service_fn(handler));
 //!
 //! // Send the request, with the gzip encoded body, to our server.
-//! let _response = server.ready().await?.call(request).await?;
+//! let _response = server.call(request).await?;
 //!
 //! // Handler receives request whose body is decoded when read
 //! async fn handler(mut req: Request<DecompressionBody<Body>>) -> Result<Response<Body>, BoxError>{
@@ -56,7 +56,7 @@
 //! use tower_async_http::{compression::Compression, decompression::DecompressionLayer, BoxError};
 //! #
 //! # #[tokio::main]
-//! # async fn main() -> Result<(), tower_http::BoxError> {
+//! # async fn main() -> Result<(), tower_async_http::BoxError> {
 //! # async fn handle(req: Request<Body>) -> Result<Response<Body>, Infallible> {
 //! #     let body = Body::from("Hello, World!");
 //! #     Ok(Response::new(body))

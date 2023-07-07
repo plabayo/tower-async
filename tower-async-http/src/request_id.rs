@@ -103,60 +103,6 @@
 //!
 //! See [`SetRequestId`] and [`PropagateRequestId`] for more details.
 //!
-//! # Using `Trace`
-//!
-//! To have request ids show up correctly in logs produced by [`Trace`] you must apply the layers
-//! in this order:
-//!
-//! ```
-//! use tower_async_http::{
-//!     ServiceBuilderExt,
-//!     trace::{TraceLayer, DefaultMakeSpan, DefaultOnResponse},
-//! };
-//! # use http::{Request, Response, header::HeaderName};
-//! # use tower_async::{Service, ServiceExt, ServiceBuilder};
-//! # use tower_async_http::request_id::{
-//! #     SetRequestIdLayer, PropagateRequestIdLayer, MakeRequestId, RequestId,
-//! # };
-//! # use hyper::Body;
-//! # use std::sync::{Arc, atomic::{AtomicU64, Ordering}};
-//! # #[tokio::main]
-//! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! # let handler = tower_async::service_fn(|request: Request<Body>| async move {
-//! #     Ok::<_, std::convert::Infallible>(Response::new(request.into_body()))
-//! # });
-//! # #[derive(Clone, Default)]
-//! # struct MyMakeRequestId {
-//! #     counter: Arc<AtomicU64>,
-//! # }
-//! # impl MakeRequestId for MyMakeRequestId {
-//! #     fn make_request_id<B>(&mut self, request: &Request<B>) -> Option<RequestId> {
-//! #         let request_id = self.counter
-//! #             .fetch_add(1, Ordering::SeqCst)
-//! #             .to_string()
-//! #             .parse()
-//! #             .unwrap();
-//! #         Some(RequestId::new(request_id))
-//! #     }
-//! # }
-//!
-//! let svc = ServiceBuilder::new()
-//!     // make sure to set request ids before the request reaches `TraceLayer`
-//!     .set_x_request_id(MyMakeRequestId::default())
-//!     // log requests and responses
-//!     .layer(
-//!         TraceLayer::new_for_http()
-//!             .make_span_with(DefaultMakeSpan::new().include_headers(true))
-//!             .on_response(DefaultOnResponse::new().include_headers(true))
-//!     )
-//!     // propagate the header to the response before the response reaches `TraceLayer`
-//!     .propagate_x_request_id()
-//!     .service(handler);
-//! #
-//! # Ok(())
-//! # }
-//! ```
-//!
 //! # Doesn't override existing headers
 //!
 //! [`SetRequestId`] and [`PropagateRequestId`] wont override request ids if its already present on
@@ -165,7 +111,6 @@
 //!
 //! [`ServiceBuilderExt`]: crate::ServiceBuilderExt
 //! [`Uuid`]: https://crates.io/crates/uuid
-//! [`Trace`]: crate::trace::Trace
 
 use http::{
     header::{HeaderName, HeaderValue},
