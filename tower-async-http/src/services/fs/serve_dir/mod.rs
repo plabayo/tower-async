@@ -292,24 +292,15 @@ impl<F> ServeDir<F> {
     /// use http_body::{combinators::UnsyncBoxBody, Body as _};
     /// use hyper::Body;
     /// use bytes::Bytes;
-    /// use tower_async::{service_fn, ServiceExt, BoxError};
+    /// use tower_async_bridge::ClassicServiceExt;
+    /// use tower_async::{service_fn, ServiceExt, BoxError, make::Shared};
     ///
     /// async fn serve_dir(
     ///     request: Request<Body>
     /// ) -> Result<Response<UnsyncBoxBody<Bytes, BoxError>>, Infallible> {
     ///     let mut service = ServeDir::new("assets");
     ///
-    ///     // You only need to worry about backpressure, and thus call `ServiceExt::ready`, if
-    ///     // your adding a fallback to `ServeDir` that cares about backpressure.
-    ///     //
-    ///     // Its shown here for demonstration but you can do `service.try_call(request)`
-    ///     // otherwise
-    ///     let ready_service = match ServiceExt::<Request<Body>>::ready(&mut service).await {
-    ///         Ok(ready_service) => ready_service,
-    ///         Err(infallible) => match infallible {},
-    ///     };
-    ///
-    ///     match ready_service.try_call(request).await {
+    ///     match service.try_call(request).await {
     ///         Ok(response) => {
     ///             Ok(response.map(|body| body.map_err(Into::into).boxed_unsync()))
     ///         }
@@ -330,7 +321,7 @@ impl<F> ServeDir<F> {
     /// // Run our service using `hyper`
     /// let addr = std::net::SocketAddr::from(([127, 0, 0, 1], 3000));
     /// hyper::Server::bind(&addr)
-    ///     .serve(tower_async::make::Shared::new(service_fn(serve_dir)))
+    ///     .serve(Shared::new(service_fn(serve_dir)).into_classic())
     ///     .await
     ///     .expect("server error");
     /// # };
