@@ -96,7 +96,7 @@ request-id = ["uuid"]
 sensitive-headers = []
 set-header = []
 set-status = []
-timeout = ["tokio/time"]
+timeout = ["tokio/time", "tokio/macros"]
 util = ["tower-async"]
 validate-request = ["mime"]
 
