@@ -67,6 +67,9 @@ Furthermore we also urge you to only use this kind of approach for transition pu
 Best in our opinion is to use one or the other and not to combine the two. But if you do absolutely must
 use one combined with the other, `tower-async-bridge` should allow you to do exactly that.
 
+You can find an Axum service example of this and why this might be useful at
+[./examples/tower-async-http/axum-key-value-store](./examples/tower-async-http/axum-key-value-store/README.md).
+
 ## Supported Rust Versions
 
 Tower Async requires nightly Rust for the time being and has no backwards compatibility
