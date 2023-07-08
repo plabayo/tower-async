@@ -17,7 +17,8 @@ impl<S, Request> ClassicServiceExt<Request> for S where S: tower_async_service::
 mod tests {
     use super::*;
     use std::convert::Infallible;
-    use tower::{Service, ServiceExt};
+    use tower::{make::Shared, MakeService, Service, ServiceExt};
+    use tower_async::service_fn;
 
     #[derive(Debug)]
     struct AsyncEchoService;
@@ -76,5 +77,20 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(response, "hello");
+    }
+
+    async fn echo<R>(req: R) -> Result<R, Infallible> {
+        Ok(req)
+    }
+
+    #[tokio::test]
+    async fn as_make_service() {
+        let mut service = Shared::new(service_fn(echo::<&'static str>).into_classic());
+
+        let mut svc = service.make_service(()).await.unwrap();
+
+        let res = svc.ready().await.unwrap().call("foo").await.unwrap();
+
+        assert_eq!(res, "foo");
     }
 }

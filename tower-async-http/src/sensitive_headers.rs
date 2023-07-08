@@ -36,49 +36,6 @@
 //! # Ok(())
 //! # }
 //! ```
-//!
-//! Its important to think about the order in which requests and responses arrive at your
-//! middleware. For example to hide headers both on requests and responses when using
-//! [`TraceLayer`] you have to apply [`SetSensitiveRequestHeadersLayer`] before [`TraceLayer`]
-//! and [`SetSensitiveResponseHeadersLayer`] afterwards.
-//!
-//! ```
-//! use tower_async_http::{
-//!     trace::TraceLayer,
-//!     sensitive_headers::{
-//!         SetSensitiveRequestHeadersLayer,
-//!         SetSensitiveResponseHeadersLayer,
-//!     },
-//! };
-//! use tower_async::{Service, ServiceExt, ServiceBuilder, service_fn};
-//! use http::header;
-//! use std::sync::Arc;
-//! # use http::{Request, Response};
-//! # use hyper::Body;
-//! # use std::convert::Infallible;
-//! # async fn handle(req: Request<Body>) -> Result<Response<Body>, Infallible> {
-//! #     Ok(Response::new(Body::empty()))
-//! # }
-//!
-//! # #[tokio::main]
-//! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! let headers: Arc<[_]> = Arc::new([
-//!     header::AUTHORIZATION,
-//!     header::PROXY_AUTHORIZATION,
-//!     header::COOKIE,
-//!     header::SET_COOKIE,
-//! ]);
-//!
-//! let service = ServiceBuilder::new()
-//!     .layer(SetSensitiveRequestHeadersLayer::from_shared(Arc::clone(&headers)))
-//!     .layer(TraceLayer::new_for_http())
-//!     .layer(SetSensitiveResponseHeadersLayer::from_shared(headers))
-//!     .service_fn(handle);
-//! # Ok(())
-//! # }
-//! ```
-//!
-//! [`TraceLayer`]: crate::trace::TraceLayer
 
 use http::{header::HeaderName, Request, Response};
 use std::sync::Arc;

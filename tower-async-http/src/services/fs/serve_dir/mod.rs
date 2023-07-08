@@ -39,6 +39,7 @@ const DEFAULT_CAPACITY: usize = 65536;
 /// # Example
 ///
 /// ```
+/// use tower_async_bridge::ClassicServiceWrapper;
 /// use tower_async_http::services::ServeDir;
 ///
 /// // This will serve files in the "assets" directory and
@@ -49,7 +50,7 @@ const DEFAULT_CAPACITY: usize = 65536;
 /// // Run our service using `hyper`
 /// let addr = std::net::SocketAddr::from(([127, 0, 0, 1], 3000));
 /// hyper::Server::bind(&addr)
-///     .serve(tower_async::make::Shared::new(service))
+///     .serve(tower::make::Shared::new(ClassicServiceWrapper::new(service)))
 ///     .await
 ///     .expect("server error");
 /// # };
@@ -208,6 +209,7 @@ impl<F> ServeDir<F> {
     /// This can be used to respond with a different file:
     ///
     /// ```rust
+    /// use tower_async_bridge::ClassicServiceWrapper;
     /// use tower_async_http::services::{ServeDir, ServeFile};
     ///
     /// let service = ServeDir::new("assets")
@@ -218,7 +220,7 @@ impl<F> ServeDir<F> {
     /// // Run our service using `hyper`
     /// let addr = std::net::SocketAddr::from(([127, 0, 0, 1], 3000));
     /// hyper::Server::bind(&addr)
-    ///     .serve(tower_async::make::Shared::new(service))
+    ///     .serve(tower::make::Shared::new(ClassicServiceWrapper::new(service)))
     ///     .await
     ///     .expect("server error");
     /// # };
@@ -243,17 +245,20 @@ impl<F> ServeDir<F> {
     /// This can be used to respond with a different file:
     ///
     /// ```rust
+    /// use tower_async_bridge::ClassicServiceWrapper;
     /// use tower_async_http::services::{ServeDir, ServeFile};
     ///
-    /// let service = ServeDir::new("assets")
+    /// let service = ClassicServiceWrapper::new(ServeDir::new("assets")
     ///     // respond with `404 Not Found` and the contents of `not_found.html` for missing files
-    ///     .not_found_service(ServeFile::new("assets/not_found.html"));
+    ///     .not_found_service(ServeFile::new("assets/not_found.html")));
+    ///
+    /// let service = tower::make::Shared::new(service);
     ///
     /// # async {
     /// // Run our service using `hyper`
     /// let addr = std::net::SocketAddr::from(([127, 0, 0, 1], 3000));
     /// hyper::Server::bind(&addr)
-    ///     .serve(tower_async::make::Shared::new(service))
+    ///     .serve(service)
     ///     .await
     ///     .expect("server error");
     /// # };
@@ -292,8 +297,9 @@ impl<F> ServeDir<F> {
     /// use http_body::{combinators::UnsyncBoxBody, Body as _};
     /// use hyper::Body;
     /// use bytes::Bytes;
-    /// use tower_async_bridge::ClassicServiceExt;
-    /// use tower_async::{service_fn, ServiceExt, BoxError, make::Shared};
+    /// use tower_async_bridge::ClassicServiceWrapper;
+    /// use tower_async::{service_fn, ServiceExt, BoxError};
+    /// use tower::make::Shared;
     ///
     /// async fn serve_dir(
     ///     request: Request<Body>
@@ -321,7 +327,7 @@ impl<F> ServeDir<F> {
     /// // Run our service using `hyper`
     /// let addr = std::net::SocketAddr::from(([127, 0, 0, 1], 3000));
     /// hyper::Server::bind(&addr)
-    ///     .serve(Shared::new(service_fn(serve_dir)).into_classic())
+    ///     .serve(Shared::new(ClassicServiceWrapper::new(service_fn(serve_dir))))
     ///     .await
     ///     .expect("server error");
     /// # };

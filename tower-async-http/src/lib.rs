@@ -9,6 +9,9 @@
 //! they're compatible with any library or framework that also uses those crates, such as
 //! [hyper], [tonic], and [warp].
 //!
+//! Note that for these frameworks you do need to use the `tower-async-bridge` crate to convert
+//! between the `tower-async` and `tower` abstractions.
+//!
 //! # Example server
 //!
 //! This example shows how to apply middleware from tower-http to a [`Service`] and then run
@@ -24,7 +27,8 @@
 //!     validate_request::ValidateRequestHeaderLayer,
 //! };
 //! use tower_async_bridge::ClassicServiceExt;
-//! use tower_async::{ServiceBuilder, service_fn, make::Shared};
+//! use tower_async::{ServiceBuilder, service_fn};
+//! use tower::make::Shared;
 //! use http::{Request, Response, header::{HeaderName, CONTENT_TYPE, AUTHORIZATION}};
 //! use hyper::{Body, Error, server::Server, service::make_service_fn};
 //! use std::{sync::Arc, net::SocketAddr, convert::Infallible, iter::once};
@@ -74,10 +78,14 @@
 //!         // Wrap a `Service` in our middleware stack
 //!         .service_fn(handler);
 //!
+//!     // Turn the service into a shared classic one,
+//!     // so that it can be reused in a `hyper` server.
+//!     let service = Shared::new(service.into_classic());
+//!
 //!     // And run our service using `hyper`
 //!     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
 //!     Server::bind(&addr)
-//!         .serve(Shared::new(service).into_classic())
+//!         .serve(service)
 //!         .await
 //!         .expect("server error");
 //! }
@@ -132,11 +140,11 @@
 //!
 //! All middleware are disabled by default and can be enabled using [cargo features].
 //!
-//! For example, to enable the [`Auth`] middleware, add the "auth" feature flag in
+//! For example, to enable the [`Timeout`] middleware, add the "timeout" feature flag in
 //! your `Cargo.toml`:
 //!
 //! ```toml
-//! tower-async-http = { version = "0.1", features = ["auth"] }
+//! tower-async-http = { version = "0.1", features = ["timeout"] }
 //! ```
 //!
 //! You can use `"full"` to enable everything:
@@ -154,7 +162,7 @@
 //! [cargo features]: https://doc.rust-lang.org/cargo/reference/features.html
 //! [`AddExtension`]: crate::add_extension::AddExtension
 //! [`Service`]: https://docs.rs/tower-async/latest/tower-async/trait.Service.html
-//! [`Auth`]: crate::auth::Auth
+//! [`Timeout`]: crate::timeout::Timeout
 
 #![warn(
     clippy::all,

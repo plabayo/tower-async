@@ -35,7 +35,7 @@ impl<S> Decompression<S> {
 
     /// Returns a new [`Layer`] that wraps services with a `Decompression` middleware.
     ///
-    /// [`Layer`]: tower_layer::Layer
+    /// [`Layer`]: tower_async_layer::Layer
     pub fn layer() -> DecompressionLayer {
         DecompressionLayer::new()
     }

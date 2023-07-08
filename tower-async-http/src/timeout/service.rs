@@ -45,8 +45,6 @@ use tower_async_layer::Layer;
 use tower_async_service::Service;
 
 /// Layer that applies the [`Timeout`] middleware which apply a timeout to requests.
-///
-/// See the [module docs](self) for an example.
 #[derive(Debug, Clone, Copy)]
 pub struct TimeoutLayer {
     timeout: Duration,
@@ -71,8 +69,6 @@ impl<S> Layer<S> for TimeoutLayer {
 ///
 /// If the request does not complete within the specified timeout it will be aborted and a `408
 /// Request Timeout` response will be sent.
-///
-/// See the [module docs](self) for an example.
 #[derive(Debug, Clone, Copy)]
 pub struct Timeout<S> {
     inner: S,

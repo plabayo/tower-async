@@ -140,7 +140,7 @@ impl<S> RequestDecompression<S> {
 
     /// Returns a new [`Layer`] that wraps services with a `RequestDecompression` middleware.
     ///
-    /// [`Layer`]: tower_layer::Layer
+    /// [`Layer`]: tower_async_layer::Layer
     pub fn layer() -> RequestDecompressionLayer {
         RequestDecompressionLayer::new()
     }
