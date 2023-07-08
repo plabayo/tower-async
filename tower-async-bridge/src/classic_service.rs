@@ -15,8 +15,6 @@ impl<S, Request> ClassicServiceExt<Request> for S where S: tower_async_service::
 
 #[cfg(test)]
 mod tests {
-    use crate::ClassicServiceError;
-
     use super::*;
     use std::convert::Infallible;
     use tower::{Service, ServiceExt};
@@ -44,26 +42,6 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(response, "hello");
-    }
-
-    #[tokio::test]
-    async fn test_into_classic_twice() {
-        let mut service = AsyncEchoService.into_classic();
-        let response = service
-            .ready()
-            .await
-            .unwrap()
-            .call("hello".to_string())
-            .await
-            .unwrap();
-        assert_eq!(response, "hello");
-        let err = service.ready().await.unwrap_err();
-        if !matches!(err, ClassicServiceError::ServiceConsumed) {
-            panic!(
-                "expected ClassicServiceError::ServiceConsumed, got {:?}",
-                err
-            );
-        }
     }
 
     #[tokio::test]

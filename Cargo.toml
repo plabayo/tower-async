@@ -6,6 +6,7 @@ members = [
   "tower-async-bridge",
   "tower-async-layer",
   "tower-async-service",
+  "examples/tower-async-http/*",
 ]
 
 resolver = "2"

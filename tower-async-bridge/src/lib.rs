@@ -49,4 +49,4 @@ pub use async_wrapper::AsyncServiceWrapper;
 
 pub use classic_layer::{ClassicLayer, ClassicLayerExt};
 pub use classic_service::ClassicServiceExt;
-pub use classic_wrapper::{ClassicServiceError, ClassicServiceWrapper};
+pub use classic_wrapper::ClassicServiceWrapper;
