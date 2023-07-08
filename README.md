@@ -165,6 +165,15 @@ Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in Tower Async by you, shall be licensed as MIT, without any additional
 terms or conditions.
 
+We do not have a roadmap for Tower Async. But here are some ideas on what you can contribute:
+
+- bug reports;
+- spelling checks;
+- port over missing features from "classic" tower ecosystem;
+- make ported async tower code more idiomatic;
+- add a feature of your own desire;
+- fix an open issue.
+
 
 [`tower`]: https://docs.rs/tower/*/t
 [`tower::Service`]: https://docs.rs/tower/*/tower/trait.Service.html
