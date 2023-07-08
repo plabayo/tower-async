@@ -30,8 +30,10 @@ mod tests {
         time::Duration,
     };
 
-    use tower::Service;
-    use tower_async::{ServiceBuilder, ServiceExt};
+    use tower::{service_fn, Service};
+    use tower_async::{
+        make::Shared, MakeService, Service as AsyncService, ServiceBuilder, ServiceExt,
+    };
 
     struct EchoService;
 
@@ -73,5 +75,20 @@ mod tests {
 
         let response = service.oneshot("hello".to_string()).await.unwrap();
         assert_eq!(response, "hello");
+    }
+
+    async fn echo<R>(req: R) -> Result<R, Infallible> {
+        Ok(req)
+    }
+
+    #[tokio::test]
+    async fn as_make_service() {
+        let mut service = Shared::new(service_fn(echo::<&'static str>).into_async());
+
+        let mut svc = service.make_service(()).await.unwrap();
+
+        let res = svc.call("foo").await.unwrap();
+
+        assert_eq!(res, "foo");
     }
 }

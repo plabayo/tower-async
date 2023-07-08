@@ -15,11 +15,10 @@ impl<S, Request> ClassicServiceExt<Request> for S where S: tower_async_service::
 
 #[cfg(test)]
 mod tests {
-    use crate::ClassicServiceError;
-
     use super::*;
     use std::convert::Infallible;
-    use tower::{Service, ServiceExt};
+    use tower::{make::Shared, MakeService, Service, ServiceExt};
+    use tower_async::service_fn;
 
     #[derive(Debug)]
     struct AsyncEchoService;
@@ -44,26 +43,6 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(response, "hello");
-    }
-
-    #[tokio::test]
-    async fn test_into_classic_twice() {
-        let mut service = AsyncEchoService.into_classic();
-        let response = service
-            .ready()
-            .await
-            .unwrap()
-            .call("hello".to_string())
-            .await
-            .unwrap();
-        assert_eq!(response, "hello");
-        let err = service.ready().await.unwrap_err();
-        if !matches!(err, ClassicServiceError::ServiceConsumed) {
-            panic!(
-                "expected ClassicServiceError::ServiceConsumed, got {:?}",
-                err
-            );
-        }
     }
 
     #[tokio::test]
@@ -98,5 +77,20 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(response, "hello");
+    }
+
+    async fn echo<R>(req: R) -> Result<R, Infallible> {
+        Ok(req)
+    }
+
+    #[tokio::test]
+    async fn as_make_service() {
+        let mut service = Shared::new(service_fn(echo::<&'static str>).into_classic());
+
+        let mut svc = service.make_service(()).await.unwrap();
+
+        let res = svc.ready().await.unwrap().call("foo").await.unwrap();
+
+        assert_eq!(res, "foo");
     }
 }

@@ -144,6 +144,13 @@ here do we welcome contributions.
 And in general welcome any contributions.
 Best to do come and chat with us prior to starting any big endavours.
 
+> Where is the `tower-async-http` Classifier and Tracing code?
+
+As this feature requires on the Retry functionality of `tower`,
+which we have yet to port to `tower-async`, it is not yet available.
+
+We very much welcome contributions to make this a possibility.
+
 ## License
 
 This project is licensed under the [MIT license](LICENSE).
@@ -157,6 +164,15 @@ which licensed their code under the same License type.
 Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in Tower Async by you, shall be licensed as MIT, without any additional
 terms or conditions.
+
+We do not have a roadmap for Tower Async. But here are some ideas on what you can contribute:
+
+- bug reports;
+- spelling checks;
+- port over missing features from "classic" tower ecosystem;
+- make ported async tower code more idiomatic;
+- add a feature of your own desire;
+- fix an open issue.
 
 
 [`tower`]: https://docs.rs/tower/*/t

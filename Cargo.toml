@@ -2,9 +2,11 @@
 
 members = [
   "tower-async",
+  "tower-async-http",
   "tower-async-bridge",
   "tower-async-layer",
   "tower-async-service",
+  "examples/tower-async-http/*",
 ]
 
 resolver = "2"
