@@ -225,16 +225,109 @@ mod tests {
     use tower_async_layer::Identity;
 
     #[tokio::test]
-    async fn test_runner() {
-        // simple test showing how to use the runner,
-        // to test a `tower_async::Layer` implementation,
-        // in this case `tower_async_layer::Identity`.
+    async fn test_runner_ok_with_success() {
         let mut runner = TestRunner::new(&mut Identity::new());
 
         runner
             .test_ok("ping", "pong")
             .expect_request("ping")
             .expect_response("pong")
+            .run()
+            .await;
+    }
+
+    #[derive(Debug)]
+    struct ApologeticService<S> {
+        inner: S,
+    }
+
+    impl<S, Request> Service<Request> for ApologeticService<S>
+    where
+        S: Service<Request>,
+    {
+        type Response = ();
+        type Error = &'static str;
+
+        async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
+            let _ = self.inner.call(request).await;
+            Err("Sorry!")
+        }
+    }
+
+    struct ApolgeticLayer;
+
+    impl<S> Layer<S> for ApolgeticLayer {
+        type Service = ApologeticService<S>;
+
+        fn layer(&self, inner: S) -> Self::Service {
+            ApologeticService { inner }
+        }
+    }
+
+    #[tokio::test]
+    async fn test_runner_ok_with_failure() {
+        let mut runner = TestRunner::new(&mut ApolgeticLayer);
+
+        runner
+            .test_ok("ping", "pong")
+            .expect_request("ping")
+            .expect_error("Sorry!")
+            .run()
+            .await;
+    }
+
+    #[tokio::test]
+    async fn test_runner_err_with_error() {
+        let mut runner = TestRunner::new(&mut Identity::new());
+
+        runner
+            .test_err("ping", "oops")
+            .expect_request("ping")
+            .expect_error("oops")
+            .run()
+            .await;
+    }
+
+    #[derive(Debug)]
+    struct DebugFmtService<S> {
+        inner: S,
+    }
+
+    impl<S, Request> Service<Request> for DebugFmtService<S>
+    where
+        S: Service<Request>,
+        S::Response: std::fmt::Debug,
+        S::Error: std::fmt::Debug,
+    {
+        type Response = String;
+        type Error = Infallible;
+
+        async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
+            Ok(format!(
+                "DebugFmtService: {:?}",
+                self.inner.call(request).await
+            ))
+        }
+    }
+
+    struct DebugFmtLayer;
+
+    impl<S> Layer<S> for DebugFmtLayer {
+        type Service = DebugFmtService<S>;
+
+        fn layer(&self, inner: S) -> Self::Service {
+            DebugFmtService { inner }
+        }
+    }
+
+    #[tokio::test]
+    async fn test_runner_err_with_response() {
+        let mut runner = TestRunner::new(&mut DebugFmtLayer);
+
+        runner
+            .test_err("ping", "Sorry!")
+            .expect_request("ping")
+            .expect_response("DebugFmtService: Err(\"Sorry!\")".into())
             .run()
             .await;
     }
