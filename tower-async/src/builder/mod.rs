@@ -96,6 +96,21 @@ impl<L> ServiceBuilder<L> {
         self.layer(crate::layer::layer_fn(f))
     }
 
+    /// Retry failed requests according to the given [retry policy][policy].
+    ///
+    /// `policy` determines which failed requests will be retried. It must
+    /// implement the [`retry::Policy`][policy] trait.
+    ///
+    /// This wraps the inner service with an instance of the [`Retry`]
+    /// middleware.
+    ///
+    /// [`Retry`]: crate::retry
+    /// [policy]: crate::retry::Policy
+    #[cfg(feature = "retry")]
+    pub fn retry<P>(self, policy: P) -> ServiceBuilder<Stack<crate::retry::RetryLayer<P>, L>> {
+        self.layer(crate::retry::RetryLayer::new(policy))
+    }
+
     /// Fail requests that take longer than `timeout`.
     ///
     /// If the next layer takes more than `timeout` to respond to a request,

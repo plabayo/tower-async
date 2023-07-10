@@ -208,6 +208,8 @@ pub mod filter;
 
 #[cfg(feature = "make")]
 pub mod make;
+#[cfg(feature = "retry")]
+pub mod retry;
 #[cfg(feature = "timeout")]
 pub mod timeout;
 #[cfg(feature = "util")]

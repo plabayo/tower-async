@@ -1,0 +1,27 @@
+[package]
+name = "tower-async-test"
+# When releasing to crates.io:
+# - Update doc url
+#   - Cargo.toml
+#   - README.md
+# - Update CHANGELOG.md.
+# - Create "v0.1.x" git tag.
+version = "0.1.0"
+authors = ["Glen De Cauwsemaecker <glen@plabayo.tech>"]
+license = "MIT"
+repository = "https://github.com/plabayo/tower-async"
+homepage = "https://github.com/plabayo/tower-async"
+description = """
+Utilities for writing client and server `Service` tests.
+An "Async Trait" fork from the original Tower Library.
+"""
+categories = ["asynchronous", "network-programming"]
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1.0", features = ["sync"] }
+tower-async-layer = { version = "0.1", path = "../tower-async-layer" }
+tower-async-service = { version = "0.1", path = "../tower-async-service" }
+
+[dev-dependencies]
+tokio = { version = "1.0", features = ["macros", "rt"] }
