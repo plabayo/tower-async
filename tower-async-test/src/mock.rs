@@ -32,7 +32,12 @@ pub struct Mock<Request, Response, Error> {
 pub(crate) fn spawn<Request, Response, Error>() -> (
     Mock<Request, Response, Error>,
     SyncHandle<Request, Response, Error>,
-) {
+)
+where
+    Request: Send + Sync,
+    Response: Send + Sync,
+    Error: Send + Sync,
+{
     let handle = Arc::new(Mutex::new(Handle::new()));
     let mock = Mock {
         handle: handle.clone(),

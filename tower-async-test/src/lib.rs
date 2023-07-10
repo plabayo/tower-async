@@ -55,6 +55,10 @@ impl<L, Request, CoreResponse, CoreError>
     TestRunner<L, L::Service, Request, CoreResponse, CoreError>
 where
     L: Layer<mock::Mock<Request, CoreResponse, CoreError>>,
+    L::Service: Service<Request> + Send + Sync,
+    Request: Send + Sync,
+    CoreResponse: Send + Sync,
+    CoreError: Send + Sync,
 {
     /// Construct a new `TestRunner` that will run tests against the given layer.
     pub fn new(layer: &mut L) -> Self {
@@ -79,6 +83,7 @@ where
 {
     /// Construct a `TestBuilder` that will send the given request to the service,
     /// and where the innter (mocked) service will return the given success response.
+    #[allow(clippy::type_complexity)]
     pub fn test_ok(
         &mut self,
         request: Request,
@@ -108,6 +113,7 @@ where
 {
     /// Construct a `TestBuilder` that will send the given request to the service,
     /// and where the innter (mocked) service will return the given error.
+    #[allow(clippy::type_complexity)]
     pub fn test_err(
         &mut self,
         request: Request,
