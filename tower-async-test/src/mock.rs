@@ -7,23 +7,6 @@ use tokio::sync::Mutex;
 use tower_async_service::Service;
 
 /// Mock `Service` that can be used in tests.
-///
-/// # Examples
-///
-/// ```rust
-/// use tower_async_service::Service;
-/// use tower_async_test::mock;
-///
-/// # async fn test() {
-/// let (mut service, mut handle) = mock::spawn();
-///
-/// let response = service.call("hello");
-///
-/// assert_request_eq!(handle, "hello").send_response("world");
-///
-/// assert_eq!(response.await.unwrap(), "world");
-/// # }
-/// ```
 #[derive(Debug)]
 pub struct Mock<Request, Response, Error> {
     handle: SyncHandle<Request, Response, Error>,

@@ -27,6 +27,8 @@
 //! # Examples
 //!
 //! ```rust
+//! # #![allow(incomplete_features)]
+//! # #![feature(async_fn_in_trait)]
 //! use std::sync::Arc;
 //!
 //! use futures_util::future;
@@ -41,26 +43,24 @@
 //! }
 //!
 //! impl<E> Policy<Req, Res, E> for RetryPolicy {
-//!     type Future = future::Ready<()>;
-//!
-//!     fn retry(&mut self, req: &mut Req, result: &mut Result<Res, E>) -> Option<Self::Future> {
+//!     async fn retry(&mut self, req: &mut Req, result: &mut Result<Res, E>) -> bool {
 //!         match result {
 //!             Ok(_) => {
 //!                 // Treat all `Response`s as success,
 //!                 // so deposit budget and don't retry...
 //!                 self.budget.deposit();
-//!                 None
+//!                 false
 //!             }
 //!             Err(_) => {
 //!                 // Treat all errors as failures...
 //!                 // Withdraw the budget, don't retry if we overdrew.
 //!                 let withdrew = self.budget.withdraw();
 //!                 if !withdrew {
-//!                     return None;
+//!                     return false;
 //!                 }
 //!
 //!                 // Try again!
-//!                 Some(future::ready(()))
+//!                 true
 //!             }
 //!         }
 //!     }

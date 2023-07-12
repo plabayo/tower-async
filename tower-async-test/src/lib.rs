@@ -17,7 +17,7 @@
 //! # Examples
 //!
 //! ```
-//! use tower_async_test::Builder
+//! use tower_async_test::Builder;
 //! use tower_async_layer::Identity;
 //!
 //! #[tokio::main]

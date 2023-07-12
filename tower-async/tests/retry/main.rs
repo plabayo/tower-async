@@ -109,7 +109,7 @@ async fn retry_errors() {
 type Req = &'static str;
 type Res = &'static str;
 type InnerError = &'static str;
-type Error = Box<dyn std::error::Error + Send + Sync>;
+type Error = &'static str;
 
 #[derive(Debug, Clone, PartialEq)]
 struct RetryErrors;
