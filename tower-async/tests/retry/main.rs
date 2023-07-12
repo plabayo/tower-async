@@ -5,38 +5,20 @@
 mod support;
 
 use tower_async::retry::{Policy, RetryLayer};
-use tower_async_test::TestRunner;
+use tower_async_test::Builder;
 
 #[tokio::test(flavor = "current_thread")]
 async fn retry_errors() {
     let _t = support::trace_init();
 
-    let mut runner = TestRunner::new(&mut RetryLayer::new(RetryErrors));
-
-    // TODO:
-    // 1. fix why this won't compile
-    // 2. support multiple request flows in TestRunner
-
-    runner
-        .test_ok("hello", Box::new("world"))
+    Builder::new("hello")
+        .send_error("retry me")
         .expect_request("hello")
-        .expect_response("world")
-        .run()
-        .await;
-
-    // let (mut service, mut handle) = new_service(RetryErrors);
-
-    // assert_ready_ok!(service.poll_ready());
-
-    // let mut fut = task::spawn(service.call("hello"));
-
-    // assert_request_eq!(handle, "hello").send_error("retry me");
-
-    // assert_pending!(fut.poll());
-
-    // assert_request_eq!(handle, "hello").send_response("world");
-
-    // assert_eq!(fut.into_inner().await.unwrap(), "world");
+        .send_response("world")
+        .expect_request("hello")
+        .test(RetryLayer::new(RetryErrors))
+        .await
+        .expect_response("world");
 }
 
 // #[tokio::test(flavor = "current_thread")]
@@ -129,7 +111,7 @@ type Res = &'static str;
 type InnerError = &'static str;
 type Error = Box<dyn std::error::Error + Send + Sync>;
 
-#[derive(Clone)]
+#[derive(Debug, Clone, PartialEq)]
 struct RetryErrors;
 
 impl Policy<Req, Res, Error> for RetryErrors {
@@ -142,7 +124,7 @@ impl Policy<Req, Res, Error> for RetryErrors {
     }
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone, PartialEq)]
 struct Limit(usize);
 
 impl Policy<Req, Res, Error> for Limit {
@@ -160,7 +142,7 @@ impl Policy<Req, Res, Error> for Limit {
     }
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone, PartialEq)]
 struct UnlessErr(InnerError);
 
 impl Policy<Req, Res, Error> for UnlessErr {
@@ -183,7 +165,7 @@ impl Policy<Req, Res, Error> for UnlessErr {
     }
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone, PartialEq)]
 struct CannotClone;
 
 impl Policy<Req, Res, Error> for CannotClone {
@@ -198,7 +180,7 @@ impl Policy<Req, Res, Error> for CannotClone {
 
 /// Test policy that changes the request to `retrying` during retries and the result to `"out of retries"`
 /// when retries are exhausted.
-#[derive(Clone)]
+#[derive(Debug, Clone, PartialEq)]
 struct MutatingPolicy {
     remaining: usize,
 }

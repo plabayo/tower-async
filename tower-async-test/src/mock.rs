@@ -1,3 +1,6 @@
+//! Mock `Service` that can be used in tests
+//! and other mock related utilities.
+
 use std::{collections::VecDeque, sync::Arc};
 
 use tokio::sync::Mutex;
@@ -29,7 +32,7 @@ pub struct Mock<Request, Response, Error> {
 /// Creates a new mock `Service` and with the default driver implementation,
 /// which can be used to assert that the `Service` receives the expected requests,
 /// and to send back responses.
-pub(crate) fn spawn<Request, Response, Error>() -> (
+pub fn spawn<Request, Response, Error>() -> (
     Mock<Request, Response, Error>,
     SyncHandle<Request, Response, Error>,
 )
@@ -56,18 +59,19 @@ impl<Request, Response, Error> Service<Request> for Mock<Request, Response, Erro
     }
 }
 
-pub(crate) type SyncHandle<Request, Response, Error> = Arc<Mutex<Handle<Request, Response, Error>>>;
+/// A Sync `Handle` to a mock `Service`.
+pub type SyncHandle<Request, Response, Error> = Arc<Mutex<Handle<Request, Response, Error>>>;
 
 /// The default `Handle` implementation.
 #[derive(Debug)]
-pub(crate) struct Handle<Request, Response, Error> {
+pub struct Handle<Request, Response, Error> {
     requests: VecDeque<Request>,
     results: VecDeque<Result<Response, Error>>,
 }
 
 impl<Request, Response, Error> Handle<Request, Response, Error> {
     /// Returns a new `Handle`, only usable once you inserted some results.
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             requests: VecDeque::new(),
             results: VecDeque::new(),
@@ -75,12 +79,12 @@ impl<Request, Response, Error> Handle<Request, Response, Error> {
     }
 
     /// Inserts a new request that was received by the mock `Service`.
-    pub(crate) fn push_request(&mut self, request: Request) {
+    pub fn push_request(&mut self, request: Request) {
         self.requests.push_back(request);
     }
 
     /// Inserts a new result to be returned by the mock `Service`.
-    pub(crate) fn push_result(&mut self, result: Result<Response, Error>) {
+    pub fn push_result(&mut self, result: Result<Response, Error>) {
         self.results.push_back(result);
     }
 
@@ -89,7 +93,7 @@ impl<Request, Response, Error> Handle<Request, Response, Error> {
     /// # Panics
     ///
     /// Panics if no request has been received.
-    pub(crate) fn pop_request(&mut self) -> Request {
+    pub fn pop_request(&mut self) -> Request {
         self.requests.pop_front().unwrap()
     }
 
@@ -98,7 +102,13 @@ impl<Request, Response, Error> Handle<Request, Response, Error> {
     /// # Panics
     ///
     /// Panics if no result has been inserted.
-    pub(crate) fn pop_result(&mut self) -> Result<Response, Error> {
+    pub fn pop_result(&mut self) -> Result<Response, Error> {
         self.results.pop_front().unwrap()
+    }
+}
+
+impl<Request, Response, Error> Default for Handle<Request, Response, Error> {
+    fn default() -> Self {
+        Self::new()
     }
 }
