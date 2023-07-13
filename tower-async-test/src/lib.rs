@@ -10,9 +10,23 @@
 #![feature(async_fn_in_trait)]
 // `rustdoc::broken_intra_doc_links` is checked on CI
 
-//! Mock `Service` that can be used in tests
-//! to assert that the `Service` receives the expected requests
-//! and to send back responses.
+//! This crate is to be used to test [`tower_async_layer::Layer`]s,
+//! by helping you write tests to gurantee this.
+//! 
+//! The guarantees that it test are:
+//! 
+//! - the [`tower_async_service::Service`] wrapped by the [`tower_async_layer::Layer`]
+//!   receives the expected requests, and that your layer react as expected on the sent responses or errors.
+//! - the [`tower_async_layer::Layer`] sends back the expected response or error.
+//! 
+//! It does so by providing a [`crate::Builder`] that you can use to define the
+//! test flow and expectations. It does this by a generated [`crate::mock::Mock`] [`tower_async_service::Service`]
+//! that is used as the core [`tower_async_service::Service`] to help you
+//! test your own [`tower_async_layer::Layer`]s with the [`crate::mock::Mock`] [`tower_async_service::Service`].
+//! 
+//! The [`crate::mock::Mock`] service cannot be used directly, but is instead use
+//! automatically for any _test_ spawned using the [`crate::Builder`] and specifically
+//! its [`crate::Builder::test`] method.
 //!
 //! # Examples
 //!

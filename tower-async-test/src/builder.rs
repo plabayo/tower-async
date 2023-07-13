@@ -1,4 +1,5 @@
-//! Builder for creating mock services and testing them with a layer.
+//! Builder for creating [`crate::mock::Mock`] services and testing them with a
+//! [`tower_async_layer::Layer`].
 
 use std::convert::Infallible;
 
@@ -34,7 +35,54 @@ pub struct Test<In, Out> {
     expected_input: Option<In>,
 }
 
-/// Builder for creating mock services and testing them with a layer.
+/// Builder for creating [`crate::mock::Mock`] services and testing them with a
+/// [`tower_async_layer::Layer`].
+/// 
+/// This generic builder is designed to make it easy to test your own
+/// [`tower_async_layer::Layer`] in a type-safe and guided manner. It achieves
+/// this by using the "Builder" pattern and a secure state flow guided by the Rust
+/// type system.
+/// 
+/// # Flow
+/// 
+/// ```none
+///                               define another cycle
+///                               ┌───────┐
+///                               │       │
+///                               │       │
+/// ┌───────────────┐     ┌───────▼───────┴───────┐              ┌─────────────────────────┐
+/// │Define         │     │Define <Response>      │              │Execute and await the    │
+/// │<Input> Request├─────►or <Error> to send from├──────────────►test using the previously│
+/// └───────────────┘     │within the Mock Service│              │defined flow and using   │
+///                       │to your Layer.         │   ┌──────────►the passed in Layer to   │
+///                       └──────▲─────┬──────────┘   │          │generate the service used│
+///                              │     │              │          │for testing.             │
+///                    define    │     │              │          └─────────────┬───────────┘
+///                    another   │     │              │                        │
+///                    cycle     │     │              │                        │
+///                        ┌─────┴─────▼──────────────┴─┐        ┌─────────────▼─────────────┐
+///                        │Define the expected         │        │Optionally expect the final│
+///                        │<Request> received by       │        │Output or Error (Result).  │
+///                        │the Mock Service (Optional).│        │                           │
+///                        └────────────────────────────┘        └───────────────────────────┘
+/// ```
+///
+/// # Examples
+///
+/// ```
+/// use tower_async_test::Builder;
+/// use tower_async_layer::Identity;
+///
+/// #[tokio::main]
+/// async fn main() {
+///     Builder::new("ping")
+///         .send_response("pong")
+///         .expect_request("ping")
+///         .test(Identity::new())
+///         .await
+///         .expect_response("pong");
+/// }
+/// ```
 #[derive(Debug)]
 pub struct Builder<R, T, RequestState> {
     request: R,
