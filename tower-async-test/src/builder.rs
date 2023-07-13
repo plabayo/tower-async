@@ -37,14 +37,14 @@ pub struct Test<In, Out> {
 
 /// Builder for creating [`crate::mock::Mock`] services and testing them with a
 /// [`tower_async_layer::Layer`].
-/// 
+///
 /// This generic builder is designed to make it easy to test your own
 /// [`tower_async_layer::Layer`] in a type-safe and guided manner. It achieves
 /// this by using the "Builder" pattern and a secure state flow guided by the Rust
 /// type system.
-/// 
+///
 /// # Flow
-/// 
+///
 /// ```none
 ///                               define another cycle
 ///                               ┌───────┐

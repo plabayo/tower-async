@@ -1,12 +1,12 @@
 //! This module provides the [`Mock`] [`tower_async_service::Service`] that is used
 //! by this crate as the core [`tower_async_service::Service`] to help you
 //! test your own [`tower_async_layer::Layer`]s.
-//! 
+//!
 //! The [`Mock`] [`tower_async_service::Service`] is to be used
 //! in tests to assert that a [`tower_async_service::Service`] wrapped
 //! by a [`tower_async_layer::Layer`] receives the expected requests,
 //! and to send back responses or errors.
-//! 
+//!
 //! You cannot use the [`Mock`] [`tower_async_service::Service`] directly,
 //! but instead use it automatically for any _test_ spawned
 //! using the [`crate::Builder`] and specifically its [`crate::Builder::test`] method.
@@ -20,7 +20,7 @@ use tower_async_service::Service;
 /// in tests to assert that a [`tower_async_service::Service`] wrapped
 /// by a [`tower_async_layer::Layer`] receives the expected requests,
 /// and to send back responses or errors.
-/// 
+///
 /// You cannot use the [`Mock`] [`tower_async_service::Service`] directly,
 /// but instead use it automatically for any _test_ spawned
 /// using the [`crate::Builder`] and specifically its [`crate::Builder::test`] method.

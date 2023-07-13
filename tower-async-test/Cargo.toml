@@ -13,7 +13,7 @@ repository = "https://github.com/plabayo/tower-async"
 homepage = "https://github.com/plabayo/tower-async"
 description = """
 Utilities for writing client and server `Service` tests.
-An "Async Trait" fork from the original Tower Library.
+An "Async Trait" spiritual fork from the original tower-test Library.
 """
 categories = ["asynchronous", "network-programming"]
 edition = "2021"
