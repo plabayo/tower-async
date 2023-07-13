@@ -187,7 +187,7 @@ where
     R: Send + Sync + std::fmt::Debug + PartialEq,
     Response: Send + Sync,
 {
-    /// Test the given layer with the previously registered tests.
+    /// Test the given [`tower_async_layer::Layer`] with the previously registered tests.
     ///
     /// # Panics
     ///
