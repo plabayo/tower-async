@@ -6,9 +6,6 @@ on:
     - master
   pull_request: {}
 
-env:
-  MSRV: 1.49.0
-
 jobs:
   check-nightly:
     # Run `cargo check` first to ensure that the pushed code at least compiles.
