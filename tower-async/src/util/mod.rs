@@ -11,6 +11,8 @@ mod map_result;
 mod service_fn;
 mod then;
 
+pub mod rng;
+
 use tower_async_service::Service;
 
 pub use self::{

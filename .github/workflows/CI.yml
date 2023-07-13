@@ -6,9 +6,6 @@ on:
     - master
   pull_request: {}
 
-env:
-  MSRV: 1.49.0
-
 jobs:
   check-nightly:
     # Run `cargo check` first to ensure that the pushed code at least compiles.
@@ -17,7 +14,7 @@ jobs:
     - uses: actions/checkout@master
     - uses: actions-rs/toolchain@v1
       with:
-        toolchain: nightly
+        toolchain: nightly-2023-07-08
         profile: minimal
         override: true
     - name: Check
@@ -32,7 +29,7 @@ jobs:
     - uses: actions/checkout@master
     - uses: actions-rs/toolchain@v1
       with:
-        toolchain: nightly
+        toolchain: nightly-2023-07-08
         profile: minimal
     - name: cargo doc
       working-directory: ${{ matrix.subcrate }}
@@ -86,7 +83,7 @@ jobs:
     - uses: actions/checkout@master
     - uses: actions-rs/toolchain@v1
       with:
-        toolchain: nightly
+        toolchain: nightly-2023-07-08
         components: rustfmt
         profile: minimal
     - name: rustfmt

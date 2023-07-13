@@ -28,12 +28,14 @@ __common = ["futures-core"]
 full = [
   "filter",
   "make",
+  "retry",
   "timeout",
   "util",
 ]
 
 filter = ["__common", "futures-util"]
 make = ["futures-util", "tokio/io-std"]
+retry = ["__common", "tokio/time", "util"]
 timeout = ["tokio/time", "tokio/macros"]
 util = ["__common", "futures-util"]
 
@@ -46,9 +48,16 @@ futures-util = { version = "0.3", default-features = false, features = ["alloc"]
 tokio = { version = "1.6", optional = true, features = ["sync"] }
 
 [dev-dependencies]
+tower-async-test = { version = "0.1", path = "../tower-async-test" }
 futures = "0.3"
-tokio = { version = "1.6.2", features = ["macros", "sync", "test-util", "rt-multi-thread"] }
+pin-project-lite = "0.2"
+tokio = { version = "1.6", features = ["macros", "sync", "test-util", "rt-multi-thread"] }
+tokio-stream = "0.1"
+tokio-test = "0.4"
+tracing = { version = "0.1", default-features = false, features = ["std"] }
+tracing-subscriber = { version = "0.3", default-features = false, features = ["fmt", "ansi"] }
 http = "0.2"
+quickcheck = "1"
 
 [package.metadata.docs.rs]
 all-features = true
