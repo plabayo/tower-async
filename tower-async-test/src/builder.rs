@@ -140,6 +140,11 @@ where
     Response: Send + Sync,
 {
     /// Test the given layer with the previously registered tests.
+    /// 
+    /// # Panics
+    /// 
+    /// Panics if there are less requests returned then there
+    /// are responses+errors registered.
     pub async fn test<L>(
         self,
         layer: L,
@@ -233,6 +238,11 @@ where
     Error: Send + Sync,
 {
     /// Test the given layer with the previously registered tests.
+    /// 
+    /// # Panics
+    /// 
+    /// Panics if there are less requests returned then there
+    /// are responses+errors registered.
     pub async fn test<L>(
         self,
         layer: L,
@@ -322,6 +332,11 @@ where
     Error: Send + Sync,
 {
     /// Test the given layer with the previously registered tests.
+    /// 
+    /// # Panics
+    /// 
+    /// Panics if there are less requests returned then there
+    /// are responses+errors registered.
     pub async fn test<L>(
         self,
         layer: L,
@@ -426,6 +441,11 @@ where
     Error: std::fmt::Debug,
 {
     /// Asserts that the response is equal to the given expected response.
+    /// 
+    /// # Panics
+    /// 
+    /// Panics if the response is an error or if the response is not equal to the given expected
+    /// response.
     pub fn expect_response(self, expected: Response) {
         match self.result {
             Ok(response) => assert_eq!(response, expected),
@@ -440,6 +460,11 @@ where
     Error: PartialEq + std::fmt::Debug,
 {
     /// Asserts that the response is equal to the given expected error.
+    /// 
+    /// # Panics
+    /// 
+    /// Panics if the response is not an error or if the error is not equal to the given expected
+    /// error.
     pub fn expect_error(self, expected: Error) {
         match self.result {
             Ok(response) => panic!("expected error, got response: {:?}", response),
