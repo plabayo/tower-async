@@ -1,3 +1,9 @@
+# axum-http-server
+
+A simple hello world example for HTTP services,
+which showcases how you can have your custom middleware and
+simple web service.
+
 # axum-key-value-store
 
 This examples contains a simple key/value store with an HTTP API built using axum.
