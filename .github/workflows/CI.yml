@@ -6,6 +6,9 @@ on:
     - master
   pull_request: {}
 
+env:
+  RUST_TOOLCHAIN: nightly-2023-07-08
+
 jobs:
   check-nightly:
     # Run `cargo check` first to ensure that the pushed code at least compiles.
@@ -14,7 +17,7 @@ jobs:
     - uses: actions/checkout@master
     - uses: actions-rs/toolchain@v1
       with:
-        toolchain: nightly-2023-07-08
+        toolchain: $RUST_TOOLCHAIN
         profile: minimal
         override: true
     - name: Check
@@ -29,10 +32,9 @@ jobs:
     - uses: actions/checkout@master
     - uses: actions-rs/toolchain@v1
       with:
-        toolchain: nightly-2023-07-08
+        toolchain: $RUST_TOOLCHAIN
         profile: minimal
     - name: cargo doc
-      working-directory: ${{ matrix.subcrate }}
       env:
         RUSTDOCFLAGS: "-D rustdoc::broken_intra_doc_links"
       run: cargo doc --all-features --no-deps
@@ -48,11 +50,9 @@ jobs:
     - name: install cargo-hack
       uses: taiki-e/install-action@cargo-hack
     - name: cargo hack check
-      working-directory: ${{ matrix.subcrate }}
       run: cargo hack check --each-feature --no-dev-deps --workspace
 
-  test-versions:
-    # Test against the stable, beta, and nightly Rust toolchains on ubuntu-latest.
+  test:
     needs: check-nightly
     runs-on: ubuntu-latest
     strategy:
@@ -60,14 +60,12 @@ jobs:
       # don't cancel the other test runs, so that we can determine whether a
       # failure only occurs on a particular version.
       fail-fast: false
-      matrix:
-        rust: [nightly]
     steps:
     - uses: actions/checkout@master
-    - name: "install Rust ${{ matrix.rust }}"
+    - name: "install Rust"
       uses: actions-rs/toolchain@v1
       with:
-        toolchain: ${{ matrix.rust }}
+        toolchain: $RUST_TOOLCHAIN
         profile: minimal
         override: true
     - name: Run tests
@@ -83,7 +81,7 @@ jobs:
     - uses: actions/checkout@master
     - uses: actions-rs/toolchain@v1
       with:
-        toolchain: nightly-2023-07-08
+        toolchain: $RUST_TOOLCHAIN
         components: rustfmt
         profile: minimal
     - name: rustfmt
