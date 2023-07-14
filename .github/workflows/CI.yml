@@ -17,7 +17,7 @@ jobs:
     - uses: actions/checkout@master
     - uses: actions-rs/toolchain@v1
       with:
-        toolchain: $RUST_TOOLCHAIN
+        toolchain: ${{env.RUST_TOOLCHAIN}}
         profile: minimal
         override: true
     - name: Check
@@ -32,7 +32,7 @@ jobs:
     - uses: actions/checkout@master
     - uses: actions-rs/toolchain@v1
       with:
-        toolchain: $RUST_TOOLCHAIN
+        toolchain: ${{env.RUST_TOOLCHAIN}}
         profile: minimal
     - name: cargo doc
       env:
@@ -65,7 +65,7 @@ jobs:
     - name: "install Rust"
       uses: actions-rs/toolchain@v1
       with:
-        toolchain: $RUST_TOOLCHAIN
+        toolchain: ${{env.RUST_TOOLCHAIN}}
         profile: minimal
         override: true
     - name: Run tests
@@ -81,7 +81,7 @@ jobs:
     - uses: actions/checkout@master
     - uses: actions-rs/toolchain@v1
       with:
-        toolchain: $RUST_TOOLCHAIN
+        toolchain: ${{env.RUST_TOOLCHAIN}}
         components: rustfmt
         profile: minimal
     - name: rustfmt
