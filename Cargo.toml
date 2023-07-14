@@ -1,7 +1,6 @@
 [workspace]
 
 members = [
-  "examples/tower-async-http/*",
   "tower-async",
   "tower-async-http",
   "tower-async-bridge",

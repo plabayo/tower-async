@@ -26,7 +26,7 @@ servers. It is protocol agnostic, but is designed around a request / response
 pattern. If your protocol is entirely stream based, Tower Async may not be a good fit.
 
 It is a fork of <https://github.com/tower-rs/tower>
-and makes use of `async traits` to simplify things and make it more easier
+and makes use of `async traits` ([RFC-3185: Static async fn in traits](https://rust-lang.github.io/rfcs/3185-static-async-fn-in-trait.html)) to simplify things and make it more easier
 to integrate async functions into middleware.
 
 This fork is made entirely with the needs of the author in mind,
@@ -68,7 +68,10 @@ Best in our opinion is to use one or the other and not to combine the two. But i
 use one combined with the other, `tower-async-bridge` should allow you to do exactly that.
 
 You can find an Axum service example of this and why this might be useful at
-[./examples/tower-async-http/axum-key-value-store](./examples/tower-async-http/axum-key-value-store/README.md).
+[./tower-async-http/examples/axum-key-value-store](./tower-async-http/examples/README.md).
+
+The above example shows how you can use `Tower-Async*` in any location where you would otherwise use `Tower`.
+As such it is also possible to use these crates on projects that use `Tonic`, `Hyper`, `Warp`, among others.
 
 ## Supported Rust Versions
 

@@ -11,5 +11,5 @@ This examples contains a simple key/value store with an HTTP API built using axu
 
 ```
 RUST_LOG=axum_key_value_store=trace,tower_async_http=trace \
-    cargo run --bin axum-key-value-store
+    cargo run --example axum-key-value-store
 ```
