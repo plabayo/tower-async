@@ -1,10 +1,11 @@
 use super::{
     DefaultMakeSpan, DefaultOnBodyChunk, DefaultOnEos, DefaultOnFailure, DefaultOnRequest,
     DefaultOnResponse, MakeSpan, OnBodyChunk, OnEos, OnFailure, OnRequest, OnResponse,
-    ResponseBody, ResponseFuture, TraceLayer,
+    ResponseBody, TraceLayer,
 };
 use crate::classify::{
-    GrpcErrorsAsFailures, MakeClassifier, ServerErrorsAsFailures, SharedClassifier,
+    ClassifiedResponse, ClassifyResponse, GrpcErrorsAsFailures, MakeClassifier,
+    ServerErrorsAsFailures, SharedClassifier,
 };
 use http::{Request, Response};
 use http_body::Body;
@@ -295,22 +296,63 @@ where
 
         let classifier = self.make_classifier.make_classifier(&req);
 
-        let future = {
+        let result = {
             let _guard = span.enter();
             self.on_request.on_request(&req, &span);
             self.inner.call(req)
-        };
-
-        ResponseFuture {
-            inner: future,
-            span,
-            classifier: Some(classifier),
-            on_response: Some(self.on_response.clone()),
-            on_body_chunk: Some(self.on_body_chunk.clone()),
-            on_eos: Some(self.on_eos.clone()),
-            on_failure: Some(self.on_failure.clone()),
-            start,
         }
-        .await
+        .await;
+        let latency = start.elapsed();
+
+        match result {
+            Ok(res) => {
+                let classification = classifier.classify_response(&res);
+                let start = start;
+
+                self.on_response.clone().on_response(&res, latency, &span);
+
+                match classification {
+                    ClassifiedResponse::Ready(classification) => {
+                        if let Err(failure_class) = classification {
+                            self.on_failure.on_failure(failure_class, latency, &span);
+                        }
+
+                        let span = span.clone();
+                        let res = res.map(|body| ResponseBody {
+                            inner: body,
+                            classify_eos: None,
+                            on_eos: None,
+                            on_body_chunk: self.on_body_chunk.clone(),
+                            on_failure: Some(self.on_failure.clone()),
+                            start,
+                            span,
+                        });
+
+                        Ok(res)
+                    }
+                    ClassifiedResponse::RequiresEos(classify_eos) => {
+                        let span = span.clone();
+                        let res = res.map(|body| ResponseBody {
+                            inner: body,
+                            classify_eos: Some(classify_eos),
+                            on_eos: Some((self.on_eos.clone(), Instant::now())),
+                            on_body_chunk: self.on_body_chunk.clone(),
+                            on_failure: Some(self.on_failure.clone()),
+                            start,
+                            span,
+                        });
+
+                        Ok(res)
+                    }
+                }
+            }
+            Err(err) => {
+                let failure_class: <M as MakeClassifier>::FailureClass =
+                    classifier.classify_error(&err);
+                self.on_failure.on_failure(failure_class, latency, &span);
+
+                Err(err)
+            }
+        }
     }
 }

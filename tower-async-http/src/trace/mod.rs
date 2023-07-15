@@ -379,7 +379,6 @@ use tracing::Level;
 
 pub use self::{
     body::ResponseBody,
-    future::ResponseFuture,
     layer::TraceLayer,
     make_span::{DefaultMakeSpan, MakeSpan},
     on_body_chunk::{DefaultOnBodyChunk, OnBodyChunk},
@@ -391,7 +390,6 @@ pub use self::{
 };
 
 mod body;
-mod future;
 mod layer;
 mod make_span;
 mod on_body_chunk;
