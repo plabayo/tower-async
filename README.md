@@ -26,11 +26,7 @@ servers. It is protocol agnostic, but is designed around a request / response
 pattern. If your protocol is entirely stream based, Tower Async may not be a good fit.
 
 It is a fork of <https://github.com/tower-rs/tower>
-and makes use of `async traits` ([RFC-3185: Static async fn in traits](https://rust-lang.github.io/rfcs/3185-static-async-fn-in-trait.html)) to simplify things and make it more easier
-to integrate async functions into middleware.
-
-This fork is made entirely with the needs of the author in mind,
-and thus might not yet contain all features you might need.
+and makes use of `async traits` ([RFC-3185: Static async fn in traits](https://rust-lang.github.io/rfcs/3185-static-async-fn-in-trait.html)) to simplify things and make it more easier to integrate async functions into middleware.
 
 Come join us at discord on the `#tower-async` public channel at [Discord](https://discord.gg/29EetaSYCD)
 or tag `@glendc` at Tokio's Tower discord instead.
@@ -38,6 +34,19 @@ or tag `@glendc` at Tokio's Tower discord instead.
 Where suitable we'll keep in sync (manually) with Tower and if the
 opportunity arises we'll contribute back "upstream" as well.
 Given however how big the diversange we aren't sure how likely that is.
+
+This set of libraries is best suited in an ecosystem of its own,
+that is to say, making use only of `tower-async` libraries and dependents on it.
+At the very least it is desired that `tower-async` is the puppeteer with where needed
+making use of `tower` (classic) (middleware) layers.
+
+For an example on how to operate purely within a `tower-async` environment you can
+explore [the Rama codebase](https://www.github.com/plabayo/rama), a proxy framework,
+written purely with a `tower-async` mindset, and the main motivator to start this fork.
+
+You can however also bridge `tower` and `tower-async` in any other way. Please consult
+[the "Bridging to Tokio's official Tower Ecosystem" chapter](#Bridging-to-Tokios-official-Tower-Ecosystem)
+for more information on how to do that.
 
 ## Difference with Tokio's official Tower Ecosystem?
 
@@ -102,6 +111,10 @@ the great work done and continued effort being put in by them.
 
 You can find more about Plabayo Sponsorship at <https://github.com/sponsors/plabayo>.
 
+One time sponsorships (the so called "buy me a coffee", but then via GitHub Sponsors payments),
+are welcome as much as regular sponsors. Not everbody have the financial means to sponsor,
+so feel free [to contribute in any other way](#contribution) that you can think of.
+
 ## FAQ
 
 > Where is the `poll_ready` method from Tower's Service?
@@ -141,7 +154,6 @@ See the previous FAQ point to get our point of view related to load balancing an
 We do think there is plenty of room for growth and improvement.
 Following utilities probably do still a place here and we welcome contributons:
 
-- As `Service` functionality: `retry`
 - As `MakeService` functionality: `limit`
 
 And there are probably some more. The test coverage is also significantly less, so also
