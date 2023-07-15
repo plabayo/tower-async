@@ -35,18 +35,12 @@
 //! [`tower_async::ServiceBuilder`]: https://docs.rs/tower-async/*/tower_async/builder/struct.ServiceBuilder.html
 //! [`tower_async::Layer`]: https://docs.rs/tower-async/*/tower_async/trait.Layer.html
 
-mod async_layer;
-mod async_service;
-mod async_wrapper;
+#[cfg(feature = "into_async")]
+mod into_async;
+#[cfg(feature = "into_async")]
+pub use into_async::*;
 
-mod classic_layer;
-mod classic_service;
-mod classic_wrapper;
-
-pub use async_layer::{AsyncLayer, AsyncLayerExt};
-pub use async_service::AsyncServiceExt;
-pub use async_wrapper::AsyncServiceWrapper;
-
-pub use classic_layer::{ClassicLayer, ClassicLayerExt};
-pub use classic_service::ClassicServiceExt;
-pub use classic_wrapper::ClassicServiceWrapper;
+#[cfg(feature = "into_classic")]
+mod into_classic;
+#[cfg(feature = "into_classic")]
+pub use into_classic::*;

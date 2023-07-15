@@ -50,7 +50,7 @@ tokio = { version = "1", features = ["full"] }
 tower = { version = "0.4", features = ["util", "make", "timeout"] }
 tower-async = { version = "0.1", path = "../tower-async", features = ["util", "make", "timeout"] }
 tower-async-http = { version = "0.1", path = ".", features = ["full"] }
-tower-async-bridge = { version = "0.1", path = "../tower-async-bridge" }
+tower-async-bridge = { version = "0.1", path = "../tower-async-bridge", features = ["full"] }
 tracing-subscriber = "0.3"
 uuid = { version = "1.0", features = ["v4"] }
 serde_json = "1.0"

@@ -19,12 +19,24 @@ and also the other way around.
 categories = ["asynchronous", "network-programming"]
 edition = "2021"
 
+[features]
+default = [
+    "into_classic",
+]
+full = [
+    "into_classic",
+    "into_async",
+]
+
+into_async = ["tower/util"]
+into_classic = []
+
 [dependencies]
-tower-async-service = { version = "0.1", path = "../tower-async-service" }
 tower-service = { version = "0.3" }
-tower-async-layer = { version = "0.1", path = "../tower-async-layer" }
 tower-layer = { version = "0.3" }
-tower = { version = "0.4", features = ["util"] }
+tower = { version = "0.4", optional = true }
+tower-async-service = { version = "0.1", path = "../tower-async-service" }
+tower-async-layer = { version = "0.1", path = "../tower-async-layer" }
 
 [dev-dependencies]
 tokio = { version = "1.11", features = ["macros", "rt-multi-thread"] }
