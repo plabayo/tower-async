@@ -288,6 +288,9 @@ pub mod map_response_body;
 #[cfg(feature = "map-request-body")]
 pub mod map_request_body;
 
+#[cfg(feature = "trace")]
+pub mod trace;
+
 #[cfg(feature = "follow-redirect")]
 pub mod follow_redirect;
 
@@ -312,6 +315,7 @@ pub mod timeout;
 #[cfg(feature = "normalize-path")]
 pub mod normalize_path;
 
+pub mod classify;
 pub mod services;
 
 #[cfg(feature = "util")]

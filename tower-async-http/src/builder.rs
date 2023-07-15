@@ -1,5 +1,8 @@
 use tower_async::ServiceBuilder;
 
+#[cfg(feature = "trace")]
+use crate::classify::{GrpcErrorsAsFailures, ServerErrorsAsFailures, SharedClassifier};
+
 #[allow(unused_imports)]
 use http::header::HeaderName;
 #[allow(unused_imports)]
@@ -29,6 +32,7 @@ use tower_async_layer::Stack;
 ///     // Methods from tower
 ///     .timeout(Duration::from_secs(30))
 ///     // Methods from tower-http
+///     .trace_for_http()
 ///     .compression()
 ///     .propagate_header(HeaderName::from_static("x-request-id"))
 ///     .service_fn(handle);
@@ -109,6 +113,34 @@ pub trait ServiceBuilderExt<L>: crate::sealed::Sealed<L> + Sized {
         feature = "decompression-zstd",
     ))]
     fn decompression(self) -> ServiceBuilder<Stack<crate::decompression::DecompressionLayer, L>>;
+
+    /// High level tracing that classifies responses using HTTP status codes.
+    ///
+    /// This method does not support customizing the output, to do that use [`TraceLayer`]
+    /// instead.
+    ///
+    /// See [`tower_http::trace`] for more details.
+    ///
+    /// [`tower_http::trace`]: crate::trace
+    /// [`TraceLayer`]: crate::trace::TraceLayer
+    #[cfg(feature = "trace")]
+    fn trace_for_http(
+        self,
+    ) -> ServiceBuilder<Stack<crate::trace::TraceLayer<SharedClassifier<ServerErrorsAsFailures>>, L>>;
+
+    /// High level tracing that classifies responses using gRPC headers.
+    ///
+    /// This method does not support customizing the output, to do that use [`TraceLayer`]
+    /// instead.
+    ///
+    /// See [`tower_http::trace`] for more details.
+    ///
+    /// [`tower_http::trace`]: crate::trace
+    /// [`TraceLayer`]: crate::trace::TraceLayer
+    #[cfg(feature = "trace")]
+    fn trace_for_grpc(
+        self,
+    ) -> ServiceBuilder<Stack<crate::trace::TraceLayer<SharedClassifier<GrpcErrorsAsFailures>>, L>>;
 
     /// Follow redirect resposes using the [`Standard`] policy.
     ///
@@ -390,6 +422,22 @@ impl<L> ServiceBuilderExt<L> for ServiceBuilder<L> {
     ))]
     fn decompression(self) -> ServiceBuilder<Stack<crate::decompression::DecompressionLayer, L>> {
         self.layer(crate::decompression::DecompressionLayer::new())
+    }
+
+    #[cfg(feature = "trace")]
+    fn trace_for_http(
+        self,
+    ) -> ServiceBuilder<Stack<crate::trace::TraceLayer<SharedClassifier<ServerErrorsAsFailures>>, L>>
+    {
+        self.layer(crate::trace::TraceLayer::new_for_http())
+    }
+
+    #[cfg(feature = "trace")]
+    fn trace_for_grpc(
+        self,
+    ) -> ServiceBuilder<Stack<crate::trace::TraceLayer<SharedClassifier<GrpcErrorsAsFailures>>, L>>
+    {
+        self.layer(crate::trace::TraceLayer::new_for_grpc())
     }
 
     #[cfg(feature = "follow-redirect")]
