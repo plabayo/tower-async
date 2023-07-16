@@ -1,8 +1,10 @@
-use super::{CompressionBody, CompressionLayer, ResponseFuture};
+use super::body::BodyInner;
+use super::{CompressionBody, CompressionLayer};
 use crate::compression::predicate::{DefaultPredicate, Predicate};
 use crate::compression::CompressionLevel;
+use crate::compression_utils::WrapBody;
 use crate::{compression_utils::AcceptEncoding, content_encoding::Encoding};
-use http::{Request, Response};
+use http::{header, Request, Response};
 use http_body::Body;
 use tower_async_service::Service;
 
@@ -165,15 +167,73 @@ where
     type Response = Response<CompressionBody<ResBody>>;
     type Error = S::Error;
 
+    #[allow(unreachable_code, unused_mut, unused_variables, unreachable_patterns)]
     async fn call(&mut self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
         let encoding = Encoding::from_headers(req.headers(), self.accept);
 
-        ResponseFuture {
-            inner: self.inner.call(req),
-            encoding,
-            predicate: self.predicate.clone(),
-            quality: self.quality,
-        }
-        .await
+        let res = self.inner.call(req).await?;
+
+        // never recompress responses that are already compressed
+        let should_compress = !res.headers().contains_key(header::CONTENT_ENCODING)
+            && self.predicate.should_compress(&res);
+
+        let (mut parts, body) = res.into_parts();
+
+        let body = match (should_compress, encoding) {
+            // if compression is _not_ support or the client doesn't accept it
+            (false, _) | (_, Encoding::Identity) => {
+                return Ok(Response::from_parts(
+                    parts,
+                    CompressionBody::new(BodyInner::identity(body)),
+                ))
+            }
+
+            #[cfg(feature = "compression-gzip")]
+            (_, Encoding::Gzip) => {
+                CompressionBody::new(BodyInner::gzip(WrapBody::new(body, self.quality)))
+            }
+            #[cfg(feature = "compression-deflate")]
+            (_, Encoding::Deflate) => {
+                CompressionBody::new(BodyInner::deflate(WrapBody::new(body, self.quality)))
+            }
+            #[cfg(feature = "compression-br")]
+            (_, Encoding::Brotli) => {
+                CompressionBody::new(BodyInner::brotli(WrapBody::new(body, self.quality)))
+            }
+            #[cfg(feature = "compression-zstd")]
+            (_, Encoding::Zstd) => {
+                CompressionBody::new(BodyInner::zstd(WrapBody::new(body, self.quality)))
+            }
+            #[cfg(feature = "fs")]
+            (true, _) => {
+                // This should never happen because the `AcceptEncoding` struct which is used to determine
+                // `self.encoding` will only enable the different compression algorithms if the
+                // corresponding crate feature has been enabled. This means
+                // Encoding::[Gzip|Brotli|Deflate] should be impossible at this point without the
+                // features enabled.
+                //
+                // The match arm is still required though because the `fs` feature uses the
+                // Encoding struct independently and requires no compression logic to be enabled.
+                // This means a combination of an individual compression feature and `fs` will fail
+                // to compile without this branch even though it will never be reached.
+                //
+                // To safeguard against refactors that changes this relationship or other bugs the
+                // server will return an uncompressed response instead of panicking since that could
+                // become a ddos attack vector.
+                return Ok(Response::from_parts(
+                    parts,
+                    CompressionBody::new(BodyInner::identity(body)),
+                ));
+            }
+        };
+
+        parts.headers.remove(header::CONTENT_LENGTH);
+
+        parts
+            .headers
+            .insert(header::CONTENT_ENCODING, encoding.into_header_value());
+
+        let res = Response::from_parts(parts, body);
+        Ok(res)
     }
 }

@@ -66,7 +66,6 @@
 pub mod predicate;
 
 mod body;
-mod future;
 mod layer;
 mod pin_project_cfg;
 mod service;
@@ -74,7 +73,6 @@ mod service;
 #[doc(inline)]
 pub use self::{
     body::CompressionBody,
-    future::ResponseFuture,
     layer::CompressionLayer,
     predicate::{DefaultPredicate, Predicate},
     service::Compression,
