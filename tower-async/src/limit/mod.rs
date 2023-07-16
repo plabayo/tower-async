@@ -53,3 +53,29 @@ where
         }
     }
 }
+
+// #[cfg(test)]
+// mod tests {
+//     use crate::service_fn;
+//     use crate::limit::policy::concurrent::ConcurrentPolicy;
+
+//     use super::*;
+
+//     use tower_async_service::Service;
+
+//     #[tokio::test]
+//     async fn test_limit() {
+//         let mut service = Limit::new(
+//             service_fn(|req: &'static str| async { Ok::<_, ()>(req) }),
+//             ConcurrentPolicy::new(1),
+//         );
+
+//         let fut1 = service.call("hello");
+//         let fut2 = service.call("world");
+
+//         join
+
+//         assert_eq!(fut1.await.unwrap(), "hello");
+//         assert_eq!(fut2.await.unwrap(), "world");
+//     }
+// }

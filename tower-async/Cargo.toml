@@ -35,7 +35,7 @@ full = [
 ]
 
 filter = ["__common", "futures-util"]
-limit = ["util"]
+limit = ["util", "tokio/time"]
 make = ["futures-util", "tokio/io-std"]
 retry = ["__common", "tokio/time", "util"]
 timeout = ["tokio/time", "tokio/macros"]
