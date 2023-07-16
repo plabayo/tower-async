@@ -402,16 +402,17 @@ impl<F> ServeDir<F> {
 
         let variant = self.variant.clone();
 
-        let open_file_future = Box::pin(open_file::open_file(
+        let open_file_result = open_file::open_file(
             variant,
             path_to_file,
             req,
             negotiated_encodings,
             range_header,
             buf_chunk_size,
-        ));
+        )
+        .await;
 
-        future::open_file(open_file_future, fallback_and_request).await
+        future::consume_open_file_result(open_file_result, fallback_and_request).await
     }
 }
 

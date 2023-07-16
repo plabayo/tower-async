@@ -4,7 +4,6 @@ use super::{
 };
 use crate::{content_encoding::Encoding, services::fs::AsyncReadBody, BoxError};
 use bytes::Bytes;
-use futures_core::future::BoxFuture;
 use http::{
     header::{self, ALLOW},
     HeaderValue, Request, Response, StatusCode,
@@ -13,8 +12,8 @@ use http_body::{Body, Empty, Full};
 use std::{convert::Infallible, io};
 use tower_async_service::Service;
 
-pub(super) async fn open_file<ReqBody, ResBody, F>(
-    future: BoxFuture<'static, io::Result<OpenFileOutput>>,
+pub(super) async fn consume_open_file_result<ReqBody, ResBody, F>(
+    open_file_result: Result<OpenFileOutput, std::io::Error>,
     mut fallback_and_request: Option<(F, Request<ReqBody>)>,
 ) -> Result<Response<ResponseBody>, std::io::Error>
 where
@@ -22,7 +21,7 @@ where
     ResBody: http_body::Body<Data = Bytes> + Send + 'static,
     ResBody::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
 {
-    match future.await {
+    match open_file_result {
         Ok(OpenFileOutput::FileOpened(file_output)) => Ok(build_response(*file_output)),
 
         Ok(OpenFileOutput::Redirect { location }) => {
