@@ -206,6 +206,9 @@
 #[cfg(feature = "filter")]
 pub mod filter;
 
+#[cfg(feature = "limit")]
+pub mod limit;
+
 #[cfg(feature = "make")]
 pub mod make;
 #[cfg(feature = "retry")]

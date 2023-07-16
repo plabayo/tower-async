@@ -1,5 +1,5 @@
 //! This module contains generic [backoff] utlities to be used with the retry
-//! layer.
+//! and limit layers.
 //!
 //! The [`Backoff`] trait is a generic way to represent backoffs that can use
 //! any timer type.

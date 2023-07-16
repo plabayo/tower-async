@@ -27,6 +27,7 @@ __common = ["futures-core"]
 
 full = [
   "filter",
+  "limit",
   "make",
   "retry",
   "timeout",
@@ -34,6 +35,7 @@ full = [
 ]
 
 filter = ["__common", "futures-util"]
+limit = []
 make = ["futures-util", "tokio/io-std"]
 retry = ["__common", "tokio/time", "util"]
 timeout = ["tokio/time", "tokio/macros"]
