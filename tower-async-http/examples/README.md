@@ -7,7 +7,7 @@ simple web service.
 ## Running the example
 
 ```
-cargo run --example axum-key-value-store
+cargo run --example axum-http-server
 ```
 
 # axum-key-value-store

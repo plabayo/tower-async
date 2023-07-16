@@ -15,7 +15,11 @@ use std::{
 };
 use tower_async::ServiceBuilder;
 use tower_async_bridge::ClassicLayerExt;
-use tower_async_http::{timeout::TimeoutLayer, ServiceBuilderExt};
+use tower_async_http::{
+    timeout::TimeoutLayer,
+    trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer},
+    LatencyUnit, ServiceBuilderExt,
+};
 
 /// Simple key/value store with an HTTP API
 #[derive(Debug, Parser)]
@@ -60,6 +64,14 @@ fn app() -> Router {
         // Mark the `Authorization` and `Cookie` headers as sensitive so it doesn't show in logs
         .sensitive_request_headers(sensitive_headers.clone())
         // Add high level tracing/logging to all requests
+        .layer(
+            TraceLayer::new_for_http()
+                .on_body_chunk(|chunk: &Bytes, latency: Duration, _: &tracing::Span| {
+                    tracing::trace!(size_bytes = chunk.len(), latency = ?latency, "sending body chunk")
+                })
+                .make_span_with(DefaultMakeSpan::new().include_headers(true))
+                .on_response(DefaultOnResponse::new().include_headers(true).latency_unit(LatencyUnit::Micros)),
+        )
         .sensitive_response_headers(sensitive_headers)
         // Set a timeout
         .layer(TimeoutLayer::new(Duration::from_secs(10)))
