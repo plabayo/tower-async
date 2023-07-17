@@ -7,7 +7,7 @@ Decorates a [`tower::Service`], allowing it to be turned into an [`Service`].
 [![MIT licensed][mit-badge]][mit-url]
 [![Build Status][actions-badge]][actions-url]
 
-[crates-badge]: https://img.shields.io/crates/v/tower-async-bridge.svg
+[crates-badge]: https://img.shields.io/crates/v/tower_async_bridge.svg
 [crates-url]: https://crates.io/crates/tower-async-bridge
 [docs-badge]: https://docs.rs/tower-async-bridge/badge.svg
 [docs-url]: https://docs.rs/tower-async-bridge

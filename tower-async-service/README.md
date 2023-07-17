@@ -7,7 +7,7 @@ The foundational `Service` trait that [Tower Async] is based on.
 [![MIT licensed][mit-badge]][mit-url]
 [![Build Status][actions-badge]][actions-url]
 
-[crates-badge]: https://img.shields.io/crates/v/tower-async-service.svg
+[crates-badge]: https://img.shields.io/crates/v/tower_async_service.svg
 [crates-url]: https://crates.io/crates/tower-async-service
 [docs-badge]: https://docs.rs/tower-async-service/badge.svg
 [docs-url]: https://docs.rs/tower-async-service

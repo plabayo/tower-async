@@ -16,7 +16,7 @@ Compared to other forks in this mono repository, this specific `tower-async-test
 only a spiritual fork of `tower-test`, with a completely different implementation,
 as the needs are very different then when using a classifc ``
 
-[crates-badge]: https://img.shields.io/crates/v/tower-async-test.svg
+[crates-badge]: https://img.shields.io/crates/v/tower_async_test.svg
 [crates-url]: https://crates.io/crates/tower-async-test
 [docs-badge]: https://docs.rs/tower-async-test/badge.svg
 [docs-url]: https://docs.rs/tower-async-test

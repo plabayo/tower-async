@@ -7,7 +7,7 @@ Decorates a [Tower Async] `Service`, transforming either the request or the resp
 [![MIT licensed][mit-badge]][mit-url]
 [![Build Status][actions-badge]][actions-url]
 
-[crates-badge]: https://img.shields.io/crates/v/tower-async-layer.svg
+[crates-badge]: https://img.shields.io/crates/v/tower_async_layer.svg
 [crates-url]: https://crates.io/crates/tower-async-layer
 [docs-badge]: https://docs.rs/tower-async-layer/badge.svg
 [docs-url]: https://docs.rs/tower-async-layer
