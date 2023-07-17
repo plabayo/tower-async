@@ -14,14 +14,14 @@ impl<P> LimitLayer<P> {
     }
 }
 
-impl<P, S> Layer<S> for LimitLayer<P>
+impl<T, P> Layer<T> for LimitLayer<P>
 where
     P: Clone,
 {
-    type Service = Limit<P, S>;
+    type Service = Limit<T, P>;
 
-    fn layer(&self, service: S) -> Self::Service {
+    fn layer(&self, service: T) -> Self::Service {
         let policy = self.policy.clone();
-        Limit::new(policy, service)
+        Limit::new(service, policy)
     }
 }

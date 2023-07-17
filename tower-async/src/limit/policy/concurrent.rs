@@ -34,11 +34,24 @@ use crate::util::backoff::Backoff;
 use super::{Policy, PolicyOutput};
 
 /// A policy that limits the number of concurrent requests.
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct ConcurrentPolicy<B> {
     max: usize,
     current: Arc<Mutex<usize>>,
     backoff: B,
+}
+
+impl<B> Clone for ConcurrentPolicy<B>
+where
+    B: Clone,
+{
+    fn clone(&self) -> Self {
+        ConcurrentPolicy {
+            max: self.max,
+            current: self.current.clone(),
+            backoff: self.backoff.clone(),
+        }
+    }
 }
 
 impl ConcurrentPolicy<()> {

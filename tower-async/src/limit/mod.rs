@@ -26,11 +26,24 @@ impl<T, P> Limit<T, P> {
     }
 }
 
+impl<T, P> Clone for Limit<T, P>
+where
+    T: Clone,
+    P: Clone,
+{
+    fn clone(&self) -> Self {
+        Limit {
+            inner: self.inner.clone(),
+            policy: self.policy.clone(),
+        }
+    }
+}
+
 impl<T, P, Request> Service<Request> for Limit<T, P>
 where
     T: Service<Request>,
-    P: policy::Policy<Request>,
     T::Error: Into<BoxError>,
+    P: policy::Policy<Request>,
     P::Error: Into<BoxError>,
     P::Future: std::future::Future,
 {
@@ -54,28 +67,44 @@ where
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use crate::service_fn;
-//     use crate::limit::policy::concurrent::ConcurrentPolicy;
+#[cfg(test)]
+mod tests {
+    use std::convert::Infallible;
 
-//     use super::*;
+    use crate::limit::policy::concurrent::ConcurrentPolicy;
+    use crate::service_fn;
 
-//     use tower_async_service::Service;
+    use super::*;
 
-//     #[tokio::test]
-//     async fn test_limit() {
-//         let mut service = Limit::new(
-//             service_fn(|req: &'static str| async { Ok::<_, ()>(req) }),
-//             ConcurrentPolicy::new(1),
-//         );
+    use futures_util::future::join_all;
+    use tower_async_layer::Layer;
+    use tower_async_service::Service;
 
-//         let fut1 = service.call("hello");
-//         let fut2 = service.call("world");
+    #[tokio::test]
+    async fn test_limit() {
+        async fn handle_request<Request>(req: Request) -> Result<Request, Infallible> {
+            tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+            Ok(req)
+        }
 
-//         join
+        let layer: LimitLayer<ConcurrentPolicy<()>> = LimitLayer::new(ConcurrentPolicy::new(1));
 
-//         assert_eq!(fut1.await.unwrap(), "hello");
-//         assert_eq!(fut2.await.unwrap(), "world");
-//     }
-// }
+        let mut service_1 = layer.layer(service_fn(handle_request));
+        let mut service_2 = layer.layer(service_fn(handle_request));
+
+        let future_1 = service_1.call("Hello");
+        let future_2 = service_2.call("Hello");
+
+        let mut results = join_all(vec![future_1, future_2]).await;
+        let result_1 = results.pop().unwrap();
+        let result_2 = results.pop().unwrap();
+
+        // check that one request succeeded and the other failed
+        if result_1.is_err() {
+            assert_eq!(result_2.unwrap(), "Hello");
+        } else {
+            assert_eq!(result_1.unwrap(), "Hello");
+            assert!(result_2.is_err());
+        }
+    }
+}
