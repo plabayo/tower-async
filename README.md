@@ -140,9 +140,10 @@ The authors of this library are always open for feedback but retain the reservat
 
 > Where is my favourite Tower Utility?
 
-For the sake of simplicitly, the sanity of the author of this fork,
-and the ability to ship an async version of Tower on a reasonable timescale,
-not all features that Tower support are supported (yet) in this fork.
+As all the tower code has to be manually ported, there might
+be some features missing. The tower ecosystem also continues to thrive and live happy,
+so there might still be new features added there as well. Feel free to chat with us
+or open a ticket on GitHub in case you wish to add/port such feature(s).
 
 Note that some features are not supported on purpose:
 
