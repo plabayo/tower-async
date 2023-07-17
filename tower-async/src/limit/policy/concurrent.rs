@@ -98,21 +98,20 @@ where
 {
     type Guard = ConcurrentGuard;
     type Error = Infallible;
-    type Future = B::Future;
 
-    async fn check(
-        &mut self,
-        _: &mut Request,
-    ) -> PolicyOutput<Self::Guard, Self::Error, Self::Future> {
-        let mut current = self.current.lock().unwrap();
-        if *current < self.max {
-            *current += 1;
-            PolicyOutput::Ready(ConcurrentGuard {
-                current: self.current.clone(),
-            })
-        } else {
-            PolicyOutput::Retry(self.backoff.next_backoff())
+    async fn check(&mut self, _: &mut Request) -> PolicyOutput<Self::Guard, Self::Error> {
+        {
+            let mut current = self.current.lock().unwrap();
+            if *current < self.max {
+                *current += 1;
+                return PolicyOutput::Ready(ConcurrentGuard {
+                    current: self.current.clone(),
+                });
+            }
         }
+
+        self.backoff.next_backoff().await;
+        PolicyOutput::Retry
     }
 }
 
@@ -132,12 +131,8 @@ impl std::error::Error for LimitReached {}
 impl<Request> Policy<Request> for ConcurrentPolicy<()> {
     type Guard = ConcurrentGuard;
     type Error = LimitReached;
-    type Future = std::future::Ready<()>;
 
-    async fn check(
-        &mut self,
-        _: &mut Request,
-    ) -> PolicyOutput<Self::Guard, Self::Error, Self::Future> {
+    async fn check(&mut self, _: &mut Request) -> PolicyOutput<Self::Guard, Self::Error> {
         let mut current = self.current.lock().unwrap();
         if *current < self.max {
             *current += 1;
@@ -154,14 +149,14 @@ impl<Request> Policy<Request> for ConcurrentPolicy<()> {
 mod tests {
     use super::*;
 
-    fn assert_ready<G, E, F>(output: PolicyOutput<G, E, F>) -> G {
+    fn assert_ready<G, E>(output: PolicyOutput<G, E>) -> G {
         match output {
             PolicyOutput::Ready(guard) => guard,
             _ => panic!("unexpected output, expected ready"),
         }
     }
 
-    fn assert_abort<G, E, F>(output: PolicyOutput<G, E, F>) {
+    fn assert_abort<G, E>(output: PolicyOutput<G, E>) {
         match output {
             PolicyOutput::Abort(_) => (),
             _ => panic!("unexpected output, expected abort"),

@@ -2,13 +2,13 @@ use super::Limit;
 use tower_async_layer::Layer;
 
 /// Limit requests based on a policy
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct LimitLayer<P> {
     policy: P,
 }
 
 impl<P> LimitLayer<P> {
-    /// Creates a new [`LimitLayer`] from a limit policy.
+    /// Creates a new [`LimitLayer`] from a [`crate::limit::Policy`].
     pub fn new(policy: P) -> Self {
         LimitLayer { policy }
     }

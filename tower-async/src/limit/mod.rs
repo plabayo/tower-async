@@ -7,6 +7,7 @@ use tower_async_service::Service;
 use crate::BoxError;
 
 pub mod policy;
+pub use policy::{Policy, PolicyOutput};
 
 mod layer;
 pub use layer::LimitLayer;
@@ -45,7 +46,6 @@ where
     T::Error: Into<BoxError>,
     P: policy::Policy<Request>,
     P::Error: Into<BoxError>,
-    P::Future: std::future::Future,
 {
     type Response = T::Response;
     type Error = BoxError;
@@ -59,9 +59,7 @@ where
                     return self.inner.call(request).await.map_err(Into::into);
                 }
                 policy::PolicyOutput::Abort(err) => return Err(err.into()),
-                policy::PolicyOutput::Retry(future) => {
-                    future.await;
-                }
+                policy::PolicyOutput::Retry => (),
             }
         }
     }
