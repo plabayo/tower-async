@@ -84,10 +84,10 @@ and published at [crates.io](https://crates.io/) under the same name.
 
 At a high level it allows you to:
 
-- Turn a [`tower::Service`] into a [`tower_async::Service`];
+- Turn a [`tower::Service`] into a [`tower_async::Service`] (requires the `into_async` feature);
 - Turn a [`tower_async::Service`] into a [`tower::Service`];
 - Use a [`tower_async::Layer`] within a [`tower`] environment (e.g. [`tower::ServiceBuilder`]);
-- Use a [`tower::Layer`] within a [`tower_async`] environment (e.g. [`tower_async::ServiceBuilder`]);
+- Use a [`tower::Layer`] within a [`tower_async`] environment (e.g. [`tower_async::ServiceBuilder`]) (requires the `into_async` feature);
 
 Please check the crate's unit tests and examples to see specifically how to use the crate in order to achieve this.
 

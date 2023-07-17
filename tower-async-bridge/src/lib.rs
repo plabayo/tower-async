@@ -15,10 +15,10 @@
 //!
 //! You can make use of this crate in order to:
 //!
-//! - Turn a [`tower::Service`] into a [`tower_async::Service`];
+//! - Turn a [`tower::Service`] into a [`tower_async::Service`] (requires the `into_async` feature);
 //! - Turn a [`tower_async::Service`] into a [`tower::Service`];
 //! - Use a [`tower_async::Layer`] within a [`tower`] environment (e.g. [`tower::ServiceBuilder`]);
-//! - Use a [`tower::Layer`] within a [`tower_async`] environment (e.g. [`tower_async::ServiceBuilder`]);
+//! - Use a [`tower::Layer`] within a [`tower_async`] environment (e.g. [`tower_async::ServiceBuilder`]) (requires the `into_async` feature);
 //!
 //! Please check the crate's unit tests and examples to see specifically how to use the crate in order to achieve this.
 //!
@@ -40,7 +40,5 @@ mod into_async;
 #[cfg(feature = "into_async")]
 pub use into_async::*;
 
-#[cfg(feature = "into_classic")]
 mod into_classic;
-#[cfg(feature = "into_classic")]
 pub use into_classic::*;

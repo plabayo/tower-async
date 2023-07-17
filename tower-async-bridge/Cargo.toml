@@ -20,16 +20,12 @@ categories = ["asynchronous", "network-programming"]
 edition = "2021"
 
 [features]
-default = [
-    "into_classic",
-]
+default = []
 full = [
-    "into_classic",
     "into_async",
 ]
 
 into_async = ["tower/util"]
-into_classic = []
 
 [dependencies]
 tower-service = { version = "0.3" }
