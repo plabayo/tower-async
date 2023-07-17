@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 0.1.0 (July 17, 2023)
 
-This is the initial realse of `tower-async-bridge`, and is meant to bridge services and/or layers
+This is the initial release of `tower-async-bridge`, and is meant to bridge services and/or layers
 from the <https://github.com/tower-rs/tower> ecosystem with those from the `tower-async` ecosystem
 (meaning written using technology of this repository).
 

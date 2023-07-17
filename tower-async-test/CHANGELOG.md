@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 0.1.0 (July 17, 2023)
 
-This is the initial realse of `tower-async-test`, a fork of <https://github.com/tower-rs/tower> and makes use of `async traits`
+This is the initial release of `tower-async-test`, a fork of <https://github.com/tower-rs/tower> and makes use of `async traits`
 ([RFC-3185: Static async fn in traits](https://rust-lang.github.io/rfcs/3185-static-async-fn-in-trait.html))
 to simplify things and make it more easier to integrate async functions into middleware.
 
