@@ -23,6 +23,6 @@ edition = "2021"
 
 [dev-dependencies]
 http = "0.2"
-tower-async-layer = { version = "0.1", path = "../tower-async-layer" }
+tower-async-layer = { path = "../tower-async-layer" }
 tokio = { version = "1", features = ["macros", "time"] }
 futures = "0.3"

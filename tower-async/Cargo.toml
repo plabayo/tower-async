@@ -52,7 +52,7 @@ futures-util = { version = "0.3", default-features = false, features = ["alloc"]
 tokio = { version = "1.6", optional = true, features = ["sync"] }
 
 [dev-dependencies]
-tower-async-test = { version = "0.1", path = "../tower-async-test" }
+tower-async-test = { path = "../tower-async-test" }
 futures = "0.3"
 pin-project-lite = "0.2"
 tokio = { version = "1.6", features = ["macros", "sync", "test-util", "rt-multi-thread"] }

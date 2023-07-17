@@ -38,7 +38,7 @@ tower-async-layer = { version = "0.1", path = "../tower-async-layer" }
 tokio = { version = "1.11", features = ["macros", "rt-multi-thread"] }
 tokio-test = { version = "0.4"  }
 tower = { version = "0.4", features = ["full"] }
-tower-async = { version = "0.1", path = "../tower-async", features = ["full"] }
+tower-async = { path = "../tower-async", features = ["full"] }
 pin-project-lite = "0.2"
 futures-core = "0.3"
 hyper = { version = "0.14", features = ["full"] }
