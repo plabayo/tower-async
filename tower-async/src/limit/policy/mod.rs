@@ -3,7 +3,7 @@
 //! for a given request.
 
 mod concurrent;
-pub use concurrent::ConcurrentPolicy;
+pub use concurrent::{ConcurrentPolicy, LimitReached};
 
 /// The output of a limit policy.
 #[derive(Debug)]

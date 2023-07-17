@@ -12,7 +12,10 @@ use bytes::Bytes;
 use clap::Parser;
 use http::{header, StatusCode};
 use hyper::service::make_service_fn;
-use tower_async::{limit::policy::ConcurrentPolicy, Service, ServiceBuilder};
+use tower_async::{
+    limit::policy::{ConcurrentPolicy, LimitReached},
+    BoxError, Service, ServiceBuilder,
+};
 use tower_async_bridge::ClassicServiceExt;
 use tower_async_http::{
     trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer},
@@ -110,8 +113,8 @@ async fn main() {
     let sensitive_headers: Arc<[_]> = vec![header::AUTHORIZATION, header::COOKIE].into();
 
     let web_service = ServiceBuilder::new()
+        .compression()
         .sensitive_request_headers(sensitive_headers.clone())
-        // Add high level tracing/logging to all requests
         .layer(
             TraceLayer::new_for_http()
             .on_body_chunk(|chunk: &Bytes, latency: Duration, _: &tracing::Span| {
@@ -122,8 +125,18 @@ async fn main() {
         )
         .sensitive_response_headers(sensitive_headers)
         .timeout(Duration::from_secs(10))
+        .map_result(|result: Result<Response, BoxError>| {
+            if let Err(err) = &result {
+                if err.is::<LimitReached>() {
+                    return Ok(hyper::Response::builder()
+                        .status(StatusCode::TOO_MANY_REQUESTS)
+                        .body(hyper::Body::empty())
+                        .unwrap());
+                }
+            }
+            result
+        })
         .limit(ConcurrentPolicy::new(1))
-        .compression()
         .service(WebServer::new())
         .into_classic();
 
