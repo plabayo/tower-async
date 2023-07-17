@@ -8,7 +8,7 @@ use clap::Parser;
 use tower_async::{Layer, Service, ServiceBuilder};
 use tower_async_bridge::ClassicLayerExt;
 
-/// Simple Hyper HTTP server with an HTTP API
+/// Simple Axum server with an HTTP API
 #[derive(Debug, Parser)]
 struct Config {
     /// The port to listen on

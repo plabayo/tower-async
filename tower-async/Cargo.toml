@@ -27,17 +27,21 @@ __common = ["futures-core"]
 
 full = [
   "filter",
+  "limit",
   "make",
   "retry",
   "timeout",
   "util",
+  "util-tokio",
 ]
 
 filter = ["__common", "futures-util"]
+limit = ["util"]
 make = ["futures-util", "tokio/io-std"]
 retry = ["__common", "tokio/time", "util"]
 timeout = ["tokio/time", "tokio/macros"]
 util = ["__common", "futures-util"]
+util-tokio = ["util", "tokio/time"]
 
 [dependencies]
 tower-async-layer = { version = "0.1", path = "../tower-async-layer" }

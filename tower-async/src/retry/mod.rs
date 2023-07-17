@@ -1,6 +1,5 @@
 //! Middleware for retrying "failed" requests.
 
-pub mod backoff;
 pub mod budget;
 mod layer;
 mod policy;

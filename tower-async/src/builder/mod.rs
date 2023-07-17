@@ -162,6 +162,18 @@ impl<L> ServiceBuilder<L> {
         self.layer(crate::filter::AsyncFilterLayer::new(predicate))
     }
 
+    /// Limit the number of in-flight requests.
+    ///
+    /// This wraps the inner service with an instance of the [`Limit`]
+    /// middleware. The `policy` determines how to handle requests sent
+    /// to the inner service when the limit has been reached.
+    ///
+    /// [`Limit`]: crate::limit::Limit
+    #[cfg(feature = "limit")]
+    pub fn limit<P>(self, policy: P) -> ServiceBuilder<Stack<crate::limit::LimitLayer<P>, L>> {
+        self.layer(crate::limit::LimitLayer::new(policy))
+    }
+
     /// Map one request type to another.
     ///
     /// This wraps the inner service with an instance of the [`MapRequest`]
