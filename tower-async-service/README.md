@@ -1,4 +1,4 @@
-# Tower Service
+# Tower Async Service
 
 The foundational `Service` trait that [Tower Async] is based on.
 
