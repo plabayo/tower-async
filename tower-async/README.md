@@ -9,9 +9,9 @@ networking clients and servers.
 [![Build Status][actions-badge]][actions-url]
 
 [crates-badge]: https://img.shields.io/crates/v/tower-async-service.svg
-[crates-url]: https://crates.io/crates/tower-async-service
-[docs-badge]: https://docs.rs/tower-async-service/badge.svg
-[docs-url]: https://docs.rs/tower-async-service
+[crates-url]: https://crates.io/crates/tower-async
+[docs-badge]: https://docs.rs/tower-async/badge.svg
+[docs-url]: https://docs.rs/tower-async
 [mit-badge]: https://img.shields.io/badge/license-MIT-blue.svg
 [mit-url]: LICENSE
 [actions-badge]: https://github.com/plabayo/tower-async/workflows/CI/badge.svg
