@@ -2,7 +2,8 @@
 //! define how requests are handled when the limit is reached
 //! for a given request.
 
-pub mod concurrent;
+mod concurrent;
+pub use concurrent::ConcurrentPolicy;
 
 /// The output of a limit policy.
 #[derive(Debug)]

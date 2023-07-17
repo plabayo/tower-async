@@ -25,3 +25,23 @@ This examples contains a simple key/value store with an HTTP API built using axu
 RUST_LOG=axum_key_value_store=trace,tower_async_http=trace \
     cargo run --example axum-key-value-store
 ```
+
+# hyper-http-server
+
+This example contains an example on how to use a custom tower-async service
+as your http service in a stacked tower-async app.
+
+## Endpoints
+
+- `GET /fast` — Simulate a fast endpoint
+- `GET /slow` — Simulate a slow endpoint
+
+If you first run the `/slow` endpoint and then immediately the `/fast` one in another shell,
+you should be getting a `429` response due to the rate limit reached.
+
+## Running the example
+
+```
+RUST_LOG=hyper_http_server=trace,tower_async_http=trace \
+    cargo run --example hyper-http-server
+```

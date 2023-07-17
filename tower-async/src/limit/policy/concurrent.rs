@@ -6,7 +6,7 @@
 //!
 //! ```
 //! use tower_async::{
-//!     limit::{Limit, policy::concurrent::ConcurrentPolicy},
+//!     limit::{Limit, policy::ConcurrentPolicy},
 //!     Service, ServiceExt, service_fn,
 //! };
 //! # use std::convert::Infallible;

@@ -71,7 +71,7 @@ where
 mod tests {
     use std::convert::Infallible;
 
-    use crate::limit::policy::concurrent::ConcurrentPolicy;
+    use crate::limit::policy::ConcurrentPolicy;
     use crate::service_fn;
 
     use super::*;
