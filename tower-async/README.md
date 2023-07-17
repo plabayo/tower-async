@@ -266,17 +266,6 @@ Note that some features are not supported on purpose:
 
 See the previous FAQ point to get our point of view related to load balancing and the like.
 
-We do think there is plenty of room for growth and improvement.
-Following utilities probably do still a place here and we welcome contributons:
-
-- As `MakeService` functionality: `limit`
-
-And there are probably some more. The test coverage is also significantly less, so also
-here do we welcome contributions.
-
-And in general welcome any contributions.
-Best to do come and chat with us prior to starting any big endavours.
-
 ## License
 
 This project is licensed under the [MIT license](LICENSE).
