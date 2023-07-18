@@ -112,6 +112,11 @@ note that:
 The documentation also contains some smaller examples and of course the codebase can be read as well,
 together with its unit tests.
 
+> Are you still new to Rust, or feel you have much to learn on your Rust learning journey?
+> You might find it useful to use <https://rust-lang.guide/> as your learning guide,
+> which might also help you get you on your way to understand the more complicated parts
+> of this monorepo codebase.
+
 ## Sponsorship
 
 Regular and onetime sponsors alike help us to pay the development and service costs
