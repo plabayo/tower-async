@@ -1,10 +1,16 @@
 use crate::{AsyncServiceWrapper, ClassicServiceWrapper};
 
-/// AsyncLayerExt adds a method to _any_ [tower_layer::Layer] that
-/// wraps it in an [AsyncLayer] so that it can be used within a [tower_async_layer::Layer] environment.
+/// AsyncLayerExt adds a method to _any_ [`tower_layer::Layer`] that
+/// wraps it in an [AsyncLayer] so that it can be used within a [`tower_async_layer::Layer`] environment.
+///
+/// [`tower_layer::Layer`]: https://docs.rs/tower-layer/*/tower_layer/trait.Layer.html
+/// [`tower_async_layer::Layer`]: https://docs.rs/tower-async-layer/*/tower_async_layer/trait.Layer.html
 pub trait AsyncLayerExt<S>: tower_layer::Layer<S> {
-    /// Wrap a [tower_layer::Layer],
-    /// so that it can be used within a [tower_async_layer::Layer] environment.
+    /// Wrap a [`tower_layer::Layer`],
+    /// so that it can be used within a [`tower_async_layer::Layer`] environment.
+    ///
+    /// [`tower_layer::Layer`]: https://docs.rs/tower-layer/*/tower_layer/trait.Layer.html
+    /// [`tower_async_layer::Layer`]: https://docs.rs/tower-async-layer/*/tower_async_layer/trait.Layer.html
     fn into_async(self) -> AsyncLayer<Self, S>
     where
         Self: Sized,
@@ -24,9 +30,12 @@ where
     }
 }
 
-/// A wrapper around a [tower_layer::Layer] that implements
-/// [tower_async_layer::Layer] and is the type returned
+/// A wrapper around a [`tower_layer::Layer`] that implements
+/// [`tower_async_layer::Layer`] and is the type returned
 /// by [AsyncLayerExt::into_async].
+///
+/// [`tower_layer::Layer`]: https://docs.rs/tower-layer/*/tower_layer/trait.Layer.html
+/// [`tower_async_layer::Layer`]: https://docs.rs/tower-async-layer/*/tower_async_layer/trait.Layer.html
 pub struct AsyncLayer<L, S> {
     inner: L,
     _marker: std::marker::PhantomData<S>,

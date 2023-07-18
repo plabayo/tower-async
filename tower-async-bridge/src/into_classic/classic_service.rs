@@ -1,8 +1,13 @@
 use crate::ClassicServiceWrapper;
 
-/// Extension trait for [tower::Service] that provides the [ClassicServiceExt::into_classic] method.
+/// Extension trait for [`tower::Service`] that provides the [ClassicServiceExt::into_classic] method.
+///
+/// [`tower::Service`]: https://docs.rs/tower/*/tower/trait.Service.html
 pub trait ClassicServiceExt<Request>: tower_async_service::Service<Request> {
-    /// Turn this [tower::Service] into an async [tower_async_service::Service].
+    /// Turn this [`tower::Service`] into an async [`tower_async_service::Service`].
+    ///
+    /// [`tower::Service`]: https://docs.rs/tower/*/tower/trait.Service.html
+    /// [`tower_async_service::Service`]: https://docs.rs/tower-async-service/*/tower_async_service/trait.Service.html
     fn into_classic(self) -> ClassicServiceWrapper<Self>
     where
         Self: Sized,

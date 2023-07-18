@@ -5,9 +5,10 @@ use crate::AsyncServiceWrapper;
 /// [`tower::Service`]: https://docs.rs/tower/*/tower/trait.Service.html
 /// [`Service`]: https://docs.rs/tower-async/*/tower_async/trait.Service.html
 pub trait AsyncServiceExt<Request>: tower_service::Service<Request> {
-    /// Turn this [`tower::Service`] into an async [`Service`].
+    /// Turn this [`tower::Service`] into a [`tower_async_service::Service`].
     ///
-    /// [`Service`]: https://docs.rs/tower-async/*/tower_async/trait.Service.html
+    /// [`tower::Service`]: https://docs.rs/tower-service/*/tower_service/trait.Service.html
+    /// [`tower_async_service::Service`]: https://docs.rs/tower-async/*/tower_async/trait.Service.html
     fn into_async(self) -> AsyncServiceWrapper<Self>
     where
         Self: Sized,
