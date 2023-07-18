@@ -170,15 +170,15 @@
 //!
 //! See [here][all_layers] for a complete list of all middleware provided by
 //! Tower.
-//! 
+//!
 //! Browse the examples at [`tower-async-http/examples`](https://github.com/plabayo/tower-async/tree/master/tower-async-http/examples) to see some examples
 //! on how to use `tower-async` and its sibling crates. While these are focussed on http examples,
 //! note that:
-//! 
+//!
 //! - `tower-async` can work for any request-response flow (akin to `tower`);
 //! - you can also use `tower-async` with http web services without making use of the `tower-async-http` crate,
 //!   it only is there to provide extra middleware for http-specific purposes, but this is all optional.
-//! 
+//!
 //! The documentation also contains some smaller examples and of course the codebase can be read as well,
 //! together with its unit tests.
 //!
