@@ -101,6 +101,17 @@ check out some of the original Tower [guides].
 We work exactly the same as Tower, expect in an async manner and slightly easier to use as such.
 But the core ideas are obviously the same, so it should never the less help you to get started.
 
+Browse the examples at [`tower-async-http/examples`](https://github.com/plabayo/tower-async/tree/master/tower-async-http/examples) to see some examples
+on how to use `tower-async` and its sibling crates. While these are focussed on http examples,
+note that:
+
+- `tower-async` can work for any request-response flow (akin to `tower`);
+- you can also use `tower-async` with http web services without making use of the `tower-async-http` crate,
+  it only is there to provide extra middleware for http-specific purposes, but this is all optional.
+
+The documentation also contains some smaller examples and of course the codebase can be read as well,
+together with its unit tests.
+
 ## Sponsorship
 
 Regular and onetime sponsors alike help us to pay the development and service costs
@@ -181,8 +192,8 @@ We do not have a roadmap for Tower Async. But here are some ideas on what you ca
 [`tower::ServiceBuilder`]: https://docs.rs/tower/*/tower/builder/struct.ServiceBuilder.html
 [`tower::Layer`]: https://docs.rs/tower/*/tower/trait.Layer.html
 [`tower_async`]: https://docs.rs/tower-async/*/tower_async
-[`tower_async::Service`]: https://docs.rs/tower-async/*/tower_async/trait.Service.html
+[`tower_async::Service`]: https://docs.rs/tower-async-service/*/tower_async_service/trait.Service.html
 [`tower_async::ServiceBuilder`]: https://docs.rs/tower-async/*/tower_async/builder/struct.ServiceBuilder.html
-[`tower_async::Layer`]: https://docs.rs/tower-async/*/tower_async/trait.Layer.html
+[`tower_async::Layer`]: https://docs.rs/tower-async-layer/*/tower_async_layer/trait.Layer.html
 
 [guides]: https://github.com/tower-rs/tower/tree/master/guides

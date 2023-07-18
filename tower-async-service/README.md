@@ -25,7 +25,7 @@ to integrate async functions into middleware.
 This fork is made entirely with the needs of the author in mind,
 and thus might not yet contain all features you might need.
 
-Come join us at discord at <https://discord.com/channels/1114459060050333696/1123537825929900113>
+Come join us at discord on the `#tower-async` public channel at [Discord](https://discord.gg/29EetaSYCD)
 or tag `@glendc` at Tokio's Tower discord instead.
 
 Where suitable we'll keep in sync (manually) with Tower and if the

@@ -116,7 +116,7 @@ with this (Aync Trait) version (Fork).
 
 ## Usage
 
-Tower provides an abstraction layer, and generic implementations of various
+Tower (Async) provides an abstraction layer, and generic implementations of various
 middleware. This means that the `tower-async` crate on its own does *not* provide
 a working implementation of a network client or server. Instead, Tower's
 [`Service` trait][`Service`] provides an integration point between
@@ -170,18 +170,29 @@ To get started using all of Tower's optional middleware, add this to your
 `Cargo.toml`:
 
 ```toml
-tower-async = { version = "0.4", features = ["full"] }
+tower-async = { version = "0.1", features = ["full"] }
 ```
 
 Alternatively, you can only enable some features. For example, to enable
 only the [`timeout`][timeouts] middleware, write:
 
 ```toml
-tower-async = { version = "0.4", features = ["timeout"] }
+tower-async = { version = "0.1", features = ["timeout"] }
 ```
 
 See [here][all_layers] for a complete list of all middleware provided by
 Tower.
+
+Browse the examples at [`tower-async-http/examples`](https://github.com/plabayo/tower-async/tree/master/tower-async-http/examples) to see some examples
+on how to use `tower-async` and its sibling crates. While these are focussed on http examples,
+note that:
+
+- `tower-async` can work for any request-response flow (akin to `tower`);
+- you can also use `tower-async` with http web services without making use of the `tower-async-http` crate,
+  it only is there to provide extra middleware for http-specific purposes, but this is all optional.
+
+The documentation also contains some smaller examples and of course the codebase can be read as well,
+together with its unit tests.
 
 [`Service`]: https://docs.rs/tower-async/latest/tower-async/trait.Service.html
 [`Layer`]: https://docs.rs/tower-async/latest/tower-async/trait.Layer.html
@@ -200,9 +211,9 @@ Tower.
 [`tower::ServiceBuilder`]: https://docs.rs/tower/*/tower/builder/struct.ServiceBuilder.html
 [`tower::Layer`]: https://docs.rs/tower/*/tower/trait.Layer.html
 [`tower_async`]: https://docs.rs/tower-async/*/tower_async
-[`tower_async::Service`]: https://docs.rs/tower-async/*/tower_async/trait.Service.html
+[`tower_async::Service`]: https://docs.rs/tower-async-service/*/tower_async_service/trait.Service.html
 [`tower_async::ServiceBuilder`]: https://docs.rs/tower-async/*/tower_async/builder/struct.ServiceBuilder.html
-[`tower_async::Layer`]: https://docs.rs/tower-async/*/tower_async/trait.Layer.html
+[`tower_async::Layer`]: https://docs.rs/tower-async-layer/*/tower_async_layer/trait.Layer.html
 
 
 ## Supported Rust Versions

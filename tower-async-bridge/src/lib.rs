@@ -31,9 +31,9 @@
 //! [`tower::ServiceBuilder`]: https://docs.rs/tower/*/tower/builder/struct.ServiceBuilder.html
 //! [`tower::Layer`]: https://docs.rs/tower/*/tower/trait.Layer.html
 //! [`tower_async`]: https://docs.rs/tower-async/*/tower_async
-//! [`tower_async::Service`]: https://docs.rs/tower-async/*/tower_async/trait.Service.html
+//! [`tower_async::Service`]: https://docs.rs/tower-async-service/*/tower_async_service/trait.Service.html
 //! [`tower_async::ServiceBuilder`]: https://docs.rs/tower-async/*/tower_async/builder/struct.ServiceBuilder.html
-//! [`tower_async::Layer`]: https://docs.rs/tower-async/*/tower_async/trait.Layer.html
+//! [`tower_async::Layer`]: https://docs.rs/tower-async-layer/*/tower_async_layer/trait.Layer.html
 
 #[cfg(feature = "into_async")]
 mod into_async;
