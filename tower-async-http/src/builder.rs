@@ -142,7 +142,7 @@ pub trait ServiceBuilderExt<L>: crate::sealed::Sealed<L> + Sized {
         self,
     ) -> ServiceBuilder<Stack<crate::trace::TraceLayer<SharedClassifier<GrpcErrorsAsFailures>>, L>>;
 
-    /// Follow redirect resposes using the [`Standard`] policy.
+    /// Follow redirect responses using the [`Standard`] policy.
     ///
     /// See [`tower_async_http::follow_redirect`] for more details.
     ///

@@ -165,7 +165,7 @@ async fn precompressed_deflate() {
 }
 
 #[tokio::test]
-async fn unsupported_precompression_alogrithm_fallbacks_to_uncompressed() {
+async fn unsupported_precompression_algorithm_fallbacks_to_uncompressed() {
     let svc = ServeDir::new("./test-files").precompressed_gzip();
 
     let request = Request::builder()

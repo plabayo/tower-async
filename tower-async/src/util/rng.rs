@@ -3,7 +3,7 @@
 //! This module provides a generic [`Rng`] trait and a [`HasherRng`] that
 //! implements the trait based on [`RandomState`] or any other [`Hasher`].
 //!
-//! These utlities replace tower's internal usage of `rand` with these smaller,
+//! These utilities replace tower's internal usage of `rand` with these smaller,
 //! more lightweight methods. Most of the implementations are extracted from
 //! their corresponding `rand` implementations.
 //!
@@ -27,11 +27,11 @@ pub trait Rng {
         // Borrowed from:
         // https://github.com/rust-random/rand/blob/master/src/distributions/float.rs#L106
         let float_size = std::mem::size_of::<f64>() as u32 * 8;
-        let precison = 52 + 1;
-        let scale = 1.0 / ((1u64 << precison) as f64);
+        let precision = 52 + 1;
+        let scale = 1.0 / ((1u64 << precision) as f64);
 
         let value = self.next_u64();
-        let value = value >> (float_size - precison);
+        let value = value >> (float_size - precision);
 
         scale * value as f64
     }

@@ -28,7 +28,7 @@ pub mod marker {
 }
 
 /// Defines the test data structure used by the builder,
-/// to store internally the registeresd tests.
+/// to store internally the registered tests.
 #[derive(Debug)]
 pub struct Test<In, Out> {
     output: Out,

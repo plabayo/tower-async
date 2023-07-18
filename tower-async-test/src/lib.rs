@@ -11,7 +11,7 @@
 // `rustdoc::broken_intra_doc_links` is checked on CI
 
 //! This crate is to be used to test [`tower_async_layer::Layer`]s,
-//! by helping you write tests to gurantee this.
+//! by helping you write tests to guarantee this.
 //!
 //! The guarantees that it test are:
 //!

@@ -449,7 +449,7 @@ mod tests {
         let req = Request::builder()
             .header(
                 "x-request-id",
-                "this-will-be-overriden-by-override_request_header-middleware",
+                "this-will-be-overridden-by-override_request_header-middleware",
             )
             .body(Body::empty())
             .unwrap();

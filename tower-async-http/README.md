@@ -31,7 +31,7 @@ with any library or framework that also uses [http]. For example [hyper].
 Tower Async requires nightly Rust for the time being and has no backwards compatibility
 promises for the time being.
 
-Once `async traits` are stabalized we'll start supporting stable rust once again,
+Once `async traits` are stabilized we'll start supporting stable rust once again,
 and we can start working towards backwards compatibility.
 
 Read <https://blog.rust-lang.org/inside-rust/2023/05/03/stabilizing-async-fn-in-trait.html> for more information

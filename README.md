@@ -138,7 +138,7 @@ As such it is also possible to use these crates on projects that use `Tonic`, `H
 Tower Async requires nightly Rust for the time being and has no backwards compatibility
 promises for the time being.
 
-Once `async traits` are stabalized we'll start supporting stable rust once again,
+Once `async traits` are stabilized we'll start supporting stable rust once again,
 and we can start working towards backwards compatibility.
 
 Read <https://blog.rust-lang.org/inside-rust/2023/05/03/stabilizing-async-fn-in-trait.html> for more information
@@ -179,7 +179,7 @@ the great work done and continued effort being put in by them.
 You can find more about Plabayo Sponsorship at <https://github.com/sponsors/plabayo>.
 
 One time sponsorships (the so called "buy me a coffee", but then via GitHub Sponsors payments),
-are welcome as much as regular sponsors. Not everbody have the financial means to sponsor,
+are welcome as much as regular sponsors. Not everybody have the financial means to sponsor,
 so feel free [to contribute in any other way](#contribution) that you can think of.
 
 ## FAQ
