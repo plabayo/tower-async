@@ -26,7 +26,7 @@
 //! Best in our opinion is to use one or the other and not to combine the two. But if you do absolutely must
 //! use one combined with the other, this crate should allow you to do exactly that.
 //!
-//! [`tower`]: https://docs.rs/tower/*/t
+//! [`tower`]: https://docs.rs/tower/*/tower
 //! [`tower::Service`]: https://docs.rs/tower/*/tower/trait.Service.html
 //! [`tower::ServiceBuilder`]: https://docs.rs/tower/*/tower/builder/struct.ServiceBuilder.html
 //! [`tower::Layer`]: https://docs.rs/tower/*/tower/trait.Layer.html

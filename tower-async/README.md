@@ -23,6 +23,59 @@ Tower Async is a fork of <https://github.com/tower-rs/tower>
 and makes use of `async traits` to simplify things and make it more easier
 to integrate async functions into middleware.
 
+
+
+> If you want to see a prime example of how much simpler
+> using [`tower_async`] is versus [`tower`], you can see an example here:
+>
+> A delay service using [`tower`]: <https://github.com/plabayo/tower-async/blob/4ae0c4747fac6cc69b27c87a7ea5cacdd8bab3fb/tower-async-bridge/src/into_async/async_layer.rs#L91-L169>.
+>
+> That same service can be written in [`tower_async`] as follows:
+>
+> ```rust
+> #[derive(Debug)]
+> struct DelayService<S> {
+>     inner: S,
+>     delay: std::time::Duration,
+> }
+> 
+> impl<S> DelayService<S> {
+>     fn new(inner: S, delay: std::time::Duration) -> Self {
+>         Self { inner, delay }
+>     }
+> }
+> 
+> impl<S, Request> tower_async_service::Service<Request> for DelayService<S>
+> where
+>     S: tower_async_service::Service<Request>,
+> {
+>     type Response = S::Response;
+>     type Error = S::Error;
+> 
+>     async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
+>         tokio::time::sleep(self.delay).await;
+>         self.inner.call(request)
+>     }
+> }
+> ```
+>
+> If you compare that with the linked [`tower`] version you can probably agree
+> that things are a lot simpler if you do not have to hand write future state machines
+> yourself, which is the reason why we have the `async` sugar in the first place.
+>
+> Of course I do acknowledge that if you make use of amazing utilities provided
+> by crates such as <https://docs.rs/futures-util-preview/latest/futures_util/future/index.html>
+> That you an write pretty much the same code without having to handwrite the future yourself.
+>
+> This is however not always possible, and it does mean that you need to (1) know about this
+> and (2) pull it as a dependency and all that it brings with it. While in reallity you really
+> just want to be able write your middleware in an `async` manner.
+>
+> We fully acknowledge that [`tower`] _had_ to use the approach it used as for many years this
+> was simply the only sensible thing to do, unless you want to force your users
+> to make use of the <https://docs.rs/async-trait/latest/async_trait/>, a choice not
+> everyone is willing to make, and sometimes they might not even have the luxary to do so.
+
 Come join us at discord on the `#tower-async` public channel at [Discord](https://discord.gg/29EetaSYCD)
 or tag `@glendc` at Tokio's Tower discord instead.
 
@@ -31,15 +84,15 @@ opportunity arises we'll contribute back "upstream" as well.
 Given however how big the diversange we aren't sure how likely that is.
 
 This set of libraries is best suited in an ecosystem of its own,
-that is to say, making use only of `tower-async` libraries and dependents on it.
-At the very least it is desired that `tower-async` is the puppeteer with where needed
-making use of `tower` (classic) (middleware) layers.
+that is to say, making use only of [`tower-async`] libraries and dependents on it.
+At the very least it is desired that [`tower-async`] is the puppeteer with where needed
+making use of [`tower`] (classic) (middleware) layers.
 
 For an example on how to operate purely within a `tower-async` environment you can
 explore [the Rama codebase](https://www.github.com/plabayo/rama), a proxy framework,
-written purely with a `tower-async` mindset, and the main motivator to start this fork.
+written purely with a [`tower-async`] mindset, and the main motivator to start this fork.
 
-You can however also bridge `tower` and `tower-async` in any other way. Please consult
+You can however also bridge [`tower`] and [`tower-async`] in any other way. Please consult
 [the "Bridging to Tokio's official Tower Ecosystem" chapter](#Bridging-to-Tokios-official-Tower-Ecosystem)
 for more information on how to do that.
 
@@ -206,7 +259,7 @@ together with its unit tests.
 [`tower-async-layer`]: https://crates.io/crates/tower-async-layer
 [open a PR]: https://github.com/plabayo/tower-async/compare
 
-[`tower`]: https://docs.rs/tower/*/t
+[`tower`]: https://docs.rs/tower/*/tower
 [`tower::Service`]: https://docs.rs/tower/*/tower/trait.Service.html
 [`tower::ServiceBuilder`]: https://docs.rs/tower/*/tower/builder/struct.ServiceBuilder.html
 [`tower::Layer`]: https://docs.rs/tower/*/tower/trait.Layer.html

@@ -194,7 +194,7 @@
 //! [`tower-async-layer`]: https://crates.io/crates/tower-async-layer
 //! [open a PR]: https://github.com/plabayo/tower-async/compare
 //!
-//! [`tower`]: https://docs.rs/tower/*/t
+//! [`tower`]: https://docs.rs/tower/*/tower
 //! [`tower::Service`]: https://docs.rs/tower/*/tower/trait.Service.html
 //! [`tower::ServiceBuilder`]: https://docs.rs/tower/*/tower/builder/struct.ServiceBuilder.html
 //! [`tower::Layer`]: https://docs.rs/tower/*/tower/trait.Layer.html
