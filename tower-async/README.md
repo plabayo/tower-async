@@ -148,14 +148,16 @@ Furthermore we also urge you to only use this kind of approach for transition pu
 Best in our opinion is to use one or the other and not to combine the two. But if you do absolutely must
 use one combined with the other, `tower-async-bridge` should allow you to do exactly that.
 
-### The Tower Ecosystem
+### The Tower Async Ecosystem
 
-Tower is made up of the following crates:
+Tower Async is made up of the following crates:
 
 * [`tower-async`] (this crate)
 * [`tower-async-bridge`]
 * [`tower-async-service`]
 * [`tower-async-layer`]
+* [`tower-async-test`]
+* [`tower-async-http`]
 
 Since the [`Service`] and [`Layer`] traits are important integration points
 for all libraries using Tower, they are kept as stable as possible, and
@@ -166,6 +168,12 @@ middleware, and [utilities] for working with [`Service`]s and [`Layer`]s.
 
 [`tower-async-bridge`] is there to bridge Tokio's official Tower ecosystem
 with this (Aync Trait) version (Fork).
+
+Testing [`Layer`]s can be done with unit tests very easily suing [`tower-async-test`].
+
+Finally in case you are using [`tower-async`] for HTTP purposes (e.g. an HTTP web server),
+then you might find it useful to also make use of [`tower-async-http`] as it provides you
+with builder extensions and middleware specifically tailored for http purposes.
 
 ## Usage
 
@@ -257,6 +265,8 @@ together with its unit tests.
 [`tower-async-bridge`]: https://crates.io/crates/tower-async-bridge
 [`tower-async-service`]: https://crates.io/crates/tower-async-service
 [`tower-async-layer`]: https://crates.io/crates/tower-async-layer
+[`tower-async-test`]: https://crates.io/crates/tower-async-test
+[`tower-async-http`]: https://crates.io/crates/tower-async-http
 [open a PR]: https://github.com/plabayo/tower-async/compare
 
 [`tower`]: https://docs.rs/tower/*/tower
