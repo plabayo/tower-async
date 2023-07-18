@@ -4,12 +4,12 @@ description = """
 Tower Async middleware and utilities for HTTP clients and servers.
 An "Async Trait" fork from the original Tower Library.
 """
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Glen De Cauwsemaecker <glen@plabayo.tech>"]
 edition = "2021"
 license = "MIT"
-repository = "https://github.com/plabayo/async-tower"
-homepage = "https://github.com/plabayo/async-tower"
+repository = "https://github.com/plabayo/tower-async"
+homepage = "https://github.com/plabayo/tower-async"
 categories = ["asynchronous", "network-programming", "web-programming"]
 keywords = ["io", "async", "futures", "service", "http"]
 
