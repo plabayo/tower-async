@@ -5,8 +5,8 @@
 //!
 //! # Differences from `tower::timeout`
 //!
-//! tower's [`Timeout`](tower::timeout::Timeout) middleware uses an error to signal timeout, i.e.
-//! it changes the error type to [`BoxError`](tower::BoxError). For HTTP services that is rarely
+//! tower's [`Timeout`](tower_async::timeout::Timeout) middleware uses an error to signal timeout, i.e.
+//! it changes the error type to [`BoxError`](tower_async::BoxError). For HTTP services that is rarely
 //! what you want as returning errors will terminate the connection without sending a response.
 //!
 //! This middleware won't change the error type and instead return a `408 Request Timeout`
