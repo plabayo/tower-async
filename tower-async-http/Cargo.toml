@@ -4,7 +4,7 @@ description = """
 Tower Async middleware and utilities for HTTP clients and servers.
 An "Async Trait" fork from the original Tower Library.
 """
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Glen De Cauwsemaecker <glen@plabayo.tech>"]
 edition = "2021"
 license = "MIT"
@@ -25,7 +25,7 @@ tower-async-layer = { version = "0.1", path = "../tower-async-layer" }
 tower-async-service = { version = "0.1", path = "../tower-async-service" }
 
 # optional dependencies
-async-compression = { version = "0.3", optional = true, features = ["tokio"] }
+async-compression = { version = "0.4", optional = true, features = ["tokio"] }
 base64 = { version = "0.21", optional = true }
 http-range-header = "0.3.0"
 iri-string = { version = "0.7.0", optional = true }
