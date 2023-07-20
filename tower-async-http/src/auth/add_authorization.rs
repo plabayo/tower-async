@@ -37,11 +37,13 @@
 //! # }
 //! ```
 
-use base64::{engine::general_purpose::STANDARD as base64, Engine};
+use base64::Engine as _;
 use http::{HeaderValue, Request, Response};
 use std::convert::TryFrom;
 use tower_async_layer::Layer;
 use tower_async_service::Service;
+
+const BASE64: base64::engine::GeneralPurpose = base64::engine::general_purpose::STANDARD;
 
 /// Layer that applies [`AddAuthorization`] which adds authorization to all requests using the
 /// [`Authorization`] header.
@@ -67,7 +69,7 @@ impl AddAuthorizationLayer {
     /// Since the username and password is sent in clear text it is recommended to use HTTPS/TLS
     /// with this method. However use of HTTPS/TLS is not enforced by this middleware.
     pub fn basic(username: &str, password: &str) -> Self {
-        let encoded = base64.encode(format!("{}:{}", username, password));
+        let encoded = BASE64.encode(format!("{}:{}", username, password));
         let value = HeaderValue::try_from(format!("Basic {}", encoded)).unwrap();
         Self { value }
     }

@@ -359,7 +359,9 @@ impl CompressionLevel {
             CompressionLevel::Fastest => AsyncCompressionLevel::Fastest,
             CompressionLevel::Best => AsyncCompressionLevel::Best,
             CompressionLevel::Default => AsyncCompressionLevel::Default,
-            CompressionLevel::Precise(quality) => AsyncCompressionLevel::Precise(quality),
+            CompressionLevel::Precise(quality) => {
+                AsyncCompressionLevel::Precise(quality.try_into().unwrap_or(i32::MAX))
+            }
         }
     }
 }
