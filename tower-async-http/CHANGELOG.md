@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 0.1.2 (July 20, 2023)
 
 Sync with original `tower-http` codebase from [`0.4.1`](https://github.com/tower-rs/tower-http/releases/tag/tower-http-0.4.1)
-to [`0.4.2`](https://github.com/tower-rs/tower-http/releases/tag/tower-http-0.4.2).
+to [`0.4.3`](https://github.com/tower-rs/tower-http/releases/tag/tower-http-0.4.3).
 
 ## Added
 

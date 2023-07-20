@@ -336,7 +336,7 @@ pub enum CompressionLevel {
     /// qualities. The interpretation of this depends on the algorithm chosen
     /// and the specific implementation backing it.
     /// Qualities are implicitly clamped to the algorithm's maximum.
-    Precise(i32),
+    Precise(u32),
 }
 
 #[cfg(any(
@@ -359,7 +359,9 @@ impl CompressionLevel {
             CompressionLevel::Fastest => AsyncCompressionLevel::Fastest,
             CompressionLevel::Best => AsyncCompressionLevel::Best,
             CompressionLevel::Default => AsyncCompressionLevel::Default,
-            CompressionLevel::Precise(quality) => AsyncCompressionLevel::Precise(quality),
+            CompressionLevel::Precise(quality) => {
+                AsyncCompressionLevel::Precise(quality.try_into().unwrap_or(i32::MAX))
+            }
         }
     }
 }
