@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.1.3 (July 24, 2023)
+
+## Changed
+
+- update `http-range-header` from `0.3.0` to `0.4.0` and fix range OOB test from reject to accept;
+
 ## 0.1.2 (July 20, 2023)
 
 Sync with original `tower-http` codebase from [`0.4.1`](https://github.com/tower-rs/tower-http/releases/tag/tower-http-0.4.1)
