@@ -28,20 +28,20 @@ full = [
 into_async = ["tower/util"]
 
 [dependencies]
-tower-service = { version = "0.3" }
-tower-layer = { version = "0.3" }
 tower = { version = "0.4", optional = true }
-tower-async-service = { version = "0.1", path = "../tower-async-service" }
 tower-async-layer = { version = "0.1", path = "../tower-async-layer" }
+tower-async-service = { version = "0.1", path = "../tower-async-service" }
+tower-layer = { version = "0.3" }
+tower-service = { version = "0.3" }
 
 [dev-dependencies]
-tokio = { version = "1.11", features = ["macros", "rt-multi-thread"] }
-tokio-test = { version = "0.4"  }
-tower = { version = "0.4", features = ["full"] }
-tower-async = { path = "../tower-async", features = ["full"] }
-pin-project-lite = "0.2"
 futures-core = "0.3"
 hyper = { version = "0.14", features = ["full"] }
+pin-project-lite = "0.2"
+tokio = { version = "1.11", features = ["macros", "rt-multi-thread"] }
+tokio-test = { version = "0.4" }
+tower = { version = "0.4", features = ["full"] }
+tower-async = { path = "../tower-async", features = ["full"] }
 
 [package.metadata.docs.rs]
 all-features = true
