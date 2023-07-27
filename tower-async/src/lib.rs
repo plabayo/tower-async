@@ -8,6 +8,7 @@
 #![allow(incomplete_features)]
 #![feature(async_fn_in_trait)]
 #![feature(impl_trait_projections)]
+#![feature(return_type_notation)]
 #![allow(elided_lifetimes_in_paths, clippy::type_complexity)]
 #![cfg_attr(test, allow(clippy::float_cmp))]
 #![cfg_attr(docsrs, feature(doc_auto_cfg, doc_cfg))]
