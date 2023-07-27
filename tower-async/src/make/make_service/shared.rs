@@ -89,7 +89,9 @@ mod tests {
         tokio::spawn(async move {
             let resp = svc.call(req).await.unwrap();
             tx.send(resp).unwrap();
-        }).await.unwrap();
+        })
+        .await
+        .unwrap();
 
         rx.await.unwrap()
     }
