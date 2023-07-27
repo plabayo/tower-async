@@ -97,8 +97,17 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn higher_order_async_fn_with_shared() {
+    async fn higher_order_async_fn_with_shared_service_struct() {
         let shared = Shared::new(EchoService);
+
+        let res = higher_order_async_fn(shared, "foo").await;
+
+        assert_eq!(res, "foo");
+    }
+
+    #[tokio::test]
+    async fn higher_order_async_fn_with_shared_service_fn() {
+        let shared = Shared::new(service_fn(echo::<&'static str>));
 
         let res = higher_order_async_fn(shared, "foo").await;
 
