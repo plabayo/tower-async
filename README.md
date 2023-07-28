@@ -28,6 +28,12 @@ pattern. If your protocol is entirely stream based, Tower Async may not be a goo
 It is a fork of <https://github.com/tower-rs/tower>
 and makes use of `async traits` ([RFC-3185: Static async fn in traits](https://rust-lang.github.io/rfcs/3185-static-async-fn-in-trait.html)) to simplify things and make it more easier to integrate async functions into middleware.
 
+> The authors of this repository are not affiliated with the
+> official Tokio and Tower codebases, other than that we as Plabayo
+> do sponsor [the Tokio project via Github Sponsors](https://github.com/sponsors/tokio-rs).
+
+Tower async was featured as crate of the week in "This week in Rust #505": <https://this-week-in-rust.org/blog/2023/07/26/this-week-in-rust-505/#crate-of-the-week>.
+
 > If you want to see a prime example of how much simpler
 > using [`tower_async`] is versus [`tower`], you can see an example here:
 >
@@ -218,6 +224,27 @@ Note that some features are not supported on purpose:
   - as such also all utilities that rely on this or build on top of this aren't supported
 
 See the previous FAQ point to get our point of view related to load balancing and the like.
+
+> Help! My Async Trait's Future is not `Send`
+
+Due to a bug in Rust, most likely its trait resolver,
+you can currently run into this not very meanigful error.
+
+Cfr: <https://github.com/rust-lang/rust/issues/114142>
+
+By using the [`turbo fish'](https://turbo.fish/) syntax you can resolve it.
+See that issue for more details on this solution.
+
+See <https://play.rust-lang.org/?version=nightly&mode=debug&edition=2021&gist=df177519275726a7df18045cf90a59a9>
+for an interactive example, with this being the important part:
+
+```rust
+// this fails to compile
+// higher_order_async_fn(EchoService, "Hello, World!").await;
+
+// ...this does work:
+higher_order_async_fn::<EchoService, _>(EchoService, "Hello, World!").await;
+```
 
 ## License
 
