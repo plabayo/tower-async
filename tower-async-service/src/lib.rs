@@ -49,11 +49,11 @@
 ///
 /// struct HelloWorld;
 ///
-/// impl Service<Request<Vec<u8>>> for HelloWorld {
+/// impl<State> Service<Request<Vec<u8>>, State> for HelloWorld {
 ///     type Response = Response<Vec<u8>>;
 ///     type Error = http::Error;
 ///
-///     async fn call(&mut self, req: Request<Vec<u8>>) -> Result<Self::Response, Self::Error> {
+///     async fn call(&mut self, req: Request<Vec<u8>>, state: State) -> Result<Self::Response, Self::Error> {
 ///         // create the body
 ///         let body: Vec<u8> = "hello, world!\n"
 ///             .as_bytes()
@@ -82,7 +82,7 @@
 ///     .connect("127.0.0.1:6379".parse().unwrap())
 ///     .unwrap();
 ///
-/// let resp = client.call(Cmd::set("foo", "this is the value of foo")).await?;
+/// let resp = client.call(Cmd::set("foo", "this is the value of foo"), ()).await?;
 ///
 /// // Wait for the future to resolve
 /// println!("Redis response: {:?}", resp);
@@ -140,9 +140,9 @@
 /// impl Error for Expired {}
 ///
 /// // We can implement `Service` for `Timeout<T>` if `T` is a `Service`
-/// impl<T, Request> Service<Request> for Timeout<T>
+/// impl<T, Request, State> Service<Request, State> for Timeout<T>
 /// where
-///     T: Service<Request>,
+///     T: Service<Request, State>,
 ///     T::Error: Into<Box<dyn Error + Send + Sync>> + 'static,
 ///     T::Response: 'static,
 /// {
@@ -153,9 +153,9 @@
 ///     // the error's type.
 ///     type Error = Box<dyn Error + Send + Sync>;
 ///
-///     async fn call(&mut self, req: Request) -> Result<Self::Response, Self::Error> {
+///     async fn call(&mut self, req: Request, state: State) -> Result<Self::Response, Self::Error> {
 ///         tokio::select! {
-///             res = self.inner.call(req) => {
+///             res = self.inner.call(req, state) => {
 ///                 res.map_err(|err| err.into())
 ///             },
 ///             _ = tokio::time::sleep(self.timeout) => {
@@ -199,7 +199,7 @@
 /// The original tower library had a `poll_ready` method which
 /// was used to implement backpressure. This was removed in this fork in
 /// favor of the above approach.
-pub trait Service<Request> {
+pub trait Service<Request, State> {
     /// Responses given by the service.
     type Response;
 
@@ -208,12 +208,12 @@ pub trait Service<Request> {
 
     /// Process the request and return the response asynchronously.
     #[must_use = "futures do nothing unless you `.await` or poll them"]
-    async fn call(&mut self, req: Request) -> Result<Self::Response, Self::Error>;
+    async fn call(&mut self, req: Request, state: State) -> Result<Self::Response, Self::Error>;
 }
 
-impl<'a, S, Request> Service<Request> for &'a mut S
+impl<'a, S, Request, State> Service<Request, State> for &'a mut S
 where
-    S: Service<Request> + 'a,
+    S: Service<Request, State> + 'a,
 {
     type Response = S::Response;
     type Error = S::Error;
@@ -221,20 +221,27 @@ where
     async fn call(
         &mut self,
         request: Request,
-    ) -> Result<<&'a mut S as Service<Request>>::Response, <&'a mut S as Service<Request>>::Error>
-    {
-        (**self).call(request).await
+        state: State,
+    ) -> Result<
+        <&'a mut S as Service<Request, State>>::Response,
+        <&'a mut S as Service<Request, State>>::Error,
+    > {
+        (**self).call(request, state).await
     }
 }
 
-impl<S, Request> Service<Request> for Box<S>
+impl<S, Request, State> Service<Request, State> for Box<S>
 where
-    S: Service<Request> + ?Sized,
+    S: Service<Request, State> + ?Sized,
 {
     type Response = S::Response;
     type Error = S::Error;
 
-    async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
-        (**self).call(request).await
+    async fn call(
+        &mut self,
+        request: Request,
+        state: State,
+    ) -> Result<Self::Response, Self::Error> {
+        (**self).call(request, state).await
     }
 }
