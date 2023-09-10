@@ -197,7 +197,7 @@
     nonstandard_style,
     missing_docs
 )]
-#![deny(unreachable_pub, private_in_public)]
+#![deny(unreachable_pub)]
 #![allow(incomplete_features)]
 #![feature(async_fn_in_trait)]
 #![feature(impl_trait_projections)]

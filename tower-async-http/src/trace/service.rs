@@ -307,7 +307,6 @@ where
         match result {
             Ok(res) => {
                 let classification = classifier.classify_response(&res);
-                let start = start;
 
                 self.on_response.clone().on_response(&res, latency, &span);
 

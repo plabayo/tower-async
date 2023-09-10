@@ -166,19 +166,18 @@ mod tests {
     #[tokio::test]
     async fn concurrent_policy() {
         let mut policy = ConcurrentPolicy::new(2);
-        let mut request = ();
 
-        let guard_1 = assert_ready(policy.check(&mut request).await);
-        let guard_2 = assert_ready(policy.check(&mut request).await);
+        let guard_1 = assert_ready(policy.check(&mut ()).await);
+        let guard_2 = assert_ready(policy.check(&mut ()).await);
 
-        assert_abort(policy.check(&mut request).await);
+        assert_abort(policy.check(&mut ()).await);
 
         drop(guard_1);
-        let _guard_3 = assert_ready(policy.check(&mut request).await);
+        let _guard_3 = assert_ready(policy.check(&mut ()).await);
 
-        assert_abort(policy.check(&mut request).await);
+        assert_abort(policy.check(&mut ()).await);
 
         drop(guard_2);
-        assert_ready(policy.check(&mut request).await);
+        assert_ready(policy.check(&mut ()).await);
     }
 }

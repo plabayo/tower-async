@@ -116,11 +116,13 @@ mod tests {
 
     quickcheck! {
         fn next_f64(counter: u64) -> TestResult {
-            let mut rng = HasherRng::default();
-            rng.counter = counter;
+            let mut rng = HasherRng {
+                counter,
+                ..HasherRng::default()
+            };
             let n = rng.next_f64();
 
-            TestResult::from_bool(n < 1.0 && n >= 0.0)
+            TestResult::from_bool((0.0..1.0).contains(&n))
         }
 
         fn next_range(counter: u64, range: Range<u64>) -> TestResult {
@@ -128,8 +130,10 @@ mod tests {
                 return TestResult::discard();
             }
 
-            let mut rng = HasherRng::default();
-            rng.counter = counter;
+            let mut rng = HasherRng {
+                counter,
+                ..HasherRng::default()
+            };
 
             let n = rng.next_range(range.clone());
 

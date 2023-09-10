@@ -3,7 +3,7 @@ use bitflags::bitflags;
 use http::{HeaderMap, Response};
 use std::{fmt, num::NonZeroI32};
 
-/// gRPC status codes.
+/// gRPC status codes. Used in [`GrpcErrorsAsFailures`].
 ///
 /// These variants match the [gRPC status codes].
 ///
@@ -241,6 +241,14 @@ impl ClassifyEos for GrpcEosErrorsAsFailures {
         E: fmt::Display + 'static,
     {
         GrpcFailureClass::Error(error.to_string())
+    }
+}
+
+impl Default for GrpcEosErrorsAsFailures {
+    fn default() -> Self {
+        Self {
+            success_codes: GrpcCodeBitmask::OK,
+        }
     }
 }
 

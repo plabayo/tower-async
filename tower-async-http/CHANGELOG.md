@@ -5,9 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.1.4 (September 10, 2023)
+
+Sync with <https://github.com/tower-rs/tower-http/releases/tag/tower-http-0.4.4>.
+
+### Added
+
+- **trace**: Default implementations for trace bodies.
+
+### Fixed
+
+- lots of changes due to new clippy rules or modifications to existing ones.
+
 ## 0.1.3 (July 24, 2023)
 
-## Changed
+### Changed
 
 - update `http-range-header` from `0.3.0` to `0.4.0` and fix range OOB test from reject to accept;
 
@@ -16,16 +28,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Sync with original `tower-http` codebase from [`0.4.1`](https://github.com/tower-rs/tower-http/releases/tag/tower-http-0.4.1)
 to [`0.4.3`](https://github.com/tower-rs/tower-http/releases/tag/tower-http-0.4.3).
 
-## Added
+### Added
 
 - **cors:** Add support for private network preflights ([tower-rs/tower-http#373])
 - **compression:** Implement `Default` for `DecompressionBody` ([tower-rs/tower-http#370])
 
-## Changed
+### Changed
 
 - **compression:** Update to async-compression 0.4 ([tower-rs/tower-http#371])
 
-## Fixed
+### Fixed
 
 - **compression:** Override default brotli compression level 11 -> 4 ([tower-rs/tower-http#356])
 - **trace:** Simplify dynamic tracing level application ([tower-rs/tower-http#380])

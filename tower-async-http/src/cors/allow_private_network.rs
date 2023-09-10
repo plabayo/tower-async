@@ -119,13 +119,13 @@ mod tests {
     use tower_async::{BoxError, ServiceBuilder};
     use tower_async_service::Service;
 
-    const REQUEST_PRIVATE_NETWORK: HeaderName =
+    static REQUEST_PRIVATE_NETWORK: HeaderName =
         HeaderName::from_static("access-control-request-private-network");
 
-    const ALLOW_PRIVATE_NETWORK: HeaderName =
+    static ALLOW_PRIVATE_NETWORK: HeaderName =
         HeaderName::from_static("access-control-allow-private-network");
 
-    const TRUE: HeaderValue = HeaderValue::from_static("true");
+    static TRUE: HeaderValue = HeaderValue::from_static("true");
 
     #[tokio::test]
     async fn cors_private_network_header_is_added_correctly() {
@@ -134,17 +134,17 @@ mod tests {
             .service_fn(echo);
 
         let req = Request::builder()
-            .header(REQUEST_PRIVATE_NETWORK, TRUE)
+            .header(REQUEST_PRIVATE_NETWORK.clone(), TRUE.clone())
             .body(Body::empty())
             .unwrap();
         let res = service.call(req).await.unwrap();
 
-        assert_eq!(res.headers().get(ALLOW_PRIVATE_NETWORK).unwrap(), TRUE);
+        assert_eq!(res.headers().get(&ALLOW_PRIVATE_NETWORK).unwrap(), TRUE);
 
         let req = Request::builder().body(Body::empty()).unwrap();
         let res = service.call(req).await.unwrap();
 
-        assert!(res.headers().get(ALLOW_PRIVATE_NETWORK).is_none());
+        assert!(res.headers().get(&ALLOW_PRIVATE_NETWORK).is_none());
     }
 
     #[tokio::test]
@@ -159,35 +159,35 @@ mod tests {
 
         let req = Request::builder()
             .header(ORIGIN, "localhost")
-            .header(REQUEST_PRIVATE_NETWORK, TRUE)
+            .header(REQUEST_PRIVATE_NETWORK.clone(), TRUE.clone())
             .uri("/allow-private")
             .body(Body::empty())
             .unwrap();
 
         let res = service.call(req).await.unwrap();
-        assert_eq!(res.headers().get(ALLOW_PRIVATE_NETWORK).unwrap(), TRUE);
+        assert_eq!(res.headers().get(&ALLOW_PRIVATE_NETWORK).unwrap(), TRUE);
 
         let req = Request::builder()
             .header(ORIGIN, "localhost")
-            .header(REQUEST_PRIVATE_NETWORK, TRUE)
+            .header(REQUEST_PRIVATE_NETWORK.clone(), TRUE.clone())
             .uri("/other")
             .body(Body::empty())
             .unwrap();
 
         let res = service.call(req).await.unwrap();
 
-        assert!(res.headers().get(ALLOW_PRIVATE_NETWORK).is_none());
+        assert!(res.headers().get(&ALLOW_PRIVATE_NETWORK).is_none());
 
         let req = Request::builder()
             .header(ORIGIN, "not-localhost")
-            .header(REQUEST_PRIVATE_NETWORK, TRUE)
+            .header(REQUEST_PRIVATE_NETWORK.clone(), TRUE.clone())
             .uri("/allow-private")
             .body(Body::empty())
             .unwrap();
 
         let res = service.call(req).await.unwrap();
 
-        assert!(res.headers().get(ALLOW_PRIVATE_NETWORK).is_none());
+        assert!(res.headers().get(&ALLOW_PRIVATE_NETWORK).is_none());
     }
 
     async fn echo(req: Request<Body>) -> Result<Response<Body>, BoxError> {
