@@ -225,6 +225,27 @@ Note that some features are not supported on purpose:
 
 See the previous FAQ point to get our point of view related to load balancing and the like.
 
+> Help! My Async Trait's Future is not `Send`
+
+Due to a bug in Rust, most likely its trait resolver,
+you can currently run into this not very meanigful error.
+
+Cfr: <https://github.com/rust-lang/rust/issues/114142>
+
+By using the [`turbo fish'](https://turbo.fish/) syntax you can resolve it.
+See that issue for more details on this solution.
+
+See <https://play.rust-lang.org/?version=nightly&mode=debug&edition=2021&gist=df177519275726a7df18045cf90a59a9>
+for an interactive example, with this being the important part:
+
+```rust
+// this fails to compile
+// higher_order_async_fn(EchoService, "Hello, World!").await;
+
+// ...this does work:
+higher_order_async_fn::<EchoService, _>(EchoService, "Hello, World!").await;
+```
+
 ## License
 
 This project is licensed under the [MIT license](LICENSE).
