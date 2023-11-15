@@ -58,7 +58,7 @@ where
     type Error = Error;
 
     #[inline]
-    async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, request: Request) -> Result<Self::Response, Self::Error> {
         self.inner.call(request).map_err(self.f.clone()).await
     }
 }

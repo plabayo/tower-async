@@ -1,15 +1,19 @@
+use std::sync::{Arc, Mutex};
+
 use super::{Action, Attempt, Policy};
 
 /// A redirection [`Policy`] that limits the number of successive redirections.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 pub struct Limited {
-    remaining: usize,
+    remaining: Arc<Mutex<usize>>,
 }
 
 impl Limited {
     /// Create a new [`Limited`] with a limit of `max` redirections.
     pub fn new(max: usize) -> Self {
-        Limited { remaining: max }
+        Limited {
+            remaining: Arc::new(Mutex::new(max)),
+        }
     }
 }
 
@@ -24,9 +28,10 @@ impl Default for Limited {
 }
 
 impl<B, E> Policy<B, E> for Limited {
-    fn redirect(&mut self, _: &Attempt<'_>) -> Result<Action, E> {
-        if self.remaining > 0 {
-            self.remaining -= 1;
+    fn redirect(&self, _: &Attempt<'_>) -> Result<Action, E> {
+        let mut remaining = self.remaining.lock().unwrap();
+        if *remaining > 0 {
+            *remaining -= 1;
             Ok(Action::Follow)
         } else {
             Ok(Action::Stop)
@@ -43,31 +48,31 @@ mod tests {
     #[test]
     fn works() {
         let uri = Uri::from_static("https://example.com/");
-        let mut policy = Limited::new(2);
+        let policy = Limited::new(2);
 
         for _ in 0..2 {
             let mut request = Request::builder().uri(uri.clone()).body(()).unwrap();
-            Policy::<(), ()>::on_request(&mut policy, &mut request);
+            Policy::<(), ()>::on_request(&policy, &mut request);
 
             let attempt = Attempt {
                 status: Default::default(),
                 location: &uri,
                 previous: &uri,
             };
-            assert!(Policy::<(), ()>::redirect(&mut policy, &attempt)
+            assert!(Policy::<(), ()>::redirect(&policy, &attempt)
                 .unwrap()
                 .is_follow());
         }
 
         let mut request = Request::builder().uri(uri.clone()).body(()).unwrap();
-        Policy::<(), ()>::on_request(&mut policy, &mut request);
+        Policy::<(), ()>::on_request(&policy, &mut request);
 
         let attempt = Attempt {
             status: Default::default(),
             location: &uri,
             previous: &uri,
         };
-        assert!(Policy::<(), ()>::redirect(&mut policy, &attempt)
+        assert!(Policy::<(), ()>::redirect(&policy, &attempt)
             .unwrap()
             .is_stop());
     }

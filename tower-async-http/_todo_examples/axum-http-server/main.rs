@@ -1,6 +1,3 @@
-#![allow(incomplete_features)]
-#![feature(async_fn_in_trait)]
-
 use std::net::{Ipv4Addr, SocketAddr};
 
 use axum::{response::IntoResponse, routing::get, Router};
@@ -40,7 +37,7 @@ where
     type Response = S::Response;
     type Error = S::Error;
 
-    async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, request: Request) -> Result<Self::Response, Self::Error> {
         // Insert log statement here or other functionality
         let stmt = format!("request = {:?}, target = {:?}", request, self.target);
         println!("{stmt}");

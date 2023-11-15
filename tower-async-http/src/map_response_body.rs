@@ -146,12 +146,12 @@ impl<S, F> MapResponseBody<S, F> {
 impl<F, S, ReqBody, ResBody, NewResBody> Service<Request<ReqBody>> for MapResponseBody<S, F>
 where
     S: Service<Request<ReqBody>, Response = Response<ResBody>>,
-    F: FnMut(ResBody) -> NewResBody + Clone,
+    F: Fn(ResBody) -> NewResBody + Clone,
 {
     type Response = Response<NewResBody>;
     type Error = S::Error;
 
-    async fn call(&mut self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
         let res = self.inner.call(req).await?;
         Ok(res.map(self.f.clone()))
     }

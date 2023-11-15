@@ -52,7 +52,7 @@ to integrate async functions into middleware.
 >     type Response = S::Response;
 >     type Error = S::Error;
 > 
->     async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
+>     async fn call(&self, request: Request) -> Result<Self::Response, Self::Error> {
 >         tokio::time::sleep(self.delay).await;
 >         self.inner.call(request)
 >     }

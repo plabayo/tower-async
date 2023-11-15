@@ -23,7 +23,7 @@ where
     type Response = S;
     type Error = Infallible;
 
-    async fn call(&mut self, _target: T) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, _target: T) -> Result<Self::Response, Self::Error> {
         Ok(self.service.clone())
     }
 }
@@ -40,9 +40,9 @@ mod tests {
 
     #[tokio::test]
     async fn as_make_service() {
-        let mut shared = Shared::new(service_fn(echo::<&'static str>));
+        let shared = Shared::new(service_fn(echo::<&'static str>));
 
-        let mut svc = shared.make_service(()).await.unwrap();
+        let svc = shared.make_service(()).await.unwrap();
 
         let res = svc.call("foo").await.unwrap();
 
@@ -52,9 +52,9 @@ mod tests {
     #[tokio::test]
     async fn as_make_service_into_service() {
         let shared = Shared::new(service_fn(echo::<&'static str>));
-        let mut shared = MakeService::<(), _>::into_service(shared);
+        let shared = MakeService::<(), _>::into_service(shared);
 
-        let mut svc = shared.call(()).await.unwrap();
+        let svc = shared.call(()).await.unwrap();
 
         let res = svc.call("foo").await.unwrap();
 

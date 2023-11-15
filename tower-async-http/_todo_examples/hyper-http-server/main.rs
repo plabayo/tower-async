@@ -1,6 +1,3 @@
-#![allow(incomplete_features)]
-#![feature(async_fn_in_trait)]
-
 use std::{
     convert::Infallible,
     net::{Ipv4Addr, SocketAddr},
@@ -93,7 +90,7 @@ impl Service<Request> for WebServer {
     type Response = Response;
     type Error = Infallible;
 
-    async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, request: Request) -> Result<Self::Response, Self::Error> {
         Ok(match request.uri().path() {
             "/fast" => self.render_page_fast().await,
             "/slow" => self.render_page_slow().await,

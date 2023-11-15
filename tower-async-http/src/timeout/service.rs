@@ -62,7 +62,7 @@ where
     type Response = S::Response;
     type Error = S::Error;
 
-    async fn call(&mut self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
         tokio::select! {
             res = self.inner.call(req) => res,
             _ = tokio::time::sleep(self.timeout) => {

@@ -31,8 +31,8 @@ where
         }
 
         Ok(OpenFileOutput::FileNotFound) => {
-            if let Some((mut fallback, request)) = fallback_and_request.take() {
-                call_fallback(&mut fallback, request).await
+            if let Some((fallback, request)) = fallback_and_request.take() {
+                call_fallback(&fallback, request).await
             } else {
                 Ok(not_found())
             }
@@ -59,8 +59,8 @@ where
                 io::ErrorKind::NotFound | io::ErrorKind::PermissionDenied
             ) || error_is_not_a_directory
             {
-                if let Some((mut fallback, request)) = fallback_and_request.take() {
-                    call_fallback(&mut fallback, request).await
+                if let Some((fallback, request)) = fallback_and_request.take() {
+                    call_fallback(&fallback, request).await
                 } else {
                     Ok(not_found())
                 }
@@ -90,7 +90,7 @@ pub(super) fn not_found() -> Response<ResponseBody> {
 }
 
 pub(super) async fn call_fallback<F, B, FResBody>(
-    fallback: &mut F,
+    fallback: &F,
     req: Request<B>,
 ) -> Result<Response<ResponseBody>, std::io::Error>
 where

@@ -92,7 +92,7 @@ where
     type Response = S::Response;
     type Error = S::Error;
 
-    async fn call(&mut self, mut req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, mut req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
         normalize_trailing_slash(req.uri_mut());
         self.inner.call(req).await
     }
@@ -145,7 +145,7 @@ mod tests {
             Ok(Response::new(request.uri().to_string()))
         }
 
-        let mut svc = ServiceBuilder::new()
+        let svc = ServiceBuilder::new()
             .layer(NormalizePathLayer::trim_trailing_slash())
             .service_fn(handle);
 

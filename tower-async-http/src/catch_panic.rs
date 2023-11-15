@@ -180,7 +180,7 @@ where
     type Response = Response<UnsyncBoxBody<Bytes, BoxError>>;
     type Error = S::Error;
 
-    async fn call(&mut self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
         let future = match std::panic::catch_unwind(AssertUnwindSafe(|| self.inner.call(req))) {
             Ok(future) => future,
             Err(panic_err) => {
@@ -210,19 +210,19 @@ pub trait ResponseForPanic: Clone {
 
     /// Create a response from the panic error.
     fn response_for_panic(
-        &mut self,
+        &self,
         err: Box<dyn Any + Send + 'static>,
     ) -> Response<Self::ResponseBody>;
 }
 
 impl<F, B> ResponseForPanic for F
 where
-    F: FnMut(Box<dyn Any + Send + 'static>) -> Response<B> + Clone,
+    F: Fn(Box<dyn Any + Send + 'static>) -> Response<B> + Clone,
 {
     type ResponseBody = B;
 
     fn response_for_panic(
-        &mut self,
+        &self,
         err: Box<dyn Any + Send + 'static>,
     ) -> Response<Self::ResponseBody> {
         self(err)
@@ -241,7 +241,7 @@ impl ResponseForPanic for DefaultResponseForPanic {
     type ResponseBody = Full<Bytes>;
 
     fn response_for_panic(
-        &mut self,
+        &self,
         err: Box<dyn Any + Send + 'static>,
     ) -> Response<Self::ResponseBody> {
         if let Some(s) = err.downcast_ref::<String>() {

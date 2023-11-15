@@ -241,15 +241,14 @@ where
 impl<ReqBody, ResBody, S, M> Service<Request<ReqBody>> for SetResponseHeader<S, M>
 where
     S: Service<Request<ReqBody>, Response = Response<ResBody>>,
-    M: MakeHeaderValue<Response<ResBody>> + Clone,
+    M: MakeHeaderValue<Response<ResBody>>,
 {
     type Response = S::Response;
     type Error = S::Error;
 
-    async fn call(&mut self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
-        let mut make = self.make.clone();
+    async fn call(&self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
         let mut res = self.inner.call(req).await?;
-        self.mode.apply(&self.header_name, &mut res, &mut make);
+        self.mode.apply(&self.header_name, &mut res, &self.make);
         Ok(res)
     }
 }

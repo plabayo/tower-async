@@ -31,11 +31,6 @@ impl<P, S> Retry<P, S> {
         &self.service
     }
 
-    /// Get a mutable reference to the inner service
-    pub fn get_mut(&mut self) -> &mut S {
-        &mut self.service
-    }
-
     /// Consume `self`, returning the inner service
     pub fn into_inner(self) -> S {
         self.service
@@ -50,7 +45,7 @@ where
     type Response = S::Response;
     type Error = S::Error;
 
-    async fn call(&mut self, mut request: Request) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, mut request: Request) -> Result<Self::Response, Self::Error> {
         loop {
             let cloned_request = self.policy.clone_request(&request);
             let mut result = self.service.call(request).await;

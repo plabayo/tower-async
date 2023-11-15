@@ -1,5 +1,6 @@
-use std::fmt::Display;
+use std::sync::Arc;
 use std::time::Duration;
+use std::{fmt::Display, sync::Mutex};
 use tokio::time;
 
 use crate::util::rng::{HasherRng, Rng};
@@ -33,6 +34,11 @@ pub struct ExponentialBackoff<R = HasherRng> {
     min: time::Duration,
     max: time::Duration,
     jitter: f64,
+    state: Arc<Mutex<ExponentialBackoffState<R>>>,
+}
+
+#[derive(Debug, Clone)]
+struct ExponentialBackoffState<R = HasherRng> {
     rng: R,
     iterations: u32,
 }
@@ -88,13 +94,15 @@ where
 {
     type Backoff = ExponentialBackoff<R>;
 
-    fn make_backoff(&mut self) -> Self::Backoff {
+    fn make_backoff(&self) -> Self::Backoff {
         ExponentialBackoff {
             max: self.max,
             min: self.min,
             jitter: self.jitter,
-            rng: self.rng.clone(),
-            iterations: 0,
+            state: Arc::new(Mutex::new(ExponentialBackoffState {
+                rng: self.rng.clone(),
+                iterations: 0,
+            })),
         }
     }
 }
@@ -110,18 +118,18 @@ impl<R: Rng> ExponentialBackoff<R> {
             "Maximum backoff must be non-zero"
         );
         self.min
-            .checked_mul(2_u32.saturating_pow(self.iterations))
+            .checked_mul(2_u32.saturating_pow(self.state.lock().unwrap().iterations))
             .unwrap_or(self.max)
             .min(self.max)
     }
 
     /// Returns a random, uniform duration on `[0, base*self.jitter]` no greater
     /// than `self.max`.
-    fn jitter(&mut self, base: time::Duration) -> time::Duration {
+    fn jitter(&self, base: time::Duration) -> time::Duration {
         if self.jitter == 0.0 {
             time::Duration::default()
         } else {
-            let jitter_factor = self.rng.next_f64();
+            let jitter_factor = self.state.lock().unwrap().rng.next_f64();
             debug_assert!(
                 jitter_factor > 0.0,
                 "rng returns values between 0.0 and 1.0"
@@ -139,15 +147,13 @@ impl<R> Backoff for ExponentialBackoff<R>
 where
     R: Rng,
 {
-    type Future = tokio::time::Sleep;
-
-    fn next_backoff(&mut self) -> Self::Future {
+    async fn next_backoff(&self) {
         let base = self.base();
         let next = base + self.jitter(base);
 
-        self.iterations += 1;
+        self.state.lock().unwrap().iterations += 1;
 
-        tokio::time::sleep(next)
+        tokio::time::sleep(next).await
     }
 }
 
@@ -185,7 +191,7 @@ mod tests {
             let min = time::Duration::from_millis(min_ms);
             let max = time::Duration::from_millis(max_ms);
             let rng = HasherRng::default();
-            let mut backoff = match ExponentialBackoffMaker::new(min, max, 0.0, rng) {
+            let backoff = match ExponentialBackoffMaker::new(min, max, 0.0, rng) {
                 Err(_) => return TestResult::discard(),
                 Ok(backoff) => backoff,
             };
@@ -199,13 +205,13 @@ mod tests {
             let min = time::Duration::from_millis(min_ms);
             let max = time::Duration::from_millis(max_ms);
             let rng = HasherRng::default();
-            let mut backoff = match ExponentialBackoffMaker::new(min, max, 0.0, rng) {
+            let backoff = match ExponentialBackoffMaker::new(min, max, 0.0, rng) {
                 Err(_) => return TestResult::discard(),
                 Ok(backoff) => backoff,
             };
-            let mut backoff = backoff.make_backoff();
+            let backoff = backoff.make_backoff();
 
-            backoff.iterations = iterations;
+            backoff.state.lock().unwrap().iterations = iterations;
             let delay = backoff.base();
             TestResult::from_bool(min <= delay && delay <= max)
         }
@@ -214,11 +220,11 @@ mod tests {
             let base = time::Duration::from_millis(base_ms);
             let max = time::Duration::from_millis(max_ms);
             let rng = HasherRng::default();
-            let mut backoff = match ExponentialBackoffMaker::new(base, max, jitter, rng) {
+            let backoff = match ExponentialBackoffMaker::new(base, max, jitter, rng) {
                 Err(_) => return TestResult::discard(),
                 Ok(backoff) => backoff,
             };
-            let mut backoff = backoff.make_backoff();
+            let backoff = backoff.make_backoff();
 
             let j = backoff.jitter(base);
             if jitter == 0.0 || base_ms == 0 || max_ms == base_ms {

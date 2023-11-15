@@ -5,8 +5,6 @@
 //! # Example
 //!
 //! ```
-//! # #![allow(incomplete_features)]
-//! # #![feature(async_fn_in_trait)]
 //! use tower_async_http::auth::{AsyncRequireAuthorizationLayer, AsyncAuthorizeRequest};
 //! use hyper::{Request, Response, Body, Error};
 //! use http::{StatusCode, header::AUTHORIZATION};
@@ -23,7 +21,7 @@
 //!     type RequestBody = B;
 //!     type ResponseBody = Body;
 //!
-//!     async fn authorize(&mut self, mut request: Request<B>) -> Result<Request<B>, Response<Self::ResponseBody>> {
+//!     async fn authorize(&self, mut request: Request<B>) -> Result<Request<B>, Response<Self::ResponseBody>> {
 //!         if let Some(user_id) = check_auth(&request).await {
 //!             // Set `user_id` as a request extension so it can be accessed by other
 //!             // services down the stack.
@@ -188,7 +186,7 @@ where
     type Response = Response<ResBody>;
     type Error = S::Error;
 
-    async fn call(&mut self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
         let req = match self.auth.authorize(req).await {
             Ok(req) => req,
             Err(res) => return Ok(res),
@@ -210,22 +208,24 @@ pub trait AsyncAuthorizeRequest<B> {
     /// Authorize the request.
     ///
     /// If the future resolves to `Ok(request)` then the request is allowed through, otherwise not.
-    async fn authorize(
-        &mut self,
+    fn authorize(
+        &self,
         request: Request<B>,
-    ) -> Result<Request<Self::RequestBody>, Response<Self::ResponseBody>>;
+    ) -> impl std::future::Future<
+        Output = Result<Request<Self::RequestBody>, Response<Self::ResponseBody>>,
+    >;
 }
 
 impl<B, F, Fut, ReqBody, ResBody> AsyncAuthorizeRequest<B> for F
 where
-    F: FnMut(Request<B>) -> Fut,
+    F: Fn(Request<B>) -> Fut,
     Fut: Future<Output = Result<Request<ReqBody>, Response<ResBody>>>,
 {
     type RequestBody = ReqBody;
     type ResponseBody = ResBody;
 
     async fn authorize(
-        &mut self,
+        &self,
         request: Request<B>,
     ) -> Result<Request<Self::RequestBody>, Response<Self::ResponseBody>> {
         self(request).await
@@ -251,7 +251,7 @@ mod tests {
         type ResponseBody = Body;
 
         async fn authorize(
-            &mut self,
+            &self,
             mut request: Request<B>,
         ) -> Result<Request<Self::RequestBody>, Response<Self::ResponseBody>> {
             let authorized = request
@@ -280,7 +280,7 @@ mod tests {
 
     #[tokio::test]
     async fn require_async_auth_works() {
-        let mut service = ServiceBuilder::new()
+        let service = ServiceBuilder::new()
             .layer(AsyncRequireAuthorizationLayer::new(MyAuth))
             .service_fn(echo);
 
@@ -296,7 +296,7 @@ mod tests {
 
     #[tokio::test]
     async fn require_async_auth_401() {
-        let mut service = ServiceBuilder::new()
+        let service = ServiceBuilder::new()
             .layer(AsyncRequireAuthorizationLayer::new(MyAuth))
             .service_fn(echo);
 

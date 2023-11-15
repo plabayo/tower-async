@@ -19,21 +19,21 @@ impl<F> fmt::Debug for RedirectFn<F> {
 
 impl<B, E, F> Policy<B, E> for RedirectFn<F>
 where
-    F: FnMut(&Attempt<'_>) -> Result<Action, E>,
+    F: Fn(&Attempt<'_>) -> Result<Action, E>,
 {
-    fn redirect(&mut self, attempt: &Attempt<'_>) -> Result<Action, E> {
+    fn redirect(&self, attempt: &Attempt<'_>) -> Result<Action, E> {
         (self.f)(attempt)
     }
 }
 
 /// Create a new redirection [`Policy`] from a closure
-/// `F: FnMut(&Attempt<'_>) -> Result<Action, E>`.
+/// `F: Fn(&Attempt<'_>) -> Result<Action, E>`.
 ///
 /// [`redirect`][Policy::redirect] method of the returned `Policy` delegates to
 /// the wrapped closure.
 pub fn redirect_fn<F, E>(f: F) -> RedirectFn<F>
 where
-    F: FnMut(&Attempt<'_>) -> Result<Action, E>,
+    F: Fn(&Attempt<'_>) -> Result<Action, E>,
 {
     RedirectFn { f }
 }

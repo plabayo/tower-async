@@ -29,7 +29,7 @@ pub trait OnBodyChunk<B> {
 
 impl<B, F> OnBodyChunk<B> for F
 where
-    F: FnMut(&B, Duration, &Span),
+    F: Fn(&B, Duration, &Span),
 {
     fn on_body_chunk(&mut self, chunk: &B, latency: Duration, span: &Span) {
         self(chunk, latency, span)

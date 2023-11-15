@@ -15,7 +15,10 @@ pub trait MakeConnection<Target>: Sealed<(Target,)> {
     type Error;
 
     /// Connect and return a transport asynchronously
-    async fn make_connection(&mut self, target: Target) -> Result<Self::Connection, Self::Error>;
+    fn make_connection(
+        &self,
+        target: Target,
+    ) -> impl std::future::Future<Output = Result<Self::Connection, Self::Error>>;
 }
 
 impl<S, Target> Sealed<(Target,)> for S where S: Service<Target> {}
@@ -28,7 +31,7 @@ where
     type Connection = C::Response;
     type Error = C::Error;
 
-    async fn make_connection(&mut self, target: Target) -> Result<Self::Connection, Self::Error> {
+    async fn make_connection(&self, target: Target) -> Result<Self::Connection, Self::Error> {
         Service::call(self, target).await
     }
 }

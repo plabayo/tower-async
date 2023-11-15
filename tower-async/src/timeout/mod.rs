@@ -33,11 +33,6 @@ impl<T> Timeout<T> {
         &self.inner
     }
 
-    /// Get a mutable reference to the inner service
-    pub fn get_mut(&mut self) -> &mut T {
-        &mut self.inner
-    }
-
     /// Consume `self`, returning the inner service
     pub fn into_inner(self) -> T {
         self.inner
@@ -52,7 +47,7 @@ where
     type Response = S::Response;
     type Error = crate::BoxError;
 
-    async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, request: Request) -> Result<Self::Response, Self::Error> {
         tokio::select! {
             res = self.inner.call(request) => res.map_err(Into::into),
             _ = tokio::time::sleep(self.timeout) => Err(Elapsed(()).into()),

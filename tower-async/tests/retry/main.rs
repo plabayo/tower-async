@@ -1,8 +1,8 @@
-#![allow(incomplete_features)]
-#![feature(async_fn_in_trait)]
 #![cfg(feature = "retry")]
 #[path = "../support.rs"]
 mod support;
+
+use std::sync::{Arc, Mutex};
 
 use tower_async::retry::{Policy, RetryLayer};
 use tower_async_test::Builder;
@@ -32,7 +32,7 @@ async fn retry_limit() {
         .expect_request("hello")
         .send_error("retry 3")
         .expect_request("hello")
-        .test(RetryLayer::new(Limit(2)))
+        .test(RetryLayer::new(Limit(Arc::new(Mutex::new(2)))))
         .await
         .expect_error("retry 3");
 }
@@ -86,7 +86,9 @@ async fn retry_mutating_policy() {
         .send_response("world")
         .expect_request("retrying")
         .send_response("world")
-        .test(RetryLayer::new(MutatingPolicy { remaining: 2 }))
+        .test(RetryLayer::new(MutatingPolicy {
+            remaining: Arc::new(Mutex::new(2)),
+        }))
         .await
         .expect_error("out of retries");
 }
@@ -98,32 +100,33 @@ impl<Req, Res, Error> Policy<Req, Res, Error> for RetryErrors
 where
     Req: Copy,
 {
-    async fn retry(&mut self, _: &mut Req, result: &mut Result<Res, Error>) -> bool {
+    async fn retry(&self, _: &mut Req, result: &mut Result<Res, Error>) -> bool {
         result.is_err()
     }
 
-    fn clone_request(&mut self, req: &Req) -> Option<Req> {
+    fn clone_request(&self, req: &Req) -> Option<Req> {
         Some(*req)
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
-struct Limit(usize);
+#[derive(Debug, Clone)]
+struct Limit(Arc<Mutex<usize>>);
 
 impl<Req, Res, Error> Policy<Req, Res, Error> for Limit
 where
     Req: Copy,
 {
-    async fn retry(&mut self, _: &mut Req, result: &mut Result<Res, Error>) -> bool {
-        if result.is_err() && self.0 > 0 {
-            self.0 -= 1;
+    async fn retry(&self, _: &mut Req, result: &mut Result<Res, Error>) -> bool {
+        let mut s = self.0.lock().unwrap();
+        if result.is_err() && *s > 0 {
+            *s -= 1;
             true
         } else {
             false
         }
     }
 
-    fn clone_request(&mut self, req: &Req) -> Option<Req> {
+    fn clone_request(&self, req: &Req) -> Option<Req> {
         Some(*req)
     }
 }
@@ -136,7 +139,7 @@ where
     Error: ToString,
     Req: Copy,
 {
-    async fn retry(&mut self, _: &mut Req, result: &mut Result<Res, Error>) -> bool {
+    async fn retry(&self, _: &mut Req, result: &mut Result<Res, Error>) -> bool {
         result
             .as_ref()
             .err()
@@ -150,7 +153,7 @@ where
             .is_some()
     }
 
-    fn clone_request(&mut self, req: &Req) -> Option<Req> {
+    fn clone_request(&self, req: &Req) -> Option<Req> {
         Some(*req)
     }
 }
@@ -159,38 +162,39 @@ where
 struct CannotClone;
 
 impl<Req, Res, Error> Policy<Req, Res, Error> for CannotClone {
-    async fn retry(&mut self, _: &mut Req, _: &mut Result<Res, Error>) -> bool {
+    async fn retry(&self, _: &mut Req, _: &mut Result<Res, Error>) -> bool {
         unreachable!("retry cannot be called since request isn't cloned");
     }
 
-    fn clone_request(&mut self, _req: &Req) -> Option<Req> {
+    fn clone_request(&self, _req: &Req) -> Option<Req> {
         None
     }
 }
 
 /// Test policy that changes the request to `retrying` during retries and the result to `"out of retries"`
 /// when retries are exhausted.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone)]
 struct MutatingPolicy {
-    remaining: usize,
+    remaining: Arc<Mutex<usize>>,
 }
 
 impl<Res, Error> Policy<&'static str, Res, Error> for MutatingPolicy
 where
     Error: From<&'static str>,
 {
-    async fn retry(&mut self, req: &mut &'static str, result: &mut Result<Res, Error>) -> bool {
-        if self.remaining == 0 {
+    async fn retry(&self, req: &mut &'static str, result: &mut Result<Res, Error>) -> bool {
+        let mut remaining = self.remaining.lock().unwrap();
+        if *remaining == 0 {
             *result = Err("out of retries".into());
             false
         } else {
             *req = "retrying";
-            self.remaining -= 1;
+            *remaining -= 1;
             true
         }
     }
 
-    fn clone_request(&mut self, req: &&'static str) -> Option<&'static str> {
+    fn clone_request(&self, req: &&'static str) -> Option<&'static str> {
         Some(*req)
     }
 }

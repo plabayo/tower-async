@@ -29,19 +29,21 @@ use http::{uri::Scheme, Request, StatusCode, Uri};
 /// ```
 /// use http::{Request, Uri};
 /// use std::collections::HashSet;
+/// use std::sync::{Arc, Mutex};
 /// use tower_async_http::follow_redirect::policy::{Action, Attempt, Policy};
 ///
 /// #[derive(Clone)]
 /// pub struct DetectCycle {
-///     uris: HashSet<Uri>,
+///     uris: Arc<Mutex<HashSet<Uri>>>,
 /// }
 ///
 /// impl<B, E> Policy<B, E> for DetectCycle {
-///     fn redirect(&mut self, attempt: &Attempt<'_>) -> Result<Action, E> {
-///         if self.uris.contains(attempt.location()) {
+///     fn redirect(&self, attempt: &Attempt<'_>) -> Result<Action, E> {
+///         let mut uris = self.uris.lock().unwrap();
+///         if uris.contains(attempt.location()) {
 ///             Ok(Action::Stop)
 ///         } else {
-///             self.uris.insert(attempt.previous().clone());
+///             uris.insert(attempt.previous().clone());
 ///             Ok(Action::Follow)
 ///         }
 ///     }
@@ -52,7 +54,7 @@ pub trait Policy<B, E> {
     ///
     /// This method returns an [`Action`] which indicates whether the service should follow
     /// the redirection.
-    fn redirect(&mut self, attempt: &Attempt<'_>) -> Result<Action, E>;
+    fn redirect(&self, attempt: &Attempt<'_>) -> Result<Action, E>;
 
     /// Invoked right before the service makes a request, regardless of whether it is redirected
     /// or not.
@@ -61,7 +63,7 @@ pub trait Policy<B, E> {
     /// or prepare the request in other ways.
     ///
     /// The default implementation does nothing.
-    fn on_request(&mut self, _request: &mut Request<B>) {}
+    fn on_request(&self, _request: &mut Request<B>) {}
 
     /// Try to clone a request body before the service makes a redirected request.
     ///
@@ -76,15 +78,15 @@ pub trait Policy<B, E> {
     }
 }
 
-impl<B, E, P> Policy<B, E> for &mut P
+impl<B, E, P> Policy<B, E> for &P
 where
     P: Policy<B, E> + ?Sized,
 {
-    fn redirect(&mut self, attempt: &Attempt<'_>) -> Result<Action, E> {
+    fn redirect(&self, attempt: &Attempt<'_>) -> Result<Action, E> {
         (**self).redirect(attempt)
     }
 
-    fn on_request(&mut self, request: &mut Request<B>) {
+    fn on_request(&self, request: &mut Request<B>) {
         (**self).on_request(request)
     }
 
@@ -97,11 +99,11 @@ impl<B, E, P> Policy<B, E> for Box<P>
 where
     P: Policy<B, E> + ?Sized,
 {
-    fn redirect(&mut self, attempt: &Attempt<'_>) -> Result<Action, E> {
+    fn redirect(&self, attempt: &Attempt<'_>) -> Result<Action, E> {
         (**self).redirect(attempt)
     }
 
-    fn on_request(&mut self, request: &mut Request<B>) {
+    fn on_request(&self, request: &mut Request<B>) {
         (**self).on_request(request)
     }
 
@@ -250,7 +252,7 @@ impl Action {
 }
 
 impl<B, E> Policy<B, E> for Action {
-    fn redirect(&mut self, _: &Attempt<'_>) -> Result<Action, E> {
+    fn redirect(&self, _: &Attempt<'_>) -> Result<Action, E> {
         Ok(*self)
     }
 }
@@ -259,7 +261,7 @@ impl<B, E> Policy<B, E> for Result<Action, E>
 where
     E: Clone,
 {
-    fn redirect(&mut self, _: &Attempt<'_>) -> Result<Action, E> {
+    fn redirect(&self, _: &Attempt<'_>) -> Result<Action, E> {
         self.clone()
     }
 }

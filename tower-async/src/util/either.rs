@@ -26,7 +26,7 @@ where
     type Response = A::Response;
     type Error = A::Error;
 
-    async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, request: Request) -> Result<Self::Response, Self::Error> {
         match self {
             Either::Left(service) => service.call(request).await,
             Either::Right(service) => service.call(request).await,

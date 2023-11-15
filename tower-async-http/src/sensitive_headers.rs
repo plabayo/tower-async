@@ -173,7 +173,7 @@ where
     type Response = S::Response;
     type Error = S::Error;
 
-    async fn call(&mut self, mut req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, mut req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
         let headers = req.headers_mut();
         for header in &*self.headers {
             if let http::header::Entry::Occupied(mut entry) = headers.entry(header) {
@@ -272,7 +272,7 @@ where
     type Response = S::Response;
     type Error = S::Error;
 
-    async fn call(&mut self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
         let mut res = self.inner.call(req).await?;
 
         let headers = res.headers_mut();
@@ -326,7 +326,7 @@ mod tests {
             Ok(resp)
         }
 
-        let mut service = ServiceBuilder::new()
+        let service = ServiceBuilder::new()
             .layer(SetSensitiveRequestHeadersLayer::new(vec![header::COOKIE]))
             .layer(SetSensitiveResponseHeadersLayer::new(vec![
                 header::SET_COOKIE,

@@ -30,14 +30,15 @@ pub trait MakeService<Target, Request>: Sealed<(Target, Request)> {
     type MakeError;
 
     /// Create and return a new service value asynchronously.
-    async fn make_service(&mut self, target: Target) -> Result<Self::Service, Self::MakeError>;
+    fn make_service(
+        &self,
+        target: Target,
+    ) -> impl std::future::Future<Output = Result<Self::Service, Self::MakeError>>;
 
     /// Consume this [`MakeService`] and convert it into a [`Service`].
     ///
     /// # Example
     /// ```
-    /// # #![allow(incomplete_features)]
-    /// # #![feature(async_fn_in_trait)]
     /// use std::convert::Infallible;
     /// use tower_async::Service;
     /// use tower_async::make::MakeService;
@@ -77,8 +78,6 @@ pub trait MakeService<Target, Request>: Sealed<(Target, Request)> {
     ///
     /// # Example
     /// ```
-    /// # #![allow(incomplete_features)]
-    /// # #![feature(async_fn_in_trait)]
     /// use std::convert::Infallible;
     /// use tower_async::Service;
     /// use tower_async::make::MakeService;
@@ -107,7 +106,7 @@ pub trait MakeService<Target, Request>: Sealed<(Target, Request)> {
     /// # };
     /// # }
     /// ```
-    fn as_service(&mut self) -> AsService<Self, Request>
+    fn as_service(&self) -> AsService<Self, Request>
     where
         Self: Sized,
     {
@@ -135,7 +134,7 @@ where
     type Service = S;
     type MakeError = M::Error;
 
-    async fn make_service(&mut self, target: Target) -> Result<Self::Service, Self::MakeError> {
+    async fn make_service(&self, target: Target) -> Result<Self::Service, Self::MakeError> {
         Service::call(self, target).await
     }
 }
@@ -182,7 +181,7 @@ where
     type Error = M::Error;
 
     #[inline]
-    async fn call(&mut self, target: Target) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, target: Target) -> Result<Self::Response, Self::Error> {
         self.make.make_service(target).await
     }
 }
@@ -193,7 +192,7 @@ where
 ///
 /// [as]: MakeService::as_service
 pub struct AsService<'a, M, Request> {
-    make: &'a mut M,
+    make: &'a M,
     _marker: PhantomData<Request>,
 }
 
@@ -217,7 +216,7 @@ where
     type Error = M::Error;
 
     #[inline]
-    async fn call(&mut self, target: Target) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, target: Target) -> Result<Self::Response, Self::Error> {
         self.make.make_service(target).await
     }
 }

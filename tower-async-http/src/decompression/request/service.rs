@@ -48,7 +48,7 @@ where
     type Response = Response<UnsyncBoxBody<D, BoxError>>;
     type Error = BoxError;
 
-    async fn call(&mut self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
         let (mut parts, body) = req.into_parts();
 
         let body =

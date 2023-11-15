@@ -21,7 +21,7 @@ impl fmt::Debug for SameOrigin {
 }
 
 impl<B, E> Policy<B, E> for SameOrigin {
-    fn redirect(&mut self, attempt: &Attempt<'_>) -> Result<Action, E> {
+    fn redirect(&self, attempt: &Attempt<'_>) -> Result<Action, E> {
         if eq_origin(attempt.previous(), attempt.location()) {
             Ok(Action::Follow)
         } else {
@@ -37,33 +37,33 @@ mod tests {
 
     #[test]
     fn works() {
-        let mut policy = SameOrigin::default();
+        let policy = SameOrigin::default();
 
         let initial = Uri::from_static("http://example.com/old");
         let same_origin = Uri::from_static("http://example.com/new");
         let cross_origin = Uri::from_static("https://example.com/new");
 
         let mut request = Request::builder().uri(initial).body(()).unwrap();
-        Policy::<(), ()>::on_request(&mut policy, &mut request);
+        Policy::<(), ()>::on_request(&policy, &mut request);
 
         let attempt = Attempt {
             status: Default::default(),
             location: &same_origin,
             previous: request.uri(),
         };
-        assert!(Policy::<(), ()>::redirect(&mut policy, &attempt)
+        assert!(Policy::<(), ()>::redirect(&policy, &attempt)
             .unwrap()
             .is_follow());
 
         let mut request = Request::builder().uri(same_origin).body(()).unwrap();
-        Policy::<(), ()>::on_request(&mut policy, &mut request);
+        Policy::<(), ()>::on_request(&policy, &mut request);
 
         let attempt = Attempt {
             status: Default::default(),
             location: &cross_origin,
             previous: request.uri(),
         };
-        assert!(Policy::<(), ()>::redirect(&mut policy, &attempt)
+        assert!(Policy::<(), ()>::redirect(&policy, &attempt)
             .unwrap()
             .is_stop());
     }

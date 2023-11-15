@@ -168,7 +168,7 @@ where
     type Error = S::Error;
 
     #[allow(unreachable_code, unused_mut, unused_variables, unreachable_patterns)]
-    async fn call(&mut self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
         let encoding = Encoding::from_headers(req.headers(), self.accept);
 
         let res = self.inner.call(req).await?;

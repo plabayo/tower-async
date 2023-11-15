@@ -64,8 +64,6 @@ impl<L> ServiceBuilder<L> {
     /// Optionally add a new layer `T` into the [`ServiceBuilder`].
     ///
     /// ```
-    /// # #![allow(incomplete_features)]
-    /// # #![feature(async_fn_in_trait)]
     /// # use std::time::Duration;
     /// # use tower_async::Service;
     /// # use tower_async::builder::ServiceBuilder;
@@ -184,8 +182,6 @@ impl<L> ServiceBuilder<L> {
     /// Changing the type of a request:
     ///
     /// ```rust
-    /// # #![allow(incomplete_features)]
-    /// # #![feature(async_fn_in_trait)]
     /// use tower_async::ServiceBuilder;
     /// use tower_async::ServiceExt;
     ///
@@ -214,8 +210,6 @@ impl<L> ServiceBuilder<L> {
     /// Modifying the request value:
     ///
     /// ```rust
-    /// # #![allow(incomplete_features)]
-    /// # #![feature(async_fn_in_trait)]
     /// use tower_async::ServiceBuilder;
     /// use tower_async::ServiceExt;
     ///
@@ -244,7 +238,7 @@ impl<L> ServiceBuilder<L> {
         f: F,
     ) -> ServiceBuilder<Stack<crate::util::MapRequestLayer<F>, L>>
     where
-        F: FnMut(R1) -> R2 + Clone,
+        F: Fn(R1) -> R2 + Clone,
     {
         self.layer(crate::util::MapRequestLayer::new(f))
     }
@@ -362,8 +356,6 @@ impl<L> ServiceBuilder<L> {
     /// [`ServiceBuilder::service`] with a [`service_fn`], like this:
     ///
     /// ```rust
-    /// # #![allow(incomplete_features)]
-    /// # #![feature(async_fn_in_trait)]
     /// # use tower_async::{ServiceBuilder, service_fn};
     /// # async fn handler_fn(_: ()) -> Result<(), ()> { Ok(()) }
     /// # let _ = {
@@ -376,8 +368,6 @@ impl<L> ServiceBuilder<L> {
     /// # Example
     ///
     /// ```rust
-    /// # #![allow(incomplete_features)]
-    /// # #![feature(async_fn_in_trait)]
     /// use std::time::Duration;
     /// use tower_async::{ServiceBuilder, ServiceExt, BoxError, service_fn};
     ///
@@ -418,8 +408,6 @@ impl<L> ServiceBuilder<L> {
     /// # Example
     ///
     /// ```rust
-    /// # #![allow(incomplete_features)]
-    /// # #![feature(async_fn_in_trait)]
     /// use tower_async::ServiceBuilder;
     ///
     /// let builder = ServiceBuilder::new()
@@ -454,8 +442,6 @@ impl<L> ServiceBuilder<L> {
     /// # Example
     ///
     /// ```rust
-    /// # #![allow(incomplete_features)]
-    /// # #![feature(async_fn_in_trait)]
     /// use tower_async::ServiceBuilder;
     ///
     /// # #[derive(Clone)]
@@ -494,8 +480,6 @@ impl<L> ServiceBuilder<L> {
     /// # Example
     ///
     /// ```rust
-    /// # #![allow(incomplete_features)]
-    /// # #![feature(async_fn_in_trait)]
     /// use tower_async::ServiceBuilder;
     /// use std::task::{Poll, Context};
     /// use tower_async::{Service, ServiceExt};
@@ -507,7 +491,7 @@ impl<L> ServiceBuilder<L> {
     ///   type Response = Response;
     ///   type Error = Error;
     ///
-    ///   async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
+    ///   async fn call(&self, request: Request) -> Result<Self::Response, Self::Error> {
     ///       // ...
     ///       # todo!()
     ///   }

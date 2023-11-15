@@ -9,8 +9,6 @@ use tower_async_service::Service;
 /// # Example
 ///
 /// ```
-/// # #![allow(incomplete_features)]
-/// # #![feature(async_fn_in_trait)]
 /// use tower_async::{service_fn, Service, ServiceExt, BoxError};
 /// # struct Request;
 /// # impl Request {
@@ -64,13 +62,13 @@ impl<T> fmt::Debug for ServiceFn<T> {
 
 impl<T, F, Request, R, E> Service<Request> for ServiceFn<T>
 where
-    T: FnMut(Request) -> F,
+    T: Fn(Request) -> F,
     F: Future<Output = Result<R, E>>,
 {
     type Response = R;
     type Error = E;
 
-    async fn call(&mut self, req: Request) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, req: Request) -> Result<Self::Response, Self::Error> {
         (self.f)(req).await
     }
 }

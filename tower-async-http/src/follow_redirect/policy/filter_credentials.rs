@@ -1,3 +1,8 @@
+use std::sync::{
+    atomic::{AtomicBool, Ordering},
+    Arc,
+};
+
 use super::{eq_origin, Action, Attempt, Policy};
 use http::{
     header::{self, HeaderName},
@@ -11,7 +16,7 @@ pub struct FilterCredentials {
     block_any: bool,
     remove_blocklisted: bool,
     remove_all: bool,
-    blocked: bool,
+    blocked: Arc<AtomicBool>,
 }
 
 const BLOCKLIST: &[HeaderName] = &[
@@ -29,7 +34,7 @@ impl FilterCredentials {
             block_any: false,
             remove_blocklisted: true,
             remove_all: false,
-            blocked: false,
+            blocked: Arc::new(AtomicBool::new(false)),
         }
     }
 
@@ -83,14 +88,15 @@ impl Default for FilterCredentials {
 }
 
 impl<B, E> Policy<B, E> for FilterCredentials {
-    fn redirect(&mut self, attempt: &Attempt<'_>) -> Result<Action, E> {
-        self.blocked = self.block_any
+    fn redirect(&self, attempt: &Attempt<'_>) -> Result<Action, E> {
+        let blocked = self.block_any
             || (self.block_cross_origin && !eq_origin(attempt.previous(), attempt.location()));
+        self.blocked.store(blocked, Ordering::SeqCst);
         Ok(Action::Follow)
     }
 
-    fn on_request(&mut self, request: &mut Request<B>) {
-        if self.blocked {
+    fn on_request(&self, request: &mut Request<B>) {
+        if self.blocked.load(Ordering::SeqCst) {
             let headers = request.headers_mut();
             if self.remove_all {
                 headers.clear();
@@ -110,7 +116,7 @@ mod tests {
 
     #[test]
     fn works() {
-        let mut policy = FilterCredentials::default();
+        let policy = FilterCredentials::default();
 
         let initial = Uri::from_static("http://example.com/old");
         let same_origin = Uri::from_static("http://example.com/new");
@@ -121,7 +127,7 @@ mod tests {
             .header(header::COOKIE, "42")
             .body(())
             .unwrap();
-        Policy::<(), ()>::on_request(&mut policy, &mut request);
+        Policy::<(), ()>::on_request(&policy, &mut request);
         assert!(request.headers().contains_key(header::COOKIE));
 
         let attempt = Attempt {
@@ -129,7 +135,7 @@ mod tests {
             location: &same_origin,
             previous: request.uri(),
         };
-        assert!(Policy::<(), ()>::redirect(&mut policy, &attempt)
+        assert!(Policy::<(), ()>::redirect(&policy, &attempt)
             .unwrap()
             .is_follow());
 
@@ -138,7 +144,7 @@ mod tests {
             .header(header::COOKIE, "42")
             .body(())
             .unwrap();
-        Policy::<(), ()>::on_request(&mut policy, &mut request);
+        Policy::<(), ()>::on_request(&policy, &mut request);
         assert!(request.headers().contains_key(header::COOKIE));
 
         let attempt = Attempt {
@@ -146,7 +152,7 @@ mod tests {
             location: &cross_origin,
             previous: request.uri(),
         };
-        assert!(Policy::<(), ()>::redirect(&mut policy, &attempt)
+        assert!(Policy::<(), ()>::redirect(&policy, &attempt)
             .unwrap()
             .is_follow());
 
@@ -155,7 +161,7 @@ mod tests {
             .header(header::COOKIE, "42")
             .body(())
             .unwrap();
-        Policy::<(), ()>::on_request(&mut policy, &mut request);
+        Policy::<(), ()>::on_request(&policy, &mut request);
         assert!(!request.headers().contains_key(header::COOKIE));
     }
 }

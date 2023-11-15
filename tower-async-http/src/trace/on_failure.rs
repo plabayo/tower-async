@@ -21,19 +21,19 @@ pub trait OnFailure<FailureClass> {
     /// [`Span`]: https://docs.rs/tracing/latest/tracing/span/index.html
     /// [record]: https://docs.rs/tracing/latest/tracing/span/struct.Span.html#method.record
     /// [`TraceLayer::make_span_with`]: crate::trace::TraceLayer::make_span_with
-    fn on_failure(&mut self, failure_classification: FailureClass, latency: Duration, span: &Span);
+    fn on_failure(&self, failure_classification: FailureClass, latency: Duration, span: &Span);
 }
 
 impl<FailureClass> OnFailure<FailureClass> for () {
     #[inline]
-    fn on_failure(&mut self, _: FailureClass, _: Duration, _: &Span) {}
+    fn on_failure(&self, _: FailureClass, _: Duration, _: &Span) {}
 }
 
 impl<F, FailureClass> OnFailure<FailureClass> for F
 where
-    F: FnMut(FailureClass, Duration, &Span),
+    F: Fn(FailureClass, Duration, &Span),
 {
-    fn on_failure(&mut self, failure_classification: FailureClass, latency: Duration, span: &Span) {
+    fn on_failure(&self, failure_classification: FailureClass, latency: Duration, span: &Span) {
         self(failure_classification, latency, span)
     }
 }
@@ -85,7 +85,7 @@ impl<FailureClass> OnFailure<FailureClass> for DefaultOnFailure
 where
     FailureClass: fmt::Display,
 {
-    fn on_failure(&mut self, failure_classification: FailureClass, latency: Duration, _: &Span) {
+    fn on_failure(&self, failure_classification: FailureClass, latency: Duration, _: &Span) {
         let latency = Latency {
             unit: self.latency_unit,
             duration: latency,

@@ -36,5 +36,8 @@ pub trait Policy<Request> {
     /// Optionally modify the request before it is passed to the inner service,
     /// which can be used to add metadata to the request regarding how the request
     /// was handled by this limit policy.
-    async fn check(&mut self, request: &mut Request) -> PolicyOutput<Self::Guard, Self::Error>;
+    fn check(
+        &self,
+        request: &mut Request,
+    ) -> impl std::future::Future<Output = PolicyOutput<Self::Guard, Self::Error>>;
 }

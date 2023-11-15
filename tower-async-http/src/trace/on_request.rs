@@ -19,19 +19,19 @@ pub trait OnRequest<B> {
     /// [`Span`]: https://docs.rs/tracing/latest/tracing/span/index.html
     /// [record]: https://docs.rs/tracing/latest/tracing/span/struct.Span.html#method.record
     /// [`TraceLayer::make_span_with`]: crate::trace::TraceLayer::make_span_with
-    fn on_request(&mut self, request: &Request<B>, span: &Span);
+    fn on_request(&self, request: &Request<B>, span: &Span);
 }
 
 impl<B> OnRequest<B> for () {
     #[inline]
-    fn on_request(&mut self, _: &Request<B>, _: &Span) {}
+    fn on_request(&self, _: &Request<B>, _: &Span) {}
 }
 
 impl<B, F> OnRequest<B> for F
 where
-    F: FnMut(&Request<B>, &Span),
+    F: Fn(&Request<B>, &Span),
 {
-    fn on_request(&mut self, request: &Request<B>, span: &Span) {
+    fn on_request(&self, request: &Request<B>, span: &Span) {
         self(request, span)
     }
 }
@@ -76,7 +76,7 @@ impl DefaultOnRequest {
 }
 
 impl<B> OnRequest<B> for DefaultOnRequest {
-    fn on_request(&mut self, _: &Request<B>, _: &Span) {
+    fn on_request(&self, _: &Request<B>, _: &Span) {
         event_dynamic_lvl!(self.level, "started processing request");
     }
 }

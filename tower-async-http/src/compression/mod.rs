@@ -112,7 +112,7 @@ mod tests {
     #[tokio::test]
     async fn gzip_works() {
         let svc = service_fn(handle);
-        let mut svc = Compression::new(svc).compress_when(Always);
+        let svc = Compression::new(svc).compress_when(Always);
 
         // call the service
         let req = Request::builder()
@@ -143,7 +143,7 @@ mod tests {
     #[tokio::test]
     async fn zstd_works() {
         let svc = service_fn(handle);
-        let mut svc = Compression::new(svc).compress_when(Always);
+        let svc = Compression::new(svc).compress_when(Always);
 
         // call the service
         let req = Request::builder()
@@ -188,7 +188,7 @@ mod tests {
                 .unwrap();
             Ok::<_, std::io::Error>(resp)
         });
-        let mut svc = Compression::new(svc);
+        let svc = Compression::new(svc);
 
         // call the service
         //
@@ -266,7 +266,7 @@ mod tests {
             }
         }
 
-        let mut svc = Compression::new(svc_fn).compress_when(EveryOtherResponse::default());
+        let svc = Compression::new(svc_fn).compress_when(EveryOtherResponse::default());
         let req = Request::builder()
             .header("accept-encoding", "br")
             .body(Body::empty())
@@ -362,7 +362,7 @@ mod tests {
             Ok::<_, std::io::Error>(resp)
         });
 
-        let mut svc = Compression::new(svc).quality(level);
+        let svc = Compression::new(svc).quality(level);
 
         // call the service
         let req = Request::builder()

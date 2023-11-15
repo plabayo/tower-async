@@ -62,7 +62,7 @@ where
                 this.on_body_chunk.on_body_chunk(chunk, latency, this.span);
             }
             Err(err) => {
-                if let Some((classify_eos, mut on_failure)) =
+                if let Some((classify_eos, on_failure)) =
                     this.classify_eos.take().zip(this.on_failure.take())
                 {
                     let failure_class = classify_eos.classify_error(err);
@@ -84,7 +84,7 @@ where
 
         let latency = this.start.elapsed();
 
-        if let Some((classify_eos, mut on_failure)) =
+        if let Some((classify_eos, on_failure)) =
             this.classify_eos.take().zip(this.on_failure.take())
         {
             match &result {

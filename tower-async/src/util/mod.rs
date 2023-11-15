@@ -14,8 +14,6 @@ mod then;
 pub mod backoff;
 pub mod rng;
 
-use tower_async_service::Service;
-
 pub use self::{
     and_then::{AndThen, AndThenLayer},
     either::Either,
@@ -35,11 +33,17 @@ use crate::layer::util::Identity;
 /// adapters
 pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// Consume this `Service`, calling it with the provided request once and only once.
-    async fn oneshot(mut self, req: Request) -> Result<Self::Response, Self::Error>
+    fn oneshot(
+        self,
+        req: Request,
+    ) -> impl std::future::Future<Output = Result<Self::Response, Self::Error>>
     where
         Self: Sized,
     {
-        Service::call(&mut self, req).await
+        async move {
+            let service = self;
+            service.call(req).await
+        }
     }
 
     /// Executes a new future after this service's future resolves.
@@ -52,8 +56,6 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     ///
     /// # Example
     /// ```
-    /// # #![allow(incomplete_features)]
-    /// # #![feature(async_fn_in_trait)]
     /// # use tower_async::{Service, ServiceExt};
     /// #
     /// # struct DatabaseService;
@@ -72,7 +74,7 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// #   type Response = Record;
     /// #   type Error = u8;
     /// #
-    /// #   async fn call(&mut self, request: u32) -> Result<Self::Response, Self::Error> {
+    /// #   async fn call(&self, request: u32) -> Result<Self::Response, Self::Error> {
     /// #       Ok(Record { name: "Jack".into(), age: 32 })
     /// #   }
     /// # }
@@ -115,8 +117,6 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     ///
     /// # Example
     /// ```
-    /// # #![allow(incomplete_features)]
-    /// # #![feature(async_fn_in_trait)]
     /// # use tower_async::{Service, ServiceExt};
     /// #
     /// # struct DatabaseService;
@@ -135,7 +135,7 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// #   type Response = Record;
     /// #   type Error = u8;
     /// #
-    /// #   async fn call(&mut self, request: u32) -> Result<Self::Response, Self::Error> {
+    /// #   async fn call(&self, request: u32) -> Result<Self::Response, Self::Error> {
     /// #       Ok(Record { name: "Jack".into(), age: 32 })
     /// #   }
     /// # }
@@ -174,8 +174,6 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     ///
     /// # Example
     /// ```
-    /// # #![allow(incomplete_features)]
-    /// # #![feature(async_fn_in_trait)]
     /// # use tower_async::{Service, ServiceExt};
     /// #
     /// # struct DatabaseService;
@@ -194,7 +192,7 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// #   type Response = String;
     /// #   type Error = Error;
     /// #
-    /// #   async fn call(&mut self, request: u32) -> Result<Self::Response, Self::Error> {
+    /// #   async fn call(&self, request: u32) -> Result<Self::Response, Self::Error> {
     /// #       Ok(String::new())
     /// #   }
     /// # }
@@ -253,8 +251,6 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// Recovering from certain errors:
     ///
     /// ```
-    /// # #![allow(incomplete_features)]
-    /// # #![feature(async_fn_in_trait)]
     /// # use tower_async::{Service, ServiceExt};
     /// #
     /// # struct DatabaseService;
@@ -278,7 +274,7 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// #   type Response = Vec<Record>;
     /// #   type Error = DbError;
     /// #
-    /// #   async fn call(&mut self, request: u32) -> Result<Self::Response, Self::Error> {
+    /// #   async fn call(&self, request: u32) -> Result<Self::Response, Self::Error> {
     /// #       Ok(vec![Record { name: "Jack".into(), age: 32 }])
     /// #   }
     /// # }
@@ -310,8 +306,6 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// Rejecting some `Ok` responses:
     ///
     /// ```
-    /// # #![allow(incomplete_features)]
-    /// # #![feature(async_fn_in_trait)]
     /// # use tower_async::{Service, ServiceExt};
     /// #
     /// # struct DatabaseService;
@@ -332,7 +326,7 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// #   type Response = Record;
     /// #   type Error = DbError;
     /// #
-    /// #   async fn call(&mut self, request: u32) -> Result<Self::Response, Self::Error> {
+    /// #   async fn call(&self, request: u32) -> Result<Self::Response, Self::Error> {
     /// #       Ok(Record { name: "Jack".into(), age: 32 })
     /// #   }
     /// # }
@@ -374,8 +368,6 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// Performing an action that must be run for both successes and failures:
     ///
     /// ```
-    /// # #![allow(incomplete_features)]
-    /// # #![feature(async_fn_in_trait)]
     /// # use std::convert::TryFrom;
     /// # use tower_async::{Service, ServiceExt};
     /// #
@@ -390,7 +382,7 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// #   type Response = String;
     /// #   type Error = u8;
     /// #
-    /// #   async fn call(&mut self, request: u32) -> Result<Self::Response, Self::Error> {
+    /// #   async fn call(&self, request: u32) -> Result<Self::Response, Self::Error> {
     /// #       Ok(String::new())
     /// #   }
     /// # }
@@ -438,8 +430,6 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     ///
     /// # Example
     /// ```
-    /// # #![allow(incomplete_features)]
-    /// # #![feature(async_fn_in_trait)]
     /// # use std::convert::TryFrom;
     /// # use tower_async::{Service, ServiceExt};
     /// #
@@ -454,7 +444,7 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// #   type Response = String;
     /// #   type Error = u8;
     /// #
-    /// #   async fn call(&mut self, request: String) -> Result<Self::Response, Self::Error> {
+    /// #   async fn call(&self, request: String) -> Result<Self::Response, Self::Error> {
     /// #       Ok(String::new())
     /// #   }
     /// # }
@@ -479,7 +469,7 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     fn map_request<F, NewRequest>(self, f: F) -> MapRequest<Self, F>
     where
         Self: Sized,
-        F: FnMut(NewRequest) -> Request,
+        F: Fn(NewRequest) -> Request,
     {
         MapRequest::new(self, f)
     }
@@ -492,8 +482,6 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     ///
     /// # Example
     /// ```
-    /// # #![allow(incomplete_features)]
-    /// # #![feature(async_fn_in_trait)]
     /// # use std::convert::TryFrom;
     /// # use tower_async::{Service, ServiceExt};
     /// #
@@ -516,7 +504,7 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// #   type Response = String;
     /// #   type Error = DbError;
     /// #
-    /// #   async fn call(&mut self, request: u32) -> Result<Self::Response, Self::Error> {
+    /// #   async fn call(&self, request: u32) -> Result<Self::Response, Self::Error> {
     /// #       Ok(String::new())
     /// #   }
     /// # }
@@ -559,8 +547,6 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     ///
     /// # Example
     /// ```
-    /// # #![allow(incomplete_features)]
-    /// # #![feature(async_fn_in_trait)]
     /// # use std::convert::TryFrom;
     /// # use tower_async::{Service, ServiceExt};
     /// #
@@ -583,7 +569,7 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// #   type Response = String;
     /// #   type Error = DbError;
     /// #
-    /// #   async fn call(&mut self, request: u32) -> Result<Self::Response, Self::Error> {
+    /// #   async fn call(&self, request: u32) -> Result<Self::Response, Self::Error> {
     /// #       Ok(String::new())
     /// #   }
     /// # }
@@ -656,8 +642,6 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// # Examples
     ///
     /// ```
-    /// # #![allow(incomplete_features)]
-    /// # #![feature(async_fn_in_trait)]
     /// # use tower_async::{Service, ServiceExt};
     /// #
     /// # struct DatabaseService;
@@ -674,7 +658,7 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// #   type Response = Record;
     /// #   type Error = DbError;
     /// #
-    /// #   async fn call(&mut self, request: u32) -> Result<Self::Response, Self::Error> {
+    /// #   async fn call(&self, request: u32) -> Result<Self::Response, Self::Error> {
     /// #       Ok(())
     /// #   }
     /// # }
@@ -732,8 +716,6 @@ impl<T: ?Sized, Request> ServiceExt<Request> for T where T: tower_async_service:
 /// Convert an `Option<Layer>` into a [`Layer`].
 ///
 /// ```
-/// # #![allow(incomplete_features)]
-/// # #![feature(async_fn_in_trait)]
 /// # use std::time::Duration;
 /// # use tower_async::Service;
 /// # use tower_async::builder::ServiceBuilder;

@@ -93,7 +93,7 @@ where
     type Response = Response<ResBody>;
     type Error = Infallible;
 
-    async fn call(&mut self, _req: R) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, _req: R) -> Result<Self::Response, Self::Error> {
         let mut res = Response::default();
         *res.status_mut() = self.status_code;
         res.headers_mut()

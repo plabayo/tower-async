@@ -236,8 +236,8 @@ where
     type Response = S::Response;
     type Error = S::Error;
 
-    async fn call(&mut self, mut req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
-        self.mode.apply(&self.header_name, &mut req, &mut self.make);
+    async fn call(&self, mut req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
+        self.mode.apply(&self.header_name, &mut req, &self.make);
         self.inner.call(req).await
     }
 }

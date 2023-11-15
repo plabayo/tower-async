@@ -109,7 +109,7 @@ where
     type Response = Response<DecompressionBody<ResBody>>;
     type Error = S::Error;
 
-    async fn call(&mut self, mut req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, mut req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
         if let header::Entry::Vacant(entry) = req.headers_mut().entry(ACCEPT_ENCODING) {
             if let Some(accept) = self.accept.to_header_value() {
                 entry.insert(accept);

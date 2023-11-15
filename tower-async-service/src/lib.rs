@@ -5,8 +5,6 @@
     unreachable_pub
 )]
 #![forbid(unsafe_code)]
-#![allow(incomplete_features)]
-#![feature(async_fn_in_trait)]
 // `rustdoc::broken_intra_doc_links` is checked on CI
 
 //! Definition of the core `Service` trait to Tower
@@ -42,8 +40,6 @@
 /// As an example, here is how an HTTP request is processed by a server:
 ///
 /// ```rust
-/// # #![allow(incomplete_features)]
-/// # #![feature(async_fn_in_trait)]
 /// # use tower_async_service::Service;
 /// use http::{Request, Response, StatusCode};
 ///
@@ -53,7 +49,7 @@
 ///     type Response = Response<Vec<u8>>;
 ///     type Error = http::Error;
 ///
-///     async fn call(&mut self, req: Request<Vec<u8>>) -> Result<Self::Response, Self::Error> {
+///     async fn call(&self, req: Request<Vec<u8>>) -> Result<Self::Response, Self::Error> {
 ///         // create the body
 ///         let body: Vec<u8> = "hello, world!\n"
 ///             .as_bytes()
@@ -99,8 +95,6 @@
 /// Take timeouts as an example:
 ///
 /// ```rust
-/// # #![allow(incomplete_features)]
-/// # #![feature(async_fn_in_trait)]
 /// use tower_async_service::Service;
 /// use tower_async_layer::Layer;
 /// use futures::FutureExt;
@@ -153,7 +147,7 @@
 ///     // the error's type.
 ///     type Error = Box<dyn Error + Send + Sync>;
 ///
-///     async fn call(&mut self, req: Request) -> Result<Self::Response, Self::Error> {
+///     async fn call(&self, req: Request) -> Result<Self::Response, Self::Error> {
 ///         tokio::select! {
 ///             res = self.inner.call(req) => {
 ///                 res.map_err(|err| err.into())
@@ -208,7 +202,10 @@ pub trait Service<Request> {
 
     /// Process the request and return the response asynchronously.
     #[must_use = "futures do nothing unless you `.await` or poll them"]
-    async fn call(&mut self, req: Request) -> Result<Self::Response, Self::Error>;
+    fn call(
+        &self,
+        req: Request,
+    ) -> impl std::future::Future<Output = Result<Self::Response, Self::Error>>;
 }
 
 impl<'a, S, Request> Service<Request> for &'a mut S
@@ -218,12 +215,16 @@ where
     type Response = S::Response;
     type Error = S::Error;
 
-    async fn call(
-        &mut self,
+    fn call(
+        &self,
         request: Request,
-    ) -> Result<<&'a mut S as Service<Request>>::Response, <&'a mut S as Service<Request>>::Error>
-    {
-        (**self).call(request).await
+    ) -> impl std::future::Future<
+        Output = Result<
+            <&'a mut S as Service<Request>>::Response,
+            <&'a mut S as Service<Request>>::Error,
+        >,
+    > {
+        (**self).call(request)
     }
 }
 
@@ -234,7 +235,10 @@ where
     type Response = S::Response;
     type Error = S::Error;
 
-    async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
-        (**self).call(request).await
+    fn call(
+        &self,
+        request: Request,
+    ) -> impl std::future::Future<Output = Result<Self::Response, Self::Error>> {
+        (**self).call(request)
     }
 }

@@ -71,7 +71,7 @@ impl<T, U> Filter<T, U> {
     }
 
     /// Check a `Request` value against this filter's predicate.
-    pub fn check<R>(&mut self, request: R) -> Result<U::Request, BoxError>
+    pub fn check<R>(&self, request: R) -> Result<U::Request, BoxError>
     where
         U: Predicate<R>,
     {
@@ -81,11 +81,6 @@ impl<T, U> Filter<T, U> {
     /// Get a reference to the inner service
     pub fn get_ref(&self) -> &T {
         &self.inner
-    }
-
-    /// Get a mutable reference to the inner service
-    pub fn get_mut(&mut self) -> &mut T {
-        &mut self.inner
     }
 
     /// Consume `self`, returning the inner service
@@ -103,7 +98,7 @@ where
     type Response = T::Response;
     type Error = BoxError;
 
-    async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, request: Request) -> Result<Self::Response, Self::Error> {
         match self.predicate.check(request) {
             Ok(request) => self.inner.call(request).err_into().await,
             Err(e) => Err(e),
@@ -128,7 +123,7 @@ impl<T, U> AsyncFilter<T, U> {
     }
 
     /// Check a `Request` value against this filter's predicate.
-    pub async fn check<R>(&mut self, request: R) -> Result<U::Request, BoxError>
+    pub async fn check<R>(&self, request: R) -> Result<U::Request, BoxError>
     where
         U: AsyncPredicate<R>,
     {
@@ -138,11 +133,6 @@ impl<T, U> AsyncFilter<T, U> {
     /// Get a reference to the inner service
     pub fn get_ref(&self) -> &T {
         &self.inner
-    }
-
-    /// Get a mutable reference to the inner service
-    pub fn get_mut(&mut self) -> &mut T {
-        &mut self.inner
     }
 
     /// Consume `self`, returning the inner service
@@ -160,7 +150,7 @@ where
     type Response = T::Response;
     type Error = BoxError;
 
-    async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, request: Request) -> Result<Self::Response, Self::Error> {
         match self.predicate.check(request).await {
             Ok(request) => self.inner.call(request).err_into().await,
             Err(e) => Err(e),

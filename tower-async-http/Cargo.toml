@@ -4,7 +4,7 @@ description = """
 Tower Async middleware and utilities for HTTP clients and servers.
 An "Async Trait" fork from the original Tower Library.
 """
-version = "0.1.4"
+version = "0.2.0"
 authors = ["Glen De Cauwsemaecker <glen@plabayo.tech>"]
 edition = "2021"
 license = "MIT"
@@ -14,6 +14,7 @@ categories = ["asynchronous", "network-programming", "web-programming"]
 keywords = ["io", "async", "futures", "service", "http"]
 
 [dependencies]
+async-lock = "3.1"
 bitflags = "2.0"
 bytes = "1"
 futures-core = "0.3"
@@ -21,8 +22,8 @@ futures-util = { version = "0.3", default_features = false, features = [] }
 http = "0.2"
 http-body = "0.4"
 pin-project-lite = "0.2"
-tower-async-layer = { version = "0.1", path = "../tower-async-layer" }
-tower-async-service = { version = "0.1", path = "../tower-async-service" }
+tower-async-layer = { version = "0.2", path = "../tower-async-layer" }
+tower-async-service = { version = "0.2", path = "../tower-async-service" }
 
 # optional dependencies
 async-compression = { version = "0.4", optional = true, features = ["tokio"] }
@@ -35,7 +36,7 @@ mime_guess = { version = "2", optional = true, default_features = false }
 percent-encoding = { version = "2.1", optional = true }
 tokio = { version = "1.6", optional = true, default_features = false }
 tokio-util = { version = "0.7", optional = true, default_features = false, features = ["io"] }
-tower-async = { version = "0.1", path = "../tower-async", optional = true }
+tower-async = { version = "0.2", path = "../tower-async", optional = true }
 tracing = { version = "0.1", default_features = false, optional = true }
 uuid = { version = "1.0", features = ["v4"], optional = true }
 
@@ -52,12 +53,11 @@ serde_json = "1.0"
 tokio = { version = "1", features = ["full"] }
 tower = { version = "0.4", features = ["util", "make", "timeout"] }
 tower-async = { path = "../tower-async", features = ["full"] }
-tower-async-bridge = { path = "../tower-async-bridge", features = ["full"] }
 tower-async-http = { path = ".", features = ["full"] }
 tracing = { version = "0.1", default_features = false }
 tracing-subscriber = "0.3"
 uuid = { version = "1.0", features = ["v4"] }
-zstd = "0.12"
+zstd = "0.13"
 
 [features]
 default = []

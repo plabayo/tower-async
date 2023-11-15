@@ -119,7 +119,7 @@ where
     type Response = S::Response;
     type Error = S::Error;
 
-    async fn call(&mut self, mut req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, mut req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
         req.extensions_mut().insert(self.value.clone());
         self.inner.call(req).await
     }

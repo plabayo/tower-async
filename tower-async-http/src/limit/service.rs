@@ -39,7 +39,7 @@ where
     type Response = Response<ResponseBody<ResBody>>;
     type Error = S::Error;
 
-    async fn call(&mut self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
         let content_length = req
             .headers()
             .get(http::header::CONTENT_LENGTH)

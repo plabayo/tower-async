@@ -50,7 +50,7 @@ where
     type Response = T::Response;
     type Error = BoxError;
 
-    async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, request: Request) -> Result<Self::Response, Self::Error> {
         let mut request = request;
         loop {
             match self.policy.check(&mut request).await {
@@ -87,8 +87,8 @@ mod tests {
 
         let layer: LimitLayer<ConcurrentPolicy<()>> = LimitLayer::new(ConcurrentPolicy::new(1));
 
-        let mut service_1 = layer.layer(service_fn(handle_request));
-        let mut service_2 = layer.layer(service_fn(handle_request));
+        let service_1 = layer.layer(service_fn(handle_request));
+        let service_2 = layer.layer(service_fn(handle_request));
 
         let future_1 = service_1.call("Hello");
         let future_2 = service_2.call("Hello");

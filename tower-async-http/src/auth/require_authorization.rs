@@ -171,7 +171,7 @@ where
 {
     type ResponseBody = ResBody;
 
-    fn validate(&mut self, request: &mut Request<B>) -> Result<(), Response<Self::ResponseBody>> {
+    fn validate(&self, request: &mut Request<B>) -> Result<(), Response<Self::ResponseBody>> {
         match request.headers().get(header::AUTHORIZATION) {
             Some(actual) if actual == self.header_value => Ok(()),
             _ => {
@@ -228,7 +228,7 @@ where
 {
     type ResponseBody = ResBody;
 
-    fn validate(&mut self, request: &mut Request<B>) -> Result<(), Response<Self::ResponseBody>> {
+    fn validate(&self, request: &mut Request<B>) -> Result<(), Response<Self::ResponseBody>> {
         match request.headers().get(header::AUTHORIZATION) {
             Some(actual) if actual == self.header_value => Ok(()),
             _ => {
@@ -255,7 +255,7 @@ mod tests {
 
     #[tokio::test]
     async fn valid_basic_token() {
-        let mut service = ServiceBuilder::new()
+        let service = ServiceBuilder::new()
             .layer(ValidateRequestHeaderLayer::basic("foo", "bar"))
             .service_fn(echo);
 
@@ -274,7 +274,7 @@ mod tests {
 
     #[tokio::test]
     async fn invalid_basic_token() {
-        let mut service = ServiceBuilder::new()
+        let service = ServiceBuilder::new()
             .layer(ValidateRequestHeaderLayer::basic("foo", "bar"))
             .service_fn(echo);
 
@@ -296,7 +296,7 @@ mod tests {
 
     #[tokio::test]
     async fn valid_bearer_token() {
-        let mut service = ServiceBuilder::new()
+        let service = ServiceBuilder::new()
             .layer(ValidateRequestHeaderLayer::bearer("foobar"))
             .service_fn(echo);
 
@@ -312,7 +312,7 @@ mod tests {
 
     #[tokio::test]
     async fn basic_auth_is_case_sensitive_in_prefix() {
-        let mut service = ServiceBuilder::new()
+        let service = ServiceBuilder::new()
             .layer(ValidateRequestHeaderLayer::basic("foo", "bar"))
             .service_fn(echo);
 
@@ -331,7 +331,7 @@ mod tests {
 
     #[tokio::test]
     async fn basic_auth_is_case_sensitive_in_value() {
-        let mut service = ServiceBuilder::new()
+        let service = ServiceBuilder::new()
             .layer(ValidateRequestHeaderLayer::basic("foo", "bar"))
             .service_fn(echo);
 
@@ -350,7 +350,7 @@ mod tests {
 
     #[tokio::test]
     async fn invalid_bearer_token() {
-        let mut service = ServiceBuilder::new()
+        let service = ServiceBuilder::new()
             .layer(ValidateRequestHeaderLayer::bearer("foobar"))
             .service_fn(echo);
 
@@ -366,7 +366,7 @@ mod tests {
 
     #[tokio::test]
     async fn bearer_token_is_case_sensitive_in_prefix() {
-        let mut service = ServiceBuilder::new()
+        let service = ServiceBuilder::new()
             .layer(ValidateRequestHeaderLayer::bearer("foobar"))
             .service_fn(echo);
 
@@ -382,7 +382,7 @@ mod tests {
 
     #[tokio::test]
     async fn bearer_token_is_case_sensitive_in_token() {
-        let mut service = ServiceBuilder::new()
+        let service = ServiceBuilder::new()
             .layer(ValidateRequestHeaderLayer::bearer("foobar"))
             .service_fn(echo);
 

@@ -102,7 +102,7 @@ where
     type Response = S::Response;
     type Error = S::Error;
 
-    async fn call(&mut self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
         let value = req.headers().get(&self.header).cloned();
 
         let mut res = self.inner.call(req).await?;

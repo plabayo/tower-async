@@ -3,17 +3,16 @@
 /// # Example
 ///
 /// ```
-/// # #![allow(incomplete_features)]
-/// # #![feature(async_fn_in_trait)]
+/// use std::sync::{Arc, Mutex};
 /// use tower_async::retry::Policy;
 ///
 /// type Req = String;
 /// type Res = String;
 ///
-/// struct Attempts(usize);
+/// struct Attempts(Arc<Mutex<usize>>);
 ///
 /// impl<E> Policy<Req, Res, E> for Attempts {
-///     async fn retry(&mut self, req: &mut Req, result: &mut Result<Res, E>) -> bool {
+///     async fn retry(&self, req: &mut Req, result: &mut Result<Res, E>) -> bool {
 ///         match result {
 ///             Ok(_) => {
 ///                 // Treat all `Response`s as success,
@@ -23,9 +22,10 @@
 ///             Err(_) => {
 ///                 // Treat all errors as failures...
 ///                 // But we limit the number of attempts...
-///                 if self.0 > 0 {
+///                 let mut retries = self.0.lock().unwrap();
+///                 if *retries > 0 {
 ///                     // Try again!
-///                     self.0 -= 1;
+///                     *retries -= 1;
 ///                     true
 ///                 } else {
 ///                     // Used all our attempts, no retry...
@@ -35,7 +35,7 @@
 ///         }
 ///     }
 ///
-///     fn clone_request(&mut self, req: &Req) -> Option<Req> {
+///     fn clone_request(&self, req: &Req) -> Option<Req> {
 ///         Some(req.clone())
 ///     }
 /// }
@@ -74,11 +74,15 @@ pub trait Policy<Req, Res, E> {
     ///
     /// [`Service::Response`]: crate::Service::Response
     /// [`Service::Error`]: crate::Service::Error
-    async fn retry(&mut self, req: &mut Req, result: &mut Result<Res, E>) -> bool;
+    fn retry(
+        &self,
+        req: &mut Req,
+        result: &mut Result<Res, E>,
+    ) -> impl std::future::Future<Output = bool>;
 
     /// Tries to clone a request before being passed to the inner service.
     ///
     /// If the request cannot be cloned, return [`None`]. Moreover, the retry
     /// function will not be called if the [`None`] is returned.
-    fn clone_request(&mut self, req: &Req) -> Option<Req>;
+    fn clone_request(&self, req: &Req) -> Option<Req>;
 }

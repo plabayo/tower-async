@@ -27,8 +27,6 @@
 //! # Examples
 //!
 //! ```rust
-//! # #![allow(incomplete_features)]
-//! # #![feature(async_fn_in_trait)]
 //! use std::sync::Arc;
 //!
 //! use futures_util::future;
@@ -43,7 +41,7 @@
 //! }
 //!
 //! impl<E> Policy<Req, Res, E> for RetryPolicy {
-//!     async fn retry(&mut self, req: &mut Req, result: &mut Result<Res, E>) -> bool {
+//!     async fn retry(&self, req: &mut Req, result: &mut Result<Res, E>) -> bool {
 //!         match result {
 //!             Ok(_) => {
 //!                 // Treat all `Response`s as success,
@@ -65,7 +63,7 @@
 //!         }
 //!     }
 //!
-//!     fn clone_request(&mut self, req: &Req) -> Option<Req> {
+//!     fn clone_request(&self, req: &Req) -> Option<Req> {
 //!         Some(req.clone())
 //!     }
 //! }

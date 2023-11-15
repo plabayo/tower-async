@@ -398,7 +398,7 @@ mod usable_for_retries {
         E: std::error::Error + 'static,
     {
         async fn retry(
-            &mut self,
+            &self,
             _req: &mut Request<ReqB>,
             res: &mut Result<Response<ResB>, E>,
         ) -> bool {
@@ -422,7 +422,7 @@ mod usable_for_retries {
             }
         }
 
-        fn clone_request(&mut self, req: &Request<ReqB>) -> Option<Request<ReqB>> {
+        fn clone_request(&self, req: &Request<ReqB>) -> Option<Request<ReqB>> {
             Some(req.clone())
         }
     }

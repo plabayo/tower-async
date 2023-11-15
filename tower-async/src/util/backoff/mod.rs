@@ -10,27 +10,21 @@
 //!
 //! [backoff]: https://en.wikipedia.org/wiki/Exponential_backoff
 
-use std::future::Future;
-
 /// Trait used to construct [`Backoff`] trait implementors.
 pub trait MakeBackoff {
     /// The backoff type produced by this maker.
     type Backoff: Backoff;
 
     /// Constructs a new backoff type.
-    fn make_backoff(&mut self) -> Self::Backoff;
+    fn make_backoff(&self) -> Self::Backoff;
 }
 
 /// A backoff trait where a single mutable reference represents a single
 /// backoff session. Implementors must also implement [`Clone`] which will
 /// reset the backoff back to the default state for the next session.
 pub trait Backoff {
-    /// The future associated with each backoff. This usually will be some sort
-    /// of timer.
-    type Future: Future<Output = ()>;
-
     /// Initiate the next backoff in the sequence.
-    fn next_backoff(&mut self) -> Self::Future;
+    fn next_backoff(&self) -> impl std::future::Future<Output = ()>;
 }
 
 #[cfg(feature = "util-tokio")]

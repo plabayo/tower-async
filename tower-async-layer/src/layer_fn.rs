@@ -12,8 +12,6 @@ use std::fmt;
 ///
 /// # Example
 /// ```rust
-/// # #![allow(incomplete_features)]
-/// # #![feature(async_fn_in_trait)]
 /// # use tower_async::Service;
 /// # use std::task::{Poll, Context};
 /// # use tower_async_layer::{Layer, layer_fn};
@@ -34,7 +32,7 @@ use std::fmt;
 ///     type Response = S::Response;
 ///     type Error = S::Error;
 ///
-///     async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
+///     async fn call(&self, request: Request) -> Result<Self::Response, Self::Error> {
 ///         // Log the request
 ///         println!("request = {:?}, target = {:?}", request, self.target);
 ///

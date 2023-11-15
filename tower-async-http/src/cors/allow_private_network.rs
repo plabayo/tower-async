@@ -129,7 +129,7 @@ mod tests {
 
     #[tokio::test]
     async fn cors_private_network_header_is_added_correctly() {
-        let mut service = ServiceBuilder::new()
+        let service = ServiceBuilder::new()
             .layer(CorsLayer::new().allow_private_network(true))
             .service_fn(echo);
 
@@ -153,7 +153,7 @@ mod tests {
             AllowPrivateNetwork::predicate(|origin: &HeaderValue, parts: &Parts| {
                 parts.uri.path() == "/allow-private" && origin == "localhost"
             });
-        let mut service = ServiceBuilder::new()
+        let service = ServiceBuilder::new()
             .layer(CorsLayer::new().allow_private_network(allow_private_network))
             .service_fn(echo);
 

@@ -94,7 +94,7 @@ impl ServeFile {
     /// See [`ServeDir::try_call`] for more details.
     #[inline]
     pub async fn try_call<ReqBody>(
-        &mut self,
+        &self,
         req: Request<ReqBody>,
     ) -> Result<Response<super::serve_dir::ResponseBody>, std::io::Error>
     where
@@ -112,7 +112,7 @@ where
     type Response = <ServeDir as Service<Request<ReqBody>>>::Response;
 
     #[inline]
-    async fn call(&mut self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
         self.0.call(req).await
     }
 }

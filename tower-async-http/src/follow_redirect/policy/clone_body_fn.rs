@@ -21,7 +21,7 @@ impl<F, B, E> Policy<B, E> for CloneBodyFn<F>
 where
     F: Fn(&B) -> Option<B>,
 {
-    fn redirect(&mut self, _: &Attempt<'_>) -> Result<Action, E> {
+    fn redirect(&self, _: &Attempt<'_>) -> Result<Action, E> {
         Ok(Action::Follow)
     }
 

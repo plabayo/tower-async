@@ -61,7 +61,7 @@
 //!     type ResponseBody = Body;
 //!
 //!     fn validate(
-//!         &mut self,
+//!         &self,
 //!         request: &mut Request<B>,
 //!     ) -> Result<(), Response<Self::ResponseBody>> {
 //!         // validate the request...
@@ -220,7 +220,7 @@ where
     type Response = Response<ResBody>;
     type Error = S::Error;
 
-    async fn call(&mut self, mut req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, mut req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
         match self.validate.validate(&mut req) {
             Ok(_) => self.inner.call(req).await,
             Err(res) => Ok(res),
@@ -236,16 +236,16 @@ pub trait ValidateRequest<B> {
     /// Validate the request.
     ///
     /// If `Ok(())` is returned then the request is allowed through, otherwise not.
-    fn validate(&mut self, request: &mut Request<B>) -> Result<(), Response<Self::ResponseBody>>;
+    fn validate(&self, request: &mut Request<B>) -> Result<(), Response<Self::ResponseBody>>;
 }
 
 impl<B, F, ResBody> ValidateRequest<B> for F
 where
-    F: FnMut(&mut Request<B>) -> Result<(), Response<ResBody>>,
+    F: Fn(&mut Request<B>) -> Result<(), Response<ResBody>>,
 {
     type ResponseBody = ResBody;
 
-    fn validate(&mut self, request: &mut Request<B>) -> Result<(), Response<Self::ResponseBody>> {
+    fn validate(&self, request: &mut Request<B>) -> Result<(), Response<Self::ResponseBody>> {
         self(request)
     }
 }
@@ -300,7 +300,7 @@ where
 {
     type ResponseBody = ResBody;
 
-    fn validate(&mut self, req: &mut Request<B>) -> Result<(), Response<Self::ResponseBody>> {
+    fn validate(&self, req: &mut Request<B>) -> Result<(), Response<Self::ResponseBody>> {
         if !req.headers().contains_key(header::ACCEPT) {
             return Ok(());
         }
@@ -347,7 +347,7 @@ mod tests {
 
     #[tokio::test]
     async fn valid_accept_header() {
-        let mut service = ServiceBuilder::new()
+        let service = ServiceBuilder::new()
             .layer(ValidateRequestHeaderLayer::accept("application/json"))
             .service_fn(echo);
 
@@ -363,7 +363,7 @@ mod tests {
 
     #[tokio::test]
     async fn valid_accept_header_accept_all_json() {
-        let mut service = ServiceBuilder::new()
+        let service = ServiceBuilder::new()
             .layer(ValidateRequestHeaderLayer::accept("application/json"))
             .service_fn(echo);
 
@@ -379,7 +379,7 @@ mod tests {
 
     #[tokio::test]
     async fn valid_accept_header_accept_all() {
-        let mut service = ServiceBuilder::new()
+        let service = ServiceBuilder::new()
             .layer(ValidateRequestHeaderLayer::accept("application/json"))
             .service_fn(echo);
 
@@ -395,7 +395,7 @@ mod tests {
 
     #[tokio::test]
     async fn invalid_accept_header() {
-        let mut service = ServiceBuilder::new()
+        let service = ServiceBuilder::new()
             .layer(ValidateRequestHeaderLayer::accept("application/json"))
             .service_fn(echo);
 
@@ -410,7 +410,7 @@ mod tests {
     }
     #[tokio::test]
     async fn not_accepted_accept_header_subtype() {
-        let mut service = ServiceBuilder::new()
+        let service = ServiceBuilder::new()
             .layer(ValidateRequestHeaderLayer::accept("application/json"))
             .service_fn(echo);
 
@@ -426,7 +426,7 @@ mod tests {
 
     #[tokio::test]
     async fn not_accepted_accept_header() {
-        let mut service = ServiceBuilder::new()
+        let service = ServiceBuilder::new()
             .layer(ValidateRequestHeaderLayer::accept("application/json"))
             .service_fn(echo);
 
@@ -442,7 +442,7 @@ mod tests {
 
     #[tokio::test]
     async fn accepted_multiple_header_value() {
-        let mut service = ServiceBuilder::new()
+        let service = ServiceBuilder::new()
             .layer(ValidateRequestHeaderLayer::accept("application/json"))
             .service_fn(echo);
 
@@ -459,7 +459,7 @@ mod tests {
 
     #[tokio::test]
     async fn accepted_inner_header_value() {
-        let mut service = ServiceBuilder::new()
+        let service = ServiceBuilder::new()
             .layer(ValidateRequestHeaderLayer::accept("application/json"))
             .service_fn(echo);
 
@@ -476,7 +476,7 @@ mod tests {
     #[tokio::test]
     async fn accepted_header_with_quotes_valid() {
         let value = "foo/bar; parisien=\"baguette, text/html, jambon, fromage\", application/*";
-        let mut service = ServiceBuilder::new()
+        let service = ServiceBuilder::new()
             .layer(ValidateRequestHeaderLayer::accept("application/xml"))
             .service_fn(echo);
 
@@ -493,7 +493,7 @@ mod tests {
     #[tokio::test]
     async fn accepted_header_with_quotes_invalid() {
         let value = "foo/bar; parisien=\"baguette, text/html, jambon, fromage\"";
-        let mut service = ServiceBuilder::new()
+        let service = ServiceBuilder::new()
             .layer(ValidateRequestHeaderLayer::accept("text/html"))
             .service_fn(echo);
 

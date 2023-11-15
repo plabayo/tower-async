@@ -42,13 +42,13 @@ impl<S, F> MapRequest<S, F> {
 impl<S, F, R1, R2> Service<R1> for MapRequest<S, F>
 where
     S: Service<R2>,
-    F: FnMut(R1) -> R2,
+    F: Fn(R1) -> R2,
 {
     type Response = S::Response;
     type Error = S::Error;
 
     #[inline]
-    async fn call(&mut self, request: R1) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, request: R1) -> Result<Self::Response, Self::Error> {
         self.inner.call((self.f)(request)).await
     }
 }

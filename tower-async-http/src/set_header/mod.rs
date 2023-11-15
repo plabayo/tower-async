@@ -24,26 +24,26 @@ pub use self::{
 /// to all responses, it can be supplied directly to the middleware.
 pub trait MakeHeaderValue<T> {
     /// Try to create a header value from the request or response.
-    fn make_header_value(&mut self, message: &T) -> Option<HeaderValue>;
+    fn make_header_value(&self, message: &T) -> Option<HeaderValue>;
 }
 
 impl<F, T> MakeHeaderValue<T> for F
 where
-    F: FnMut(&T) -> Option<HeaderValue>,
+    F: Fn(&T) -> Option<HeaderValue>,
 {
-    fn make_header_value(&mut self, message: &T) -> Option<HeaderValue> {
+    fn make_header_value(&self, message: &T) -> Option<HeaderValue> {
         self(message)
     }
 }
 
 impl<T> MakeHeaderValue<T> for HeaderValue {
-    fn make_header_value(&mut self, _message: &T) -> Option<HeaderValue> {
+    fn make_header_value(&self, _message: &T) -> Option<HeaderValue> {
         Some(self.clone())
     }
 }
 
 impl<T> MakeHeaderValue<T> for Option<HeaderValue> {
-    fn make_header_value(&mut self, _message: &T) -> Option<HeaderValue> {
+    fn make_header_value(&self, _message: &T) -> Option<HeaderValue> {
         self.clone()
     }
 }
@@ -56,7 +56,7 @@ enum InsertHeaderMode {
 }
 
 impl InsertHeaderMode {
-    fn apply<T, M>(self, header_name: &HeaderName, target: &mut T, make: &mut M)
+    fn apply<T, M>(self, header_name: &HeaderName, target: &mut T, make: &M)
     where
         T: Headers,
         M: MakeHeaderValue<T>,

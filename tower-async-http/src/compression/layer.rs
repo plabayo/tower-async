@@ -151,7 +151,7 @@ mod tests {
             .no_br()
             .no_gzip();
 
-        let mut service = ServiceBuilder::new()
+        let service = ServiceBuilder::new()
             // Compress responses based on the `Accept-Encoding` header.
             .layer(deflate_only_layer)
             .service_fn(handle);
@@ -181,7 +181,7 @@ mod tests {
             .no_gzip()
             .no_deflate();
 
-        let mut service = ServiceBuilder::new()
+        let service = ServiceBuilder::new()
             // Compress responses based on the `Accept-Encoding` header.
             .layer(br_only_layer)
             .service_fn(handle);

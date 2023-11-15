@@ -5,8 +5,6 @@
     unreachable_pub
 )]
 #![forbid(unsafe_code)]
-#![allow(incomplete_features)]
-#![feature(async_fn_in_trait)]
 // `rustdoc::broken_intra_doc_links` is checked on CI
 
 //! Layer traits and extensions.
@@ -42,8 +40,6 @@ pub use self::{
 /// Take request logging as an example:
 ///
 /// ```rust
-/// # #![allow(incomplete_features)]
-/// # #![feature(async_fn_in_trait)]
 /// # use tower_async_service::Service;
 /// # use std::task::{Poll, Context};
 /// # use tower_async_layer::Layer;
@@ -78,7 +74,7 @@ pub use self::{
 ///     type Response = S::Response;
 ///     type Error = S::Error;
 ///
-///     async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
+///     async fn call(&self, request: Request) -> Result<Self::Response, Self::Error> {
 ///         // Insert log statement here or other functionality
 ///         println!("request = {:?}, target = {:?}", request, self.target);
 ///         self.service.call(request).await

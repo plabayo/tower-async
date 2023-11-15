@@ -52,7 +52,7 @@ impl<Request, Response, Error> Service<Request> for Mock<Request, Response, Erro
     type Response = Response;
     type Error = Error;
 
-    async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, request: Request) -> Result<Self::Response, Self::Error> {
         let mut handle = self.handle.lock().await;
         handle.push_request(request);
         handle.pop_result()

@@ -517,7 +517,7 @@ mod tests {
                 },
             );
 
-        let mut svc = ServiceBuilder::new().layer(trace_layer).service_fn(echo);
+        let svc = ServiceBuilder::new().layer(trace_layer).service_fn(echo);
 
         let res = svc.call(Request::new(Body::from("foobar"))).await.unwrap();
 
@@ -562,7 +562,7 @@ mod tests {
                 },
             );
 
-        let mut svc = ServiceBuilder::new()
+        let svc = ServiceBuilder::new()
             .layer(trace_layer)
             .service_fn(streaming_body);
 

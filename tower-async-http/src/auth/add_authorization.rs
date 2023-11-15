@@ -169,7 +169,7 @@ where
     type Response = S::Response;
     type Error = S::Error;
 
-    async fn call(&mut self, mut req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, mut req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
         req.headers_mut()
             .insert(http::header::AUTHORIZATION, self.value.clone());
         self.inner.call(req).await
@@ -194,7 +194,7 @@ mod tests {
             .service_fn(echo);
 
         // make a client that adds auth
-        let mut client = AddAuthorization::basic(svc, "foo", "bar");
+        let client = AddAuthorization::basic(svc, "foo", "bar");
 
         let res = client.call(Request::new(Body::empty())).await.unwrap();
 
@@ -209,7 +209,7 @@ mod tests {
             .service_fn(echo);
 
         // make a client that adds auth
-        let mut client = AddAuthorization::bearer(svc, "foo");
+        let client = AddAuthorization::bearer(svc, "foo");
 
         let res = client.call(Request::new(Body::empty())).await.unwrap();
 
@@ -227,7 +227,7 @@ mod tests {
                 Ok::<_, hyper::Error>(Response::new(Body::empty()))
             });
 
-        let mut client = AddAuthorization::bearer(svc, "foo").as_sensitive(true);
+        let client = AddAuthorization::bearer(svc, "foo").as_sensitive(true);
 
         let res = client.call(Request::new(Body::empty())).await.unwrap();
 

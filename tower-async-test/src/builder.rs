@@ -436,7 +436,7 @@ where
     let (service, handle) = crate::mock::spawn();
 
     let layer = layer;
-    let mut service = layer.layer(service);
+    let service = layer.layer(service);
 
     let (input_results, expected_inputs): (Vec<_>, Vec<_>) = tests
         .into_iter()

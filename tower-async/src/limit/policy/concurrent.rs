@@ -99,7 +99,7 @@ where
     type Guard = ConcurrentGuard;
     type Error = Infallible;
 
-    async fn check(&mut self, _: &mut Request) -> PolicyOutput<Self::Guard, Self::Error> {
+    async fn check(&self, _: &mut Request) -> PolicyOutput<Self::Guard, Self::Error> {
         {
             let mut current = self.current.lock().unwrap();
             if *current < self.max {
@@ -132,7 +132,7 @@ impl<Request> Policy<Request> for ConcurrentPolicy<()> {
     type Guard = ConcurrentGuard;
     type Error = LimitReached;
 
-    async fn check(&mut self, _: &mut Request) -> PolicyOutput<Self::Guard, Self::Error> {
+    async fn check(&self, _: &mut Request) -> PolicyOutput<Self::Guard, Self::Error> {
         let mut current = self.current.lock().unwrap();
         if *current < self.max {
             *current += 1;
@@ -165,7 +165,7 @@ mod tests {
 
     #[tokio::test]
     async fn concurrent_policy() {
-        let mut policy = ConcurrentPolicy::new(2);
+        let policy = ConcurrentPolicy::new(2);
 
         let guard_1 = assert_ready(policy.check(&mut ()).await);
         let guard_2 = assert_ready(policy.check(&mut ()).await);

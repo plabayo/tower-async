@@ -25,14 +25,14 @@ where
     A: Policy<Bd, E>,
     B: Policy<Bd, E>,
 {
-    fn redirect(&mut self, attempt: &Attempt<'_>) -> Result<Action, E> {
+    fn redirect(&self, attempt: &Attempt<'_>) -> Result<Action, E> {
         match self.a.redirect(attempt) {
             Ok(Action::Stop) | Err(_) => self.b.redirect(attempt),
             a => a,
         }
     }
 
-    fn on_request(&mut self, request: &mut Request<Bd>) {
+    fn on_request(&self, request: &mut Request<Bd>) {
         self.a.on_request(request);
         self.b.on_request(request);
     }
@@ -44,20 +44,26 @@ where
 
 #[cfg(test)]
 mod tests {
+    use std::sync::atomic::AtomicBool;
+
     use super::*;
     use http::Uri;
 
     struct Taint<P> {
         policy: P,
-        used: bool,
+        _used: AtomicBool,
     }
 
     impl<P> Taint<P> {
         fn new(policy: P) -> Self {
             Taint {
                 policy,
-                used: false,
+                _used: AtomicBool::new(false),
             }
+        }
+
+        fn used(&self) -> bool {
+            self._used.load(std::sync::atomic::Ordering::SeqCst)
         }
     }
 
@@ -65,8 +71,8 @@ mod tests {
     where
         P: Policy<B, E>,
     {
-        fn redirect(&mut self, attempt: &Attempt<'_>) -> Result<Action, E> {
-            self.used = true;
+        fn redirect(&self, attempt: &Attempt<'_>) -> Result<Action, E> {
+            self._used.store(true, std::sync::atomic::Ordering::SeqCst);
             self.policy.redirect(attempt)
         }
     }
@@ -79,40 +85,40 @@ mod tests {
             previous: &Uri::from_static("*"),
         };
 
-        let mut a = Taint::new(Action::Follow);
-        let mut b = Taint::new(Action::Follow);
-        let mut policy = Or::new::<(), ()>(&mut a, &mut b);
-        assert!(Policy::<(), ()>::redirect(&mut policy, &attempt)
+        let a = Taint::new(Action::Follow);
+        let b = Taint::new(Action::Follow);
+        let policy = Or::new::<(), ()>(&a, &b);
+        assert!(Policy::<(), ()>::redirect(&policy, &attempt)
             .unwrap()
             .is_follow());
-        assert!(a.used);
-        assert!(!b.used); // short-circuiting
+        assert!(a.used());
+        assert!(!b.used()); // short-circuiting
 
-        let mut a = Taint::new(Action::Stop);
-        let mut b = Taint::new(Action::Follow);
-        let mut policy = Or::new::<(), ()>(&mut a, &mut b);
-        assert!(Policy::<(), ()>::redirect(&mut policy, &attempt)
+        let a = Taint::new(Action::Stop);
+        let b = Taint::new(Action::Follow);
+        let policy = Or::new::<(), ()>(&a, &b);
+        assert!(Policy::<(), ()>::redirect(&policy, &attempt)
             .unwrap()
             .is_follow());
-        assert!(a.used);
-        assert!(b.used);
+        assert!(a.used());
+        assert!(b.used());
 
-        let mut a = Taint::new(Action::Follow);
-        let mut b = Taint::new(Action::Stop);
-        let mut policy = Or::new::<(), ()>(&mut a, &mut b);
-        assert!(Policy::<(), ()>::redirect(&mut policy, &attempt)
+        let a = Taint::new(Action::Follow);
+        let b = Taint::new(Action::Stop);
+        let policy = Or::new::<(), ()>(&a, &b);
+        assert!(Policy::<(), ()>::redirect(&policy, &attempt)
             .unwrap()
             .is_follow());
-        assert!(a.used);
-        assert!(!b.used);
+        assert!(a.used());
+        assert!(!b.used());
 
-        let mut a = Taint::new(Action::Stop);
-        let mut b = Taint::new(Action::Stop);
-        let mut policy = Or::new::<(), ()>(&mut a, &mut b);
-        assert!(Policy::<(), ()>::redirect(&mut policy, &attempt)
+        let a = Taint::new(Action::Stop);
+        let b = Taint::new(Action::Stop);
+        let policy = Or::new::<(), ()>(&a, &b);
+        assert!(Policy::<(), ()>::redirect(&policy, &attempt)
             .unwrap()
             .is_stop());
-        assert!(a.used);
-        assert!(b.used);
+        assert!(a.used());
+        assert!(b.used());
     }
 }

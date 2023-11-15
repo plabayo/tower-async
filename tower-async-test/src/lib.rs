@@ -6,8 +6,6 @@
 )]
 #![forbid(unsafe_code)]
 #![allow(elided_lifetimes_in_paths)]
-#![allow(incomplete_features)]
-#![feature(async_fn_in_trait)]
 // `rustdoc::broken_intra_doc_links` is checked on CI
 
 //! This crate is to be used to test [`tower_async_layer::Layer`]s,
@@ -91,7 +89,7 @@ mod tests {
         type Response = ();
         type Error = &'static str;
 
-        async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
+        async fn call(&self, request: Request) -> Result<Self::Response, Self::Error> {
             let _ = self.inner.call(request).await;
             Err("Sorry!")
         }
@@ -163,7 +161,7 @@ mod tests {
         type Response = String;
         type Error = Infallible;
 
-        async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
+        async fn call(&self, request: Request) -> Result<Self::Response, Self::Error> {
             Ok(format!(
                 "DebugFmtService: {:?}",
                 self.inner.call(request).await

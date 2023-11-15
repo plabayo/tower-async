@@ -94,7 +94,7 @@ where
     type Response = S::Response;
     type Error = S::Error;
 
-    async fn call(&mut self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
         let mut response = self.inner.call(req).await?;
         *response.status_mut() = self.status;
         Ok(response)

@@ -10,20 +10,20 @@ use super::DEFAULT_MESSAGE_LEVEL;
 /// [`Trace`]: super::Trace
 pub trait MakeSpan<B> {
     /// Make a span from a request.
-    fn make_span(&mut self, request: &Request<B>) -> Span;
+    fn make_span(&self, request: &Request<B>) -> Span;
 }
 
 impl<B> MakeSpan<B> for Span {
-    fn make_span(&mut self, _request: &Request<B>) -> Span {
+    fn make_span(&self, _request: &Request<B>) -> Span {
         self.clone()
     }
 }
 
 impl<F, B> MakeSpan<B> for F
 where
-    F: FnMut(&Request<B>) -> Span,
+    F: Fn(&Request<B>) -> Span,
 {
-    fn make_span(&mut self, request: &Request<B>) -> Span {
+    fn make_span(&self, request: &Request<B>) -> Span {
         self(request)
     }
 }
@@ -75,7 +75,7 @@ impl Default for DefaultMakeSpan {
 }
 
 impl<B> MakeSpan<B> for DefaultMakeSpan {
-    fn make_span(&mut self, request: &Request<B>) -> Span {
+    fn make_span(&self, request: &Request<B>) -> Span {
         // This ugly macro is needed, unfortunately, because `tracing::span!`
         // required the level argument to be static. Meaning we can't just pass
         // `self.level`.

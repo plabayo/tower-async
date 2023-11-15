@@ -196,7 +196,7 @@ where
     type Response = Response<ResBody>;
     type Error = S::Error;
 
-    async fn call(&mut self, mut req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, mut req: Request<ReqBody>) -> Result<Self::Response, Self::Error> {
         let mut this = RedirectServiceState {
             method: req.method().clone(),
             uri: req.uri().clone(),

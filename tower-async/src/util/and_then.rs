@@ -59,7 +59,7 @@ where
     type Response = Fut::Ok;
     type Error = Fut::Error;
 
-    async fn call(&mut self, request: Request) -> Result<Self::Response, Self::Error> {
+    async fn call(&self, request: Request) -> Result<Self::Response, Self::Error> {
         self.inner
             .call(request)
             .err_into()

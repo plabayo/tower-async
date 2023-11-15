@@ -16,21 +16,21 @@ mod tests {
     #[tokio::test]
     async fn decompress_accepted_encoding() {
         let req = request_gzip();
-        let mut svc = RequestDecompression::new(service_fn(assert_request_is_decompressed));
+        let svc = RequestDecompression::new(service_fn(assert_request_is_decompressed));
         let _ = svc.call(req).await.unwrap();
     }
 
     #[tokio::test]
     async fn support_unencoded_body() {
         let req = Request::builder().body(Body::from("Hello?")).unwrap();
-        let mut svc = RequestDecompression::new(service_fn(assert_request_is_decompressed));
+        let svc = RequestDecompression::new(service_fn(assert_request_is_decompressed));
         let _ = svc.call(req).await.unwrap();
     }
 
     #[tokio::test]
     async fn unaccepted_content_encoding_returns_unsupported_media_type() {
         let req = request_gzip();
-        let mut svc = RequestDecompression::new(service_fn(should_not_be_called)).gzip(false);
+        let svc = RequestDecompression::new(service_fn(should_not_be_called)).gzip(false);
         let res = svc.call(req).await.unwrap();
         assert_eq!(StatusCode::UNSUPPORTED_MEDIA_TYPE, res.status());
     }
@@ -38,7 +38,7 @@ mod tests {
     #[tokio::test]
     async fn pass_through_unsupported_encoding_when_enabled() {
         let req = request_gzip();
-        let mut svc = RequestDecompression::new(service_fn(assert_request_is_passed_through))
+        let svc = RequestDecompression::new(service_fn(assert_request_is_passed_through))
             .pass_through_unaccepted(true)
             .gzip(false);
         let _ = svc.call(req).await.unwrap();
