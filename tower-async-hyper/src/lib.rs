@@ -81,14 +81,16 @@ mod test {
             Error = E,
         >,
     ) {
-        let res = hyper_service
-            .call(
-                HyperRequest::builder()
-                    .body(String::from("hello"))
-                    .expect("build http hyper request"),
-            )
-            .await
-            .expect("call hyper service");
+        fn require_send<T: Send>(_t: T) {}
+
+        let fut = hyper_service.call(
+            HyperRequest::builder()
+                .body(String::from("hello"))
+                .expect("build http hyper request"),
+        );
+        require_send(fut);
+
+        let res = fut.await.expect("call hyper service");
         assert_eq!(res.status(), 200);
         assert_eq!(res.body(), "hello");
     }
