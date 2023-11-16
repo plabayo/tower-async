@@ -5,98 +5,91 @@
 //! ```text
 //! ```
 
-use std::{future::Future, pin::Pin, sync::Arc};
+use std::sync::Arc;
 
+use hyper::body::Body as HyperBody;
+use hyper::service::service_fn;
 use hyper::service::Service as HyperService;
+use hyper::Request as HyperRequest;
+use hyper::Response as HyperResponse;
+
 use tower_async_service::Service;
 
 pub trait TowerHyperServiceExt<Request> {
-    /// Convert this service into a `tower::Service`.
-    fn into_hyper(self) -> TowerHyperService<Self>;
+    type Response;
+    type Error;
+
+    /// Convert this [`tower::Service`] service into a [`hyper::service::Service`].
+    ///
+    /// [`tower::Service`]: https://docs.rs/tower-async/latest/tower_async/trait.Service.html
+    /// [`hyper::service::Service`]: https://docs.rs/hyper/latest/hyper/service/trait.Service.html
+    fn into_hyper_service(
+        self,
+    ) -> impl HyperService<Request, Response = Self::Response, Error = Self::Error>;
 }
 
-impl<S, Request> TowerHyperServiceExt<Request> for S
+impl<S, ReqBody, RespBody> TowerHyperServiceExt<HyperRequest<ReqBody>> for S
 where
-    S: Service<Request>,
-{
-    fn into_hyper(self) -> TowerHyperService<Self> {
-        TowerHyperService::new(self)
-    }
-}
-
-pub struct TowerHyperService<S: ?Sized> {
-    inner: Arc<S>,
-}
-
-impl<S> TowerHyperService<S> {
-    pub fn new(inner: S) -> Self {
-        Self {
-            inner: Arc::new(inner),
-        }
-    }
-}
-
-impl<S, Request> HyperService<Request> for TowerHyperService<S>
-where
-    Request: Send + 'static,
-    S: Service<Request> + 'static,
+    S: Service<HyperRequest<ReqBody>, Response = HyperResponse<RespBody>>,
+    S::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
+    ReqBody: HyperBody,
+    RespBody: HyperBody,
 {
     type Response = S::Response;
     type Error = S::Error;
-    type Future = BoxFuture<Result<Self::Response, Self::Error>>;
 
-    fn call(&self, req: Request) -> Self::Future {
-        let service = self.inner.clone();
-
-        let future = async move { service.call(req).await };
-        Box::pin(future)
+    fn into_hyper_service(
+        self,
+    ) -> impl HyperService<HyperRequest<ReqBody>, Response = Self::Response, Error = Self::Error>
+    {
+        let service = Arc::new(self);
+        service_fn(move |req: HyperRequest<ReqBody>| {
+            let service = service.clone();
+            async move { service.call(req).await }
+        })
     }
 }
-
-pub type BoxFuture<T> = Pin<Box<dyn Future<Output = T>>>;
 
 #[cfg(test)]
 mod test {
     use super::*;
-    // use tower_async::ServiceExt;
-
-    #[tokio::test]
-    async fn test_new_hyper_service() {
-        let service = tower_async::service_fn(|req: String| async move { Ok::<_, ()>(req) });
-        let hyper_service = TowerHyperService::new(service);
-        let res = hyper_service.call("foo".to_string()).await.unwrap();
-        assert_eq!(res, "foo");
-    }
 
     #[tokio::test]
     async fn test_into_hyper_service() {
-        let service = tower_async::service_fn(|req: String| async move { Ok::<_, ()>(req) });
-        let hyper_service = service.into_hyper();
-        let res = hyper_service.call("foo".to_string()).await.unwrap();
-        assert_eq!(res, "foo");
+        let service = tower_async::service_fn(|req: HyperRequest<String>| async move {
+            HyperResponse::builder().status(200).body(req.into_body())
+        });
+        let hyper_service = service.into_hyper_service();
+        inner_test_hyper_service(hyper_service).await;
     }
 
-    // #[tokio::test]
-    // async fn test_new_layered_hyper_service() {
-    //     let service = tower_async::ServiceBuilder::new()
-    //         .timeout(std::time::Duration::from_secs(5))
-    //         .service_fn(|req: String| async move { Ok::<_, ()>(req) });
-    //     let hyper_service = TowerHyperService::new(service);
-    //     let res = hyper_service.call("foo".to_string()).await.unwrap();
-    //     assert_eq!(res, "foo");
-    // }
+    #[tokio::test]
+    async fn test_into_layered_hyper_service() {
+        let service = tower_async::ServiceBuilder::new()
+            .timeout(std::time::Duration::from_secs(5))
+            .service_fn(|req: HyperRequest<String>| async move {
+                HyperResponse::builder().status(200).body(req.into_body())
+            });
+        let hyper_service = service.into_hyper_service();
+        inner_test_hyper_service(hyper_service).await;
+    }
 
-    // #[tokio::test]
-    // async fn test_into_layered_hyper_service() {
-    //     let service = tower_async::ServiceBuilder::new()
-    //         .timeout(std::time::Duration::from_secs(5))
-    //         .service_fn(|req: String| async move { Ok::<_, ()>(req) });
-
-    //     let res = service.oneshot("foo".to_string()).await.unwrap();
-    //     assert_eq!(res, "foo");
-
-    //     // let hyper_service = service.into_hyper();
-    //     // let res = hyper_service.call("foo".to_string()).await.unwrap();
-    //     // assert_eq!(res, "foo");
-    // }
+    async fn inner_test_hyper_service<E: std::fmt::Debug>(
+        hyper_service: impl HyperService<
+            HyperRequest<String>,
+            Response = HyperResponse<String>,
+            Error = E,
+        >,
+    ) {
+        let res = hyper_service
+            .call(
+                HyperRequest::builder()
+                    .body(String::from("hello"))
+                    .expect("build http hyper request"),
+            )
+            .await
+            .expect("call hyper service");
+        assert_eq!(res.status(), 200);
+        assert_eq!(res.body(), "hello");
+    }
 }
