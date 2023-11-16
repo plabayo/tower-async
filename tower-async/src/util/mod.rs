@@ -40,10 +40,7 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     where
         Self: Sized,
     {
-        async move {
-            let service = self;
-            service.call(req).await
-        }
+        async move { self.call(req).await }
     }
 
     /// Executes a new future after this service's future resolves.
