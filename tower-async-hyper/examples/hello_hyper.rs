@@ -1,10 +1,12 @@
+use std::net::SocketAddr;
+
 use http::{Request, Response, StatusCode};
 use hyper::body::Incoming;
 use hyper_util::rt::{TokioExecutor, TokioIo};
 use hyper_util::server::conn::auto::Builder;
 use tokio::net::TcpListener;
 use tower_async::ServiceBuilder;
-use tower_async_http::ServiceBuilderExt;
+// use tower_async_http::ServiceBuilderExt;
 use tower_async_hyper::TowerHyperServiceExt;
 
 #[tokio::main]
@@ -23,7 +25,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
                 .body(String::from("hello"))
         });
 
-    let addr = ([127, 0, 0, 1], 8080).into();
+    let addr: SocketAddr = ([127, 0, 0, 1], 8080).into();
     let listener = TcpListener::bind(addr).await?;
 
     loop {
