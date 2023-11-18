@@ -8,12 +8,12 @@
 //! use bytes::{Bytes, BytesMut};
 //! use http::{Request, Response, header::ACCEPT_ENCODING};
 //! use http_body::Body as _; // for Body::data
-//! use hyper::Body;
 //! use std::convert::Infallible;
 //! use tokio::fs::{self, File};
 //! use tokio_util::io::ReaderStream;
 //! use tower_async::{Service, ServiceExt, ServiceBuilder, service_fn};
 //! use tower_async_http::{compression::CompressionLayer, BoxError};
+//! use tower_async_http::test_helpers::Body;
 //!
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), BoxError> {
@@ -23,7 +23,7 @@
 //!     // Convert the file into a `Stream`.
 //!     let stream = ReaderStream::new(file);
 //!     // Convert the `Stream` into a `Body`.
-//!     let body = Body::wrap_stream(stream);
+//!     let body = Body::from_stream(stream);
 //!     // Create response.
 //!     Ok(Response::new(body))
 //! }
@@ -81,15 +81,16 @@ pub use crate::compression_utils::CompressionLevel;
 
 #[cfg(test)]
 mod tests {
-    use crate::compression::predicate::SizeAbove;
-
     use super::*;
+
+    use crate::compression::predicate::SizeAbove;
+    use crate::test_helpers::{Body, TowerHttpBodyExt};
+
     use async_compression::tokio::write::{BrotliDecoder, BrotliEncoder};
     use bytes::BytesMut;
     use flate2::read::GzDecoder;
     use http::header::{ACCEPT_ENCODING, CONTENT_ENCODING, CONTENT_TYPE};
-    use http_body::Body as _;
-    use hyper::{Body, Error, Request, Response};
+    use hyper::{Error, Request, Response};
     use std::io::Read;
     use std::sync::{Arc, RwLock};
     use tokio::io::{AsyncReadExt, AsyncWriteExt};

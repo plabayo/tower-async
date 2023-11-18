@@ -24,7 +24,7 @@ impl ServeFile {
                 HeaderValue::from_str(mime::APPLICATION_OCTET_STREAM.as_ref()).unwrap()
             });
 
-        Self(ServeDir::new_single_file(path, mime))
+        ServeFile(ServeDir::new_single_file(path, mime))
     }
 
     /// Create a new [`ServeFile`] with a specific mime type.
@@ -36,7 +36,7 @@ impl ServeFile {
     /// [header value]: https://docs.rs/http/latest/http/header/struct.HeaderValue.html
     pub fn new_with_mime<P: AsRef<Path>>(path: P, mime: &Mime) -> Self {
         let mime = HeaderValue::from_str(mime.as_ref()).expect("mime isn't a valid header value");
-        Self(ServeDir::new_single_file(path, mime))
+        ServeFile(ServeDir::new_single_file(path, mime))
     }
 
     /// Informs the service that it should also look for a precompressed gzip
@@ -119,18 +119,19 @@ where
 
 #[cfg(test)]
 mod tests {
+    use std::io::Read;
+    use std::str::FromStr;
+
     use crate::services::ServeFile;
+    use crate::test_helpers::{Body, TowerHttpBodyExt};
+
     use brotli::BrotliDecompress;
     use flate2::bufread::DeflateDecoder;
     use flate2::bufread::GzDecoder;
     use http::header;
     use http::Method;
     use http::{Request, StatusCode};
-    use http_body::Body as _;
-    use hyper::Body;
     use mime::Mime;
-    use std::io::Read;
-    use std::str::FromStr;
     use tower_async::ServiceExt;
 
     #[tokio::test]

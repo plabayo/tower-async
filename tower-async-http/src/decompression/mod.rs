@@ -108,15 +108,17 @@ pub use self::request::service::RequestDecompression;
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     use std::io::Write;
 
-    use super::*;
     use crate::compression::Compression;
+    use crate::test_helpers::{Body, TowerHttpBodyExt};
+
     use bytes::BytesMut;
     use flate2::write::GzEncoder;
     use http::Response;
-    use http_body::Body as _;
-    use hyper::{Body, Error, Request};
+    use hyper::{Error, Request};
     use tower_async::{service_fn, Service};
 
     #[tokio::test]

@@ -256,8 +256,10 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    use crate::test_helpers::Body;
+
     use http::{header, HeaderValue};
-    use hyper::Body;
     use std::convert::Infallible;
     use tower_async::{service_fn, ServiceExt};
 

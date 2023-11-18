@@ -472,10 +472,12 @@ impl fmt::Display for Latency {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     use crate::classify::ServerErrorsFailureClass;
+    use crate::test_helpers::{self, Body};
+
     use bytes::Bytes;
     use http::{HeaderMap, Request, Response};
-    use hyper::Body;
     use once_cell::sync::Lazy;
     use std::{
         sync::atomic::{AtomicU32, Ordering},
@@ -527,7 +529,7 @@ mod tests {
         assert_eq!(0, ON_EOS.load(Ordering::SeqCst), "eos");
         assert_eq!(0, ON_FAILURE.load(Ordering::SeqCst), "failure");
 
-        hyper::body::to_bytes(res.into_body()).await.unwrap();
+        test_helpers::to_bytes(res.into_body()).await.unwrap();
         assert_eq!(1, ON_BODY_CHUNK_COUNT.load(Ordering::SeqCst), "body chunk");
         assert_eq!(0, ON_EOS.load(Ordering::SeqCst), "eos");
         assert_eq!(0, ON_FAILURE.load(Ordering::SeqCst), "failure");
@@ -574,7 +576,7 @@ mod tests {
         assert_eq!(0, ON_EOS.load(Ordering::SeqCst), "eos");
         assert_eq!(0, ON_FAILURE.load(Ordering::SeqCst), "failure");
 
-        hyper::body::to_bytes(res.into_body()).await.unwrap();
+        test_helpers::to_bytes(res.into_body()).await.unwrap();
         assert_eq!(3, ON_BODY_CHUNK_COUNT.load(Ordering::SeqCst), "body chunk");
         assert_eq!(0, ON_EOS.load(Ordering::SeqCst), "eos");
         assert_eq!(0, ON_FAILURE.load(Ordering::SeqCst), "failure");
@@ -593,7 +595,7 @@ mod tests {
             Ok::<_, BoxError>(Bytes::from("three")),
         ]);
 
-        let body = Body::wrap_stream(stream);
+        let body = Body::from_stream(stream);
 
         Ok(Response::new(body))
     }

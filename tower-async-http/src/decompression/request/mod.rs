@@ -4,12 +4,14 @@ pub(super) mod service;
 #[cfg(test)]
 mod tests {
     use super::service::RequestDecompression;
+
     use crate::decompression::DecompressionBody;
+    use crate::test_helpers::{Body, TowerHttpBodyExt};
+
     use bytes::BytesMut;
     use flate2::{write::GzEncoder, Compression};
     use http::{header, Response, StatusCode};
-    use http_body::Body as _;
-    use hyper::{Body, Error, Request};
+    use hyper::{Error, Request};
     use std::io::Write;
     use tower_async::{service_fn, Service};
 

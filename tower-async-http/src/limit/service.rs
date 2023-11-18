@@ -2,7 +2,8 @@ use super::body::create_error_response;
 use super::{RequestBodyLimitLayer, ResponseBody};
 
 use http::{Request, Response};
-use http_body::{Body, Limited};
+use http_body::Body;
+use http_body_util::Limited;
 use tower_async_service::Service;
 
 /// Middleware that intercepts requests with body lengths greater than the

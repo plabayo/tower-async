@@ -6,15 +6,18 @@ use hyper_util::rt::{TokioExecutor, TokioIo};
 use hyper_util::server::conn::auto::Builder;
 use tokio::net::TcpListener;
 use tower_async::ServiceBuilder;
-// use tower_async_http::ServiceBuilderExt;
+use tower_async_http::ServiceBuilderExt;
 use tower_async_hyper::TowerHyperServiceExt;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let service = ServiceBuilder::new()
         .timeout(std::time::Duration::from_secs(5))
+        .map_request(|req| req)
         // .decompression()
         // .compression()
+        // .follow_redirects()
+        // .trace_for_http()
         .service_fn(|_req: Request<Incoming>| async move {
             // req.into_body().data().await;
             // let bytes = body::to_bytes(req.into_body()).await?;

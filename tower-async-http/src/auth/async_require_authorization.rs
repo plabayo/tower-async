@@ -236,8 +236,10 @@ where
 mod tests {
     #[allow(unused_imports)]
     use super::*;
+
+    use crate::test_helpers::Body;
+
     use http::{header, StatusCode};
-    use hyper::Body;
     use tower_async::{BoxError, ServiceBuilder};
 
     #[derive(Clone, Copy)]
@@ -275,7 +277,7 @@ mod tests {
         }
     }
 
-    #[derive(Debug)]
+    #[derive(Debug, Clone)]
     struct UserId(String);
 
     #[tokio::test]
@@ -310,7 +312,7 @@ mod tests {
         assert_eq!(res.status(), StatusCode::UNAUTHORIZED);
     }
 
-    async fn echo(req: Request<Body>) -> Result<Response<Body>, BoxError> {
+    async fn echo<Body>(req: Request<Body>) -> Result<Response<Body>, BoxError> {
         Ok(Response::new(req.into_body()))
     }
 }

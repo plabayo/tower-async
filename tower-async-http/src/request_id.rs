@@ -386,8 +386,9 @@ impl MakeRequestId for MakeRequestUuid {
 
 #[cfg(test)]
 mod tests {
+    use crate::test_helpers::Body;
     use crate::ServiceBuilderExt as _;
-    use hyper::{Body, Response};
+    use hyper::Response;
     use std::{
         convert::Infallible,
         sync::{

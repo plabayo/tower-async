@@ -5,7 +5,7 @@ use crate::{
 use async_lock::Mutex;
 use bytes::Bytes;
 use http::{header, HeaderValue, Method, Request, Response, StatusCode};
-use http_body::{combinators::UnsyncBoxBody, Body, Empty};
+use http_body_util::{combinators::UnsyncBoxBody, BodyExt, Empty};
 use percent_encoding::percent_decode;
 use std::{
     convert::Infallible,
@@ -300,7 +300,8 @@ impl<F> ServeDir<F> {
     /// // use tower_async_http::services::ServeDir;
     /// // use std::{io, convert::Infallible};
     /// // use http::{Request, Response, StatusCode};
-    /// // use http_body::{combinators::UnsyncBoxBody, Body as _};
+    /// // use http_body::Body as _;
+    /// // use http_body_util::combinators::UnsyncBoxBody;
     /// // use hyper::Body;
     /// // use bytes::Bytes;
     /// // use tower_async_bridge::ClassicServiceWrapper;

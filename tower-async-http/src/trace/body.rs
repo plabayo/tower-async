@@ -1,8 +1,7 @@
 use super::{OnBodyChunk, OnEos, OnFailure};
 use crate::classify::ClassifyEos;
 use futures_core::ready;
-use http::HeaderMap;
-use http_body::Body;
+use http_body::{Body, Frame};
 use pin_project_lite::pin_project;
 use std::{
     fmt,
@@ -41,14 +40,14 @@ where
     type Data = B::Data;
     type Error = B::Error;
 
-    fn poll_data(
+    fn poll_frame(
         self: Pin<&mut Self>,
         cx: &mut Context<'_>,
-    ) -> Poll<Option<Result<Self::Data, Self::Error>>> {
+    ) -> Poll<Option<Result<Frame<Self::Data>, Self::Error>>> {
         let this = self.project();
         let _guard = this.span.enter();
 
-        let result = if let Some(result) = ready!(this.inner.poll_data(cx)) {
+        let result = if let Some(result) = ready!(this.inner.poll_frame(cx)) {
             result
         } else {
             return Poll::Ready(None);
@@ -58,8 +57,10 @@ where
         *this.start = Instant::now();
 
         match &result {
-            Ok(chunk) => {
-                this.on_body_chunk.on_body_chunk(chunk, latency, this.span);
+            Ok(frame) => {
+                if let Some(data) = frame.data_ref() {
+                    this.on_body_chunk.on_body_chunk(&data, latency, this.span);
+                }
             }
             Err(err) => {
                 if let Some((classify_eos, on_failure)) =
@@ -72,39 +73,6 @@ where
         }
 
         Poll::Ready(Some(result))
-    }
-
-    fn poll_trailers(
-        self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-    ) -> Poll<Result<Option<HeaderMap>, Self::Error>> {
-        let this = self.project();
-        let _guard = this.span.enter();
-        let result = ready!(this.inner.poll_trailers(cx));
-
-        let latency = this.start.elapsed();
-
-        if let Some((classify_eos, on_failure)) =
-            this.classify_eos.take().zip(this.on_failure.take())
-        {
-            match &result {
-                Ok(trailers) => {
-                    if let Err(failure_class) = classify_eos.classify_eos(trailers.as_ref()) {
-                        on_failure.on_failure(failure_class, latency, this.span);
-                    }
-
-                    if let Some((on_eos, stream_start)) = this.on_eos.take() {
-                        on_eos.on_eos(trailers.as_ref(), stream_start.elapsed(), this.span);
-                    }
-                }
-                Err(err) => {
-                    let failure_class = classify_eos.classify_error(err);
-                    on_failure.on_failure(failure_class, latency, this.span);
-                }
-            }
-        }
-
-        Poll::Ready(result)
     }
 
     fn is_end_stream(&self) -> bool {

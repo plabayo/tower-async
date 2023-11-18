@@ -1,11 +1,11 @@
 //! Types used by compression and decompression middleware.
 
 use crate::{content_encoding::SupportedEncodings, BoxError};
-use bytes::{Bytes, BytesMut};
+use bytes::{Buf, Bytes, BytesMut};
 use futures_core::Stream;
 use futures_util::ready;
 use http::HeaderValue;
-use http_body::Body;
+use http_body::{Body, Frame};
 use pin_project_lite::pin_project;
 use std::{
     io,
@@ -188,10 +188,10 @@ where
     type Data = Bytes;
     type Error = BoxError;
 
-    fn poll_data(
+    fn poll_frame(
         self: Pin<&mut Self>,
         cx: &mut Context<'_>,
-    ) -> Poll<Option<Result<Self::Data, Self::Error>>> {
+    ) -> Poll<Option<Result<Frame<Self::Data>, Self::Error>>> {
         let mut this = self.project();
         let mut buf = BytesMut::new();
 
@@ -218,20 +218,8 @@ where
         if read == 0 {
             Poll::Ready(None)
         } else {
-            Poll::Ready(Some(Ok(buf.freeze())))
+            Poll::Ready(Some(Ok(Frame::data(buf.freeze()))))
         }
-    }
-
-    fn poll_trailers(
-        self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-    ) -> Poll<Result<Option<http::HeaderMap>, Self::Error>> {
-        let this = self.project();
-        let body = M::get_pin_mut(this.read)
-            .get_pin_mut()
-            .get_pin_mut()
-            .get_pin_mut();
-        body.poll_trailers(cx).map_err(Into::into)
     }
 }
 
@@ -277,7 +265,14 @@ where
     type Item = Result<B::Data, B::Error>;
 
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
-        self.project().body.poll_data(cx)
+        self.project().body.poll_frame(cx).map(|opt| match opt {
+            Some(Ok(frame)) => match frame.into_data() {
+                Ok(data) => Some(Ok(data)),
+                Err(_) => None,
+            },
+            Some(Err(err)) => Some(Err(err)),
+            None => None,
+        })
     }
 }
 

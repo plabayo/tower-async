@@ -17,7 +17,7 @@ use async_compression::tokio::bufread::ZstdEncoder;
 use bytes::{Buf, Bytes};
 use futures_util::ready;
 use http::HeaderMap;
-use http_body::Body;
+use http_body::{Body, Frame};
 use pin_project_lite::pin_project;
 use std::{
     io,
@@ -143,44 +143,30 @@ where
     type Data = Bytes;
     type Error = BoxError;
 
-    fn poll_data(
+    fn poll_frame(
         self: Pin<&mut Self>,
         cx: &mut Context<'_>,
-    ) -> Poll<Option<Result<Self::Data, Self::Error>>> {
+    ) -> Poll<Option<Result<Frame<Self::Data>, Self::Error>>> {
         match self.project().inner.project() {
             #[cfg(feature = "compression-gzip")]
-            BodyInnerProj::Gzip { inner } => inner.poll_data(cx),
+            BodyInnerProj::Gzip { inner } => inner.poll_frame(cx),
             #[cfg(feature = "compression-deflate")]
-            BodyInnerProj::Deflate { inner } => inner.poll_data(cx),
+            BodyInnerProj::Deflate { inner } => inner.poll_frame(cx),
             #[cfg(feature = "compression-br")]
-            BodyInnerProj::Brotli { inner } => inner.poll_data(cx),
+            BodyInnerProj::Brotli { inner } => inner.poll_frame(cx),
             #[cfg(feature = "compression-zstd")]
-            BodyInnerProj::Zstd { inner } => inner.poll_data(cx),
-            BodyInnerProj::Identity { inner } => match ready!(inner.poll_data(cx)) {
-                Some(Ok(mut buf)) => {
-                    let bytes = buf.copy_to_bytes(buf.remaining());
-                    Poll::Ready(Some(Ok(bytes)))
-                }
+            BodyInnerProj::Zstd { inner } => inner.poll_frame(cx),
+            BodyInnerProj::Identity { inner } => match ready!(inner.poll_frame(cx)) {
+                Some(Ok(mut frame)) => match frame.into_data() {
+                    Ok(mut buf) => {
+                        let bytes = buf.copy_to_bytes(buf.remaining());
+                        Poll::Ready(Some(Ok(Frame::data(bytes))))
+                    }
+                    Err(_) => Poll::Ready(None),
+                },
                 Some(Err(err)) => Poll::Ready(Some(Err(err.into()))),
                 None => Poll::Ready(None),
             },
-        }
-    }
-
-    fn poll_trailers(
-        self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-    ) -> Poll<Result<Option<HeaderMap>, Self::Error>> {
-        match self.project().inner.project() {
-            #[cfg(feature = "compression-gzip")]
-            BodyInnerProj::Gzip { inner } => inner.poll_trailers(cx),
-            #[cfg(feature = "compression-deflate")]
-            BodyInnerProj::Deflate { inner } => inner.poll_trailers(cx),
-            #[cfg(feature = "compression-br")]
-            BodyInnerProj::Brotli { inner } => inner.poll_trailers(cx),
-            #[cfg(feature = "compression-zstd")]
-            BodyInnerProj::Zstd { inner } => inner.poll_trailers(cx),
-            BodyInnerProj::Identity { inner } => inner.poll_trailers(cx).map_err(Into::into),
         }
     }
 }

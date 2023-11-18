@@ -2,8 +2,7 @@
 
 use bytes::Bytes;
 use futures_util::Stream;
-use http::HeaderMap;
-use http_body::Body;
+use http_body::{Body, Frame};
 use pin_project_lite::pin_project;
 use std::{
     io,
@@ -66,17 +65,14 @@ where
     type Data = Bytes;
     type Error = io::Error;
 
-    fn poll_data(
+    fn poll_frame(
         self: Pin<&mut Self>,
         cx: &mut Context<'_>,
-    ) -> Poll<Option<Result<Self::Data, Self::Error>>> {
-        self.project().reader.poll_next(cx)
-    }
-
-    fn poll_trailers(
-        self: Pin<&mut Self>,
-        _cx: &mut Context<'_>,
-    ) -> Poll<Result<Option<HeaderMap>, Self::Error>> {
-        Poll::Ready(Ok(None))
+    ) -> Poll<Option<Result<Frame<Self::Data>, Self::Error>>> {
+        self.project().reader.poll_next(cx).map(|opt| match opt {
+            Some(Ok(bytes)) => Some(Ok(Frame::data(bytes))),
+            Some(Err(err)) => Some(Err(err)),
+            None => None,
+        })
     }
 }

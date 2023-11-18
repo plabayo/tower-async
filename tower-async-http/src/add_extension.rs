@@ -129,8 +129,10 @@ where
 mod tests {
     #[allow(unused_imports)]
     use super::*;
+
+    use crate::test_helpers::Body;
+
     use http::Response;
-    use hyper::Body;
     use std::{convert::Infallible, sync::Arc};
     use tower_async::{service_fn, ServiceBuilder, ServiceExt};
 

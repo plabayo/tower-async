@@ -8,7 +8,7 @@ use http::{
     header::{self, ALLOW},
     HeaderValue, Request, Response, StatusCode,
 };
-use http_body::{Body, Empty, Full};
+use http_body_util::{BodyExt, Empty, Full};
 use std::{convert::Infallible, io};
 use tower_async_service::Service;
 

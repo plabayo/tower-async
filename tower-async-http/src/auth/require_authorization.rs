@@ -244,12 +244,13 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::validate_request::ValidateRequestHeaderLayer;
-
     #[allow(unused_imports)]
     use super::*;
+
+    use crate::test_helpers::Body;
+    use crate::validate_request::ValidateRequestHeaderLayer;
+
     use http::header;
-    use hyper::Body;
     use tower_async::{BoxError, ServiceBuilder};
     use tower_async_service::Service;
 
@@ -396,7 +397,7 @@ mod tests {
         assert_eq!(res.status(), StatusCode::UNAUTHORIZED);
     }
 
-    async fn echo(req: Request<Body>) -> Result<Response<Body>, BoxError> {
+    async fn echo<Body>(req: Request<Body>) -> Result<Response<Body>, BoxError> {
         Ok(Response::new(req.into_body()))
     }
 }

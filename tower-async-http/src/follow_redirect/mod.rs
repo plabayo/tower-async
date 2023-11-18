@@ -275,6 +275,7 @@ where
 ///
 /// The value differs from the original request's effective URI if the middleware has followed
 /// redirections.
+#[derive(Clone, Debug)]
 pub struct RequestUri(pub Uri);
 
 #[derive(Debug)]
@@ -337,7 +338,10 @@ fn resolve_uri(relative: &str, base: &Uri) -> Option<Uri> {
 #[cfg(test)]
 mod tests {
     use super::{policy::*, *};
-    use hyper::{header::LOCATION, Body};
+
+    use crate::test_helpers::Body;
+
+    use hyper::header::LOCATION;
     use std::convert::Infallible;
     use tower_async::{ServiceBuilder, ServiceExt};
 

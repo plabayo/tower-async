@@ -6,8 +6,8 @@ use crate::{
 };
 use bytes::Buf;
 use http::{header, HeaderValue, Request, Response, StatusCode};
-use http_body::Empty;
-use http_body::{combinators::UnsyncBoxBody, Body};
+use http_body::Body;
+use http_body_util::{combinators::UnsyncBoxBody, BodyExt, Empty};
 use tower_async_service::Service;
 
 #[cfg(any(

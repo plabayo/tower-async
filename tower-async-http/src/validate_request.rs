@@ -341,8 +341,10 @@ where
 mod tests {
     #[allow(unused_imports)]
     use super::*;
+
+    use crate::test_helpers::Body;
+
     use http::{header, StatusCode};
-    use hyper::Body;
     use tower_async::{BoxError, ServiceBuilder};
 
     #[tokio::test]
@@ -507,7 +509,7 @@ mod tests {
         assert_eq!(res.status(), StatusCode::NOT_ACCEPTABLE);
     }
 
-    async fn echo(req: Request<Body>) -> Result<Response<Body>, BoxError> {
+    async fn echo<B>(req: Request<B>) -> Result<Response<B>, BoxError> {
         Ok(Response::new(req.into_body()))
     }
 }
