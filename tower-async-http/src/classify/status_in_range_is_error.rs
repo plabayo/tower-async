@@ -16,6 +16,7 @@ use std::{fmt, ops::RangeInclusive};
 /// // use tower_async::{ServiceBuilder, Service};
 /// // use hyper::{Client, Body};
 /// // use http::{Request, Method};
+/// // use http_body_util::Empty;
 /// //
 /// // # async fn foo() -> Result<(), tower_async::BoxError> {
 /// // let classifier = StatusInRangeAsFailures::new(400..=599);
@@ -27,7 +28,7 @@ use std::{fmt, ops::RangeInclusive};
 /// // let request = Request::builder()
 /// //     .method(Method::GET)
 /// //     .uri("https://example.com")
-/// //     .body(Body::empty())
+/// //     .body(Empty::new())
 /// //     .unwrap();
 /// //
 /// // let response = client.call(request).await?;

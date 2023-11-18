@@ -7,7 +7,7 @@
 //!
 //! ```rust
 //! use http::{Request, Uri, StatusCode};
-//! use hyper::Body;
+//! use hyper::body::Body;
 //! use tower_async::{Service, ServiceExt};
 //! use tower_async_http::services::Redirect;
 //!

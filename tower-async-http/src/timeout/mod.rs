@@ -17,14 +17,15 @@
 //!
 //! ```
 //! use http::{Request, Response};
-//! use hyper::Body;
+//! use http_body_util::Empty;
+//! use hyper::body::Body;
 //! use std::{convert::Infallible, time::Duration};
 //! use tower_async::ServiceBuilder;
 //! use tower_async_http::timeout::TimeoutLayer;
 //!
-//! async fn handle(_: Request<Body>) -> Result<Response<Body>, Infallible> {
+//! async fn handle(_: Request<Body>) -> Result<Response<Empty>, Infallible> {
 //!     // ...
-//!     # Ok(Response::new(Body::empty()))
+//!     # Ok(Response::new(Empty::new()))
 //! }
 //!
 //! # #[tokio::main]

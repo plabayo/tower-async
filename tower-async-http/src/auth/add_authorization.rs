@@ -7,11 +7,12 @@
 //! ```
 //! use tower_async_http::validate_request::{ValidateRequestHeader, ValidateRequestHeaderLayer};
 //! use tower_async_http::auth::AddAuthorizationLayer;
-//! use hyper::{Request, Response, Body, Error};
+//! use hyper::{Request, Response, body::Body, Error};
+//! use http_body_util::Empty;
 //! use http::{StatusCode, header::AUTHORIZATION};
 //! use tower_async::{Service, ServiceExt, ServiceBuilder, service_fn};
-//! # async fn handle(request: Request<Body>) -> Result<Response<Body>, Error> {
-//! #     Ok(Response::new(Body::empty()))
+//! # async fn handle(request: Request<Body>) -> Result<Response<Empty>, Error> {
+//! #     Ok(Response::new(Empty::new()))
 //! # }
 //!
 //! # #[tokio::main]
@@ -28,8 +29,7 @@
 //!
 //! // Make a request, we don't have to add the `Authorization` header manually
 //! let response = client
-
-//!     .call(Request::new(Body::empty()))
+//!     .call(Request::new(Empty::new()))
 //!     .await?;
 //!
 //! assert_eq!(StatusCode::OK, response.status());

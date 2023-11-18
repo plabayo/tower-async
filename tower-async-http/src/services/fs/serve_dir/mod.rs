@@ -302,7 +302,7 @@ impl<F> ServeDir<F> {
     /// // use http::{Request, Response, StatusCode};
     /// // use http_body::Body as _;
     /// // use http_body_util::combinators::UnsyncBoxBody;
-    /// // use hyper::Body;
+    /// // use hyper::body::Body;
     /// // use bytes::Bytes;
     /// // use tower_async_bridge::ClassicServiceWrapper;
     /// // use tower_async::{service_fn, ServiceExt, BoxError};

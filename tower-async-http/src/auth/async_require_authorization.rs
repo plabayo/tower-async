@@ -6,8 +6,9 @@
 //!
 //! ```
 //! use tower_async_http::auth::{AsyncRequireAuthorizationLayer, AsyncAuthorizeRequest};
-//! use hyper::{Request, Response, Body, Error};
+//! use hyper::{Request, Response, body::Body, Error};
 //! use http::{StatusCode, header::AUTHORIZATION};
+//! use http_body_util::Empty;
 //! use tower_async::{Service, ServiceExt, ServiceBuilder, service_fn};
 //! use futures_util::future::BoxFuture;
 //!
@@ -19,7 +20,7 @@
 //!     B: Send + Sync + 'static,
 //! {
 //!     type RequestBody = B;
-//!     type ResponseBody = Body;
+//!     type ResponseBody = Empty;
 //!
 //!     async fn authorize(&self, mut request: Request<B>) -> Result<Request<B>, Response<Self::ResponseBody>> {
 //!         if let Some(user_id) = check_auth(&request).await {
@@ -31,7 +32,7 @@
 //!         } else {
 //!             let unauthorized_response = Response::builder()
 //!                 .status(StatusCode::UNAUTHORIZED)
-//!                 .body(Body::empty())
+//!                 .body(Empty::new())
 //!                 .unwrap();
 //!
 //!             Err(unauthorized_response)
@@ -47,7 +48,7 @@
 //! #[derive(Debug)]
 //! struct UserId(String);
 //!
-//! async fn handle(request: Request<Body>) -> Result<Response<Body>, Error> {
+//! async fn handle(request: Request<Body>) -> Result<Response<Empty>, Error> {
 //!     // Access the `UserId` that was set in `on_authorized`. If `handle` gets called the
 //!     // request was authorized and `UserId` will be present.
 //!     let user_id = request
@@ -57,7 +58,7 @@
 //!
 //!     println!("request from {:?}", user_id);
 //!
-//!     Ok(Response::new(Body::empty()))
+//!     Ok(Response::new(Empty::new()))
 //! }
 //!
 //! # #[tokio::main]
@@ -74,8 +75,9 @@
 //!
 //! ```
 //! use tower_async_http::auth::{AsyncRequireAuthorizationLayer, AsyncAuthorizeRequest};
-//! use hyper::{Request, Response, Body, Error};
+//! use hyper::{Request, Response, body::Body, Error};
 //! use http::StatusCode;
+//! use http_body_util::Empty;
 //! use tower_async::{Service, ServiceExt, ServiceBuilder};
 //! use futures_util::future::BoxFuture;
 //!
@@ -101,7 +103,7 @@
 //!         } else {
 //!             let unauthorized_response = Response::builder()
 //!                 .status(StatusCode::UNAUTHORIZED)
-//!                 .body(Body::empty())
+//!                 .body(Empty::new())
 //!                 .unwrap();
 //!
 //!             Err(unauthorized_response)

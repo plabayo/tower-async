@@ -24,10 +24,10 @@
 //! use bytes::Bytes;
 //! use std::convert::Infallible;
 //! use http::{Request, Response, StatusCode, HeaderValue, header::CONTENT_LENGTH};
-//! use http_body::{Limited, LengthLimitError};
+//! use http_body_util::{Limited, LengthLimitError};
 //! use tower_async::{Service, ServiceExt, ServiceBuilder};
 //! use tower_async_http::limit::RequestBodyLimitLayer;
-//! use hyper::Body;
+//! # use crate::test_helpers::Body;
 //!
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -58,8 +58,8 @@
 //!
 //! If a `Content-Length` header is not present, then the body will be read
 //! until the configured limit has been reached. If the payload is larger than
-//! the limit, the [`http_body::Limited`] body will return an error. This
-//! error can be inspected to determine if it is a [`http_body::LengthLimitError`]
+//! the limit, the [`http_body_util::Limited`] body will return an error. This
+//! error can be inspected to determine if it is a [`http_body_util::LengthLimitError`]
 //! and return an appropriate response in such case.
 //!
 //! Note that no error will be generated if the body is never read. Similarly,
@@ -71,15 +71,15 @@
 //! # use bytes::Bytes;
 //! # use std::convert::Infallible;
 //! # use http::{Request, Response, StatusCode};
-//! # use http_body::{Limited, LengthLimitError};
+//! # use http_body_util::{Limited, LengthLimitError};
 //! # use tower_async::{Service, ServiceExt, ServiceBuilder, BoxError};
 //! # use tower_async_http::limit::RequestBodyLimitLayer;
-//! # use hyper::Body;
+//! # use crate::test_helpers::Body;
 //! #
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), BoxError> {
 //! async fn handle(req: Request<Limited<Body>>) -> Result<Response<Body>, BoxError> {
-//!     let data = match hyper::body::to_bytes(req.into_body()).await {
+//!     let data = match hyper::body::Body::to_bytes(req.into_body()).await {
 //!         Ok(data) => data,
 //!         Err(err) => {
 //!             if let Some(_) = err.downcast_ref::<LengthLimitError>() {
@@ -123,7 +123,7 @@
 //! If enforcement of body size limits is desired without preemptively
 //! handling requests with a `Content-Length` header indicating an over-sized
 //! request, consider using [`MapRequestBody`] to wrap the request body with
-//! [`http_body::Limited`] and checking for [`http_body::LengthLimitError`]
+//! [`http_body_util::Limited`] and checking for [`http_body_util::LengthLimitError`]
 //! like in the previous example.
 //!
 //! [`MapRequestBody`]: crate::map_request_body

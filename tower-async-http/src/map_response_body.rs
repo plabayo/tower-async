@@ -5,14 +5,15 @@
 //! ```
 //! use bytes::Bytes;
 //! use http::{Request, Response};
-//! use hyper::Body;
+//! use http_body_util::Empty;
+//! use hyper::body::Body;
 //! use std::convert::Infallible;
 //! use std::{pin::Pin, task::{Context, Poll}};
 //! use tower_async::{ServiceBuilder, service_fn, ServiceExt, Service};
 //! use tower_async_http::map_response_body::MapResponseBodyLayer;
 //! use futures::ready;
 //!
-//! // A wrapper for a `hyper::Body` that prints the size of data chunks
+//! // A wrapper for a `hyper::body::Body` that prints the size of data chunks
 //! struct PrintChunkSizesBody {
 //!     inner: Body,
 //! }
@@ -55,9 +56,9 @@
 //!     }
 //! }
 //!
-//! async fn handle<B>(_: Request<B>) -> Result<Response<Body>, Infallible> {
+//! async fn handle<B>(_: Request<B>) -> Result<Response<Empty>, Infallible> {
 //!     // ...
-//!     # Ok(Response::new(Body::empty()))
+//!     # Ok(Response::new(Empty::new()))
 //! }
 //!
 //! # #[tokio::main]

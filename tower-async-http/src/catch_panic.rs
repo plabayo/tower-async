@@ -10,7 +10,8 @@
 //! use std::convert::Infallible;
 //! use tower_async::{Service, ServiceExt, ServiceBuilder, service_fn};
 //! use tower_async_http::catch_panic::CatchPanicLayer;
-//! use hyper::Body;
+//! use hyper::body::Body;
+//! use http_body_util::Empty;
 //!
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -24,7 +25,7 @@
 //!     .service_fn(handle);
 //!
 //! // Call the service.
-//! let request = Request::new(Body::empty());
+//! let request = Request::new(Empty::new());
 //!
 //! let response = svc.call(request).await?;
 //!
@@ -41,7 +42,7 @@
 //! use std::{any::Any, convert::Infallible};
 //! use tower_async::{Service, ServiceExt, ServiceBuilder, service_fn};
 //! use tower_async_http::catch_panic::CatchPanicLayer;
-//! use hyper::Body;
+//! use hyper:body::Body;
 //!
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {

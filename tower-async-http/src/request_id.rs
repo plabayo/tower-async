@@ -4,11 +4,12 @@
 //!
 //! ```
 //! use http::{Request, Response, header::HeaderName};
+//! use http_body_util::Empty;
 //! use tower_async::{Service, ServiceExt, ServiceBuilder};
 //! use tower_async_http::request_id::{
 //!     SetRequestIdLayer, PropagateRequestIdLayer, MakeRequestId, RequestId,
 //! };
-//! use hyper::Body;
+//! use hyper::body::Body;
 //! use std::sync::{Arc, atomic::{AtomicU64, Ordering}};
 //!
 //! # #[tokio::main]
@@ -47,7 +48,7 @@
 //!     .layer(PropagateRequestIdLayer::new(x_request_id))
 //!     .service(handler);
 //!
-//! let request = Request::new(Body::empty());
+//! let request = Request::new(Empty::new());
 //! let response = svc.call(request).await?;
 //!
 //! assert_eq!(response.headers()["x-request-id"], "0");
@@ -61,11 +62,12 @@
 //! ```
 //! use tower_async_http::ServiceBuilderExt;
 //! # use http::{Request, Response, header::HeaderName};
+//! # use http_body_util::Empty;
 //! # use tower_async::{Service, ServiceExt, ServiceBuilder};
 //! # use tower_async_http::request_id::{
 //! #     SetRequestIdLayer, PropagateRequestIdLayer, MakeRequestId, RequestId,
 //! # };
-//! # use hyper::Body;
+//! # use hyper::body::Body;
 //! # use std::sync::{Arc, atomic::{AtomicU64, Ordering}};
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -92,7 +94,7 @@
 //!     .propagate_x_request_id()
 //!     .service(handler);
 //!
-//! let request = Request::new(Body::empty());
+//! let request = Request::new(Empty::new());
 //! let response = svc.call(request).await?;
 //!
 //! assert_eq!(response.headers()["x-request-id"], "0");

@@ -107,7 +107,8 @@
 //! //};
 //! //use tower_async_bridge::AsyncServiceExt;
 //! //use tower_async::{ServiceBuilder, Service, ServiceExt};
-//! //use hyper::Body;
+//! //use hyper::body::Body;
+//! //use http_body_util::Empty;
 //! //use http::{Request, HeaderValue, header::USER_AGENT};
 //! //
 //! //#[tokio::main]
@@ -128,7 +129,7 @@
 //! //    // Make a request
 //! //    let request = Request::builder()
 //! //        .uri("http://example.com")
-//! //        .body(Body::empty())
+//! //        .body(Empty::new())
 //! //        .unwrap();
 //! //
 //! //    let response = client

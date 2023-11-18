@@ -6,13 +6,14 @@
 //!
 //! ```rust
 //! use http::{Request, Response};
-//! use hyper::Body;
+//! use http_body_util::Full;
+//! use bytes::Bytes;
 //! use tower_async::{ServiceBuilder, Service};
 //! use tower_async_http::trace::TraceLayer;
 //! use std::convert::Infallible;
 //!
-//! async fn handle(request: Request<Body>) -> Result<Response<Body>, Infallible> {
-//!     Ok(Response::new(Body::from("foo")))
+//! async fn handle(request: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, Infallible> {
+//!     Ok(Response::new(Full::from("foo")))
 //! }
 //!
 //! # #[tokio::main]
@@ -24,7 +25,7 @@
 //!     .layer(TraceLayer::new_for_http())
 //!     .service_fn(handle);
 //!
-//! let request = Request::new(Body::from("foo"));
+//! let request = Request::new(Full::from("foo"));
 //!
 //! let response = service
 //!     .call(request)
@@ -48,7 +49,7 @@
 //!
 //! ```rust
 //! use http::{Request, Response, HeaderMap, StatusCode};
-//! use hyper::Body;
+//! use hyper::body::Body;
 //! use bytes::Bytes;
 //! use tower_async::ServiceBuilder;
 //! use tracing::Level;
@@ -96,7 +97,7 @@
 //!
 //! ```rust
 //! use http::{Request, Response, HeaderMap, StatusCode};
-//! use hyper::Body;
+//! use http_body_util::Full;
 //! use bytes::Bytes;
 //! use tower_async::ServiceBuilder;
 //! use tower_async_http::{classify::ServerErrorsFailureClass, trace::TraceLayer};
@@ -105,8 +106,8 @@
 //! # use tower_async::Service;
 //! # use std::convert::Infallible;
 //!
-//! # async fn handle(request: Request<Body>) -> Result<Response<Body>, Infallible> {
-//! #     Ok(Response::new(Body::from("foo")))
+//! # async fn handle(request: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, Infallible> {
+//! #     Ok(Response::new(Full::from("foo")))
 //! # }
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -115,13 +116,13 @@
 //! let service = ServiceBuilder::new()
 //!     .layer(
 //!         TraceLayer::new_for_http()
-//!             .make_span_with(|request: &Request<Body>| {
+//!             .make_span_with(|request: &Request<Full<Bytes>>| {
 //!                 tracing::debug_span!("http-request")
 //!             })
-//!             .on_request(|request: &Request<Body>, _span: &Span| {
+//!             .on_request(|request: &Request<Full<Bytes>>, _span: &Span| {
 //!                 tracing::debug!("started {} {}", request.method(), request.uri().path())
 //!             })
-//!             .on_response(|response: &Response<Body>, latency: Duration, _span: &Span| {
+//!             .on_response(|response: &Response<Full<Bytes>>, latency: Duration, _span: &Span| {
 //!                 tracing::debug!("response generated in {:?}", latency)
 //!             })
 //!             .on_body_chunk(|chunk: &Bytes, latency: Duration, _span: &Span| {
@@ -137,7 +138,7 @@
 //!     .service_fn(handle);
 //! # let mut service = service;
 //! # let response = service
-//! #     .call(Request::new(Body::from("foo")))
+//! #     .call(Request::new(Full::from("foo")))
 //! #     .await?;
 //! # Ok(())
 //! # }
@@ -154,7 +155,7 @@
 //! use std::time::Duration;
 //! use tracing::Span;
 //! # use tower_async::Service;
-//! # use hyper::Body;
+//! # use hyper::body::Body;
 //! # use http::{Response, Request};
 //! # use std::convert::Infallible;
 //!
@@ -208,14 +209,15 @@
 //! ### `on_body_chunk`
 //!
 //! The `on_body_chunk` callback is called when the response body produces a new
-//! chunk, that is when [`Body::poll_data`] returns `Poll::Ready(Some(Ok(chunk)))`.
+//! chunk, that is when [`http_body::Body::poll_frame`] returns `Poll::Ready(Some(Ok(chunk)))`.
 //!
 //! `on_body_chunk` is called even if the chunk is empty.
 //!
 //! ### `on_eos`
 //!
 //! The `on_eos` callback is called when a streaming response body ends, that is
-//! when [`Body::poll_trailers`] returns `Poll::Ready(Ok(trailers))`.
+//! when `http_body::Body::poll_trailers` returns `Poll::Ready(Ok(trailers))`.
+//! TODO: is this still used?!
 //!
 //! `on_eos` is called even if the trailers produced are `None`.
 //!
@@ -225,8 +227,8 @@
 //!
 //! - The inner [`Service`]'s response future resolves to an error.
 //! - A response is classified as a failure.
-//! - [`Body::poll_data`] returns an error.
-//! - [`Body::poll_trailers`] returns an error.
+//! - [`http_body::Body::poll_frame`] returns an error.
+//! // TODO: is poll_trailers correctly transitioned?!
 //! - An end-of-stream is classified as a failure.
 //!
 //! # Recording fields on the span
@@ -237,7 +239,7 @@
 //!
 //! ```rust
 //! use http::{Request, Response, HeaderMap, StatusCode};
-//! use hyper::Body;
+//! use hyper::body::Body;
 //! use bytes::Bytes;
 //! use tower_async::ServiceBuilder;
 //! use tower_async_http::trace::TraceLayer;
@@ -282,7 +284,7 @@
 //!
 //! ```rust
 //! use http::{Request, Response};
-//! use hyper::Body;
+//! use hyper::body::Body;
 //! use tower_async::ServiceBuilder;
 //! use tower_async_http::{
 //!     trace::TraceLayer,
@@ -372,8 +374,7 @@
 //! [`TraceLayer::make_span_with`]: crate::trace::TraceLayer::make_span_with
 //! [`Span`]: tracing::Span
 //! [`ServerErrorsAsFailures`]: crate::classify::ServerErrorsAsFailures
-//! [`Body::poll_trailers`]: http_body::Body::poll_trailers
-//! [`Body::poll_data`]: http_body::Body::poll_data
+//! TODO: is on_eos still ever called?
 
 use std::{fmt, time::Duration};
 

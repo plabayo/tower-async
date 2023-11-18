@@ -17,13 +17,14 @@ use tower_async_layer::Stack;
 ///
 /// ```rust
 /// use http::{Request, Response, header::HeaderName};
-/// use hyper::Body;
+/// use hyper::body::Body::Body;
+/// use http_body_util::Empty;
 /// use std::{time::Duration, convert::Infallible};
 /// use tower_async::{ServiceBuilder, ServiceExt, Service};
 /// use tower_async_http::ServiceBuilderExt;
 ///
-/// async fn handle(request: Request<Body>) -> Result<Response<Body>, Infallible> {
-///     Ok(Response::new(Body::empty()))
+/// async fn handle(request: Request<Body>) -> Result<Response<Empty>, Infallible> {
+///     Ok(Response::new(Empty::new()))
 /// }
 ///
 /// # #[tokio::main]
@@ -37,7 +38,7 @@ use tower_async_layer::Stack;
 ///     .propagate_header(HeaderName::from_static("x-request-id"))
 ///     .service_fn(handle);
 /// # let mut service = service;
-/// # service.call(Request::new(Body::empty())).await.unwrap();
+/// # service.call(Request::new(Empty::new())).await.unwrap();
 /// # }
 /// ```
 #[cfg(feature = "util")]

@@ -8,7 +8,7 @@
 //! use flate2::{write::GzEncoder, Compression};
 //! use http::{header, HeaderValue, Request, Response};
 //! use http_body::Body as _; // for Body::data
-//! use hyper::Body;
+//! use hyper::body::Body;
 //! use std::{error::Error, io::Write};
 //! use tower_async::{Service, ServiceBuilder, service_fn, ServiceExt};
 //! use tower_async_http::{BoxError, decompression::{DecompressionBody, RequestDecompressionLayer}};
@@ -50,7 +50,7 @@
 //! use bytes::BytesMut;
 //! use http::{Request, Response};
 //! use http_body::Body as _; // for Body::data
-//! use hyper::Body;
+//! use hyper::body::Body;
 //! use std::convert::Infallible;
 //! use tower_async::{Service, ServiceExt, ServiceBuilder, service_fn};
 //! use tower_async_http::{compression::Compression, decompression::DecompressionLayer, BoxError};

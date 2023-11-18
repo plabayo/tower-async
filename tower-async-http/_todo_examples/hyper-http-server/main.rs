@@ -8,6 +8,7 @@ use std::{
 use bytes::Bytes;
 use clap::Parser;
 use http::{header, StatusCode};
+use http_body_util::Emtpy;
 use hyper::service::make_service_fn;
 use tower_async::{
     limit::policy::{ConcurrentPolicy, LimitReached},
@@ -27,8 +28,8 @@ struct Config {
     port: u16,
 }
 
-type Request = hyper::Request<hyper::Body>;
-type Response = hyper::Response<hyper::Body>;
+type Request = hyper::Request<hyper::body::Body>;
+type Response = hyper::Response<hyper::body::Body>;
 
 #[derive(Debug, Clone)]
 struct WebServer {
@@ -127,7 +128,7 @@ async fn main() {
                 if err.is::<LimitReached>() {
                     return Ok(hyper::Response::builder()
                         .status(StatusCode::TOO_MANY_REQUESTS)
-                        .body(hyper::Body::empty())
+                        .body(Empty::new())
                         .unwrap());
                 }
             }

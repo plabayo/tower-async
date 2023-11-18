@@ -6,12 +6,13 @@
 //!
 //! ```
 //! use tower_async_http::validate_request::{ValidateRequest, ValidateRequestHeader, ValidateRequestHeaderLayer};
-//! use hyper::{Request, Response, Body, Error};
+//! use hyper::{Request, Response, body::Body, Error};
 //! use http::{StatusCode, header::AUTHORIZATION};
+//! use http_body_util::Empty;
 //! use tower_async::{Service, ServiceExt, ServiceBuilder, service_fn};
 //!
-//! async fn handle(request: Request<Body>) -> Result<Response<Body>, Error> {
-//!     Ok(Response::new(Body::empty()))
+//! async fn handle(request: Request<Body>) -> Result<Response<Empty>, Error> {
+//!     Ok(Response::new(Empty::new()))
 //! }
 //!
 //! # #[tokio::main]
@@ -24,7 +25,7 @@
 //! // Requests with the correct token are allowed through
 //! let request = Request::builder()
 //!     .header(AUTHORIZATION, "Bearer passwordlol")
-//!     .body(Body::empty())
+//!     .body(Empty::new())
 //!     .unwrap();
 //!
 //! let response = service
@@ -36,7 +37,7 @@
 //!
 //! // Requests with an invalid token get a `401 Unauthorized` response
 //! let request = Request::builder()
-//!     .body(Body::empty())
+//!     .body(Empty::new())
 //!     .unwrap();
 //!
 //! let response = service

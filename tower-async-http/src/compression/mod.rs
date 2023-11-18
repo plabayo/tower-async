@@ -8,6 +8,7 @@
 //! use bytes::{Bytes, BytesMut};
 //! use http::{Request, Response, header::ACCEPT_ENCODING};
 //! use http_body::Body as _; // for Body::data
+//! use http_body_util::Empty;
 //! use std::convert::Infallible;
 //! use tokio::fs::{self, File};
 //! use tokio_util::io::ReaderStream;
@@ -36,7 +37,7 @@
 //! // Call the service.
 //! let request = Request::builder()
 //!     .header(ACCEPT_ENCODING, "gzip")
-//!     .body(Body::empty())?;
+//!     .body(Empty::new())?;
 //!
 //! let response = service
 

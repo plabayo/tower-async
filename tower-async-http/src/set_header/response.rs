@@ -12,7 +12,7 @@
 //! use http::{Request, Response, header::{self, HeaderValue}};
 //! use tower_async::{Service, ServiceExt, ServiceBuilder};
 //! use tower_async_http::set_header::SetResponseHeaderLayer;
-//! use hyper::Body;
+//! use hyper::body::Body;
 //!
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -49,7 +49,7 @@
 //! use http::{Request, Response, header::{self, HeaderValue}};
 //! use tower_async::{Service, ServiceExt, ServiceBuilder};
 //! use tower_async_http::set_header::SetResponseHeaderLayer;
-//! use hyper::Body;
+//! use hyper::body::Body;
 //! use http_body::Body as _; // for `Body::size_hint`
 //!
 //! # #[tokio::main]
