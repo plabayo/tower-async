@@ -1,7 +1,7 @@
 //! Types used by compression and decompression middleware.
 
 use crate::{content_encoding::SupportedEncodings, BoxError};
-use bytes::{Buf, Bytes, BytesMut};
+use bytes::{Bytes, BytesMut};
 use futures_core::Stream;
 use futures_util::ready;
 use http::HeaderValue;
@@ -287,11 +287,6 @@ pin_project! {
 impl<S, E> StreamErrorIntoIoError<S, E> {
     pub(crate) fn new(inner: S) -> Self {
         Self { inner, error: None }
-    }
-
-    /// Get a pinned mutable reference to the inner inner
-    pub(crate) fn get_pin_mut(self: Pin<&mut Self>) -> Pin<&mut S> {
-        self.project().inner
     }
 }
 

@@ -59,7 +59,7 @@ where
         match &result {
             Ok(frame) => {
                 if let Some(data) = frame.data_ref() {
-                    this.on_body_chunk.on_body_chunk(&data, latency, this.span);
+                    this.on_body_chunk.on_body_chunk(data, latency, this.span);
                 }
             }
             Err(err) => {
