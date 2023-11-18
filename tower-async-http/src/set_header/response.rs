@@ -47,15 +47,16 @@
 //!
 //! ```
 //! use http::{Request, Response, header::{self, HeaderValue}};
-//! use tower_async::{Service, ServiceExt, ServiceBuilder};
+//! use tower_async::{Service, ServiceExt, ServiceBuilder, BoxError};
 //! use tower_async_http::set_header::SetResponseHeaderLayer;
-//! use hyper::body::Body;
+//! use http_body_util::Full;
+//! use bytes::Bytes;
 //! use http_body::Body as _; // for `Body::size_hint`
 //!
 //! # #[tokio::main]
-//! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! # let render_html = tower_async::service_fn(|request: Request<Body>| async move {
-//! #     Ok::<_, std::convert::Infallible>(Response::new(Body::from("1234567890")))
+//! # async fn main() -> Result<(), BoxError> {
+//! # let render_html = tower_async::service_fn(|request: Request<Full<Bytes>>| async move {
+//! #     Ok::<_, std::convert::Infallible>(Response::new(Full::from("1234567890")))
 //! # });
 //! #
 //! let mut svc = ServiceBuilder::new()
@@ -67,7 +68,7 @@
 //!         // may have.
 //!         SetResponseHeaderLayer::overriding(
 //!             header::CONTENT_LENGTH,
-//!             |response: &Response<Body>| {
+//!             |response: &Response<Full<Bytes>>| {
 //!                 if let Some(size) = response.body().size_hint().exact() {
 //!                     // If the response body has a known size, returning `Some` will
 //!                     // set the `Content-Length` header to that value.
@@ -82,7 +83,7 @@
 //!     )
 //!     .service(render_html);
 //!
-//! let request = Request::new(Body::empty());
+//! let request = Request::new(Full::default());
 //!
 //! let response = svc.call(request).await?;
 //!
