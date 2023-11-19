@@ -8,14 +8,14 @@
 //! ```rust
 //! use http::{Request, Response, header::HeaderName};
 //! use std::convert::Infallible;
-//! use tower_async::{Service, ServiceExt, ServiceBuilder, service_fn};
+//! use tower_async::{Service, ServiceExt, ServiceBuilder, service_fn, BoxError};
 //! use tower_async_http::catch_panic::CatchPanicLayer;
-//! use hyper::body::Body;
-//! use http_body_util::Empty;
+//! use http_body_util::Full;
+//! use bytes::Bytes;
 //!
 //! # #[tokio::main]
-//! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! async fn handle(req: Request<Body>) -> Result<Response<Body>, Infallible> {
+//! # async fn main() -> Result<(), BoxError> {
+//! async fn handle(req: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, Infallible> {
 //!     panic!("something went wrong...")
 //! }
 //!
@@ -25,7 +25,7 @@
 //!     .service_fn(handle);
 //!
 //! // Call the service.
-//! let request = Request::new(Empty::new());
+//! let request = Request::new(Full::<Bytes>::default());
 //!
 //! let response = svc.call(request).await?;
 //!
@@ -40,17 +40,18 @@
 //! ```rust
 //! use http::{Request, StatusCode, Response, header::{self, HeaderName}};
 //! use std::{any::Any, convert::Infallible};
-//! use tower_async::{Service, ServiceExt, ServiceBuilder, service_fn};
+//! use tower_async::{Service, ServiceExt, ServiceBuilder, service_fn, BoxError};
 //! use tower_async_http::catch_panic::CatchPanicLayer;
-//! use hyper:body::Body;
+//! use http_body_util::Full;
+//! use bytes::Bytes;
 //!
 //! # #[tokio::main]
-//! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! async fn handle(req: Request<Body>) -> Result<Response<Body>, Infallible> {
+//! # async fn main() -> Result<(), BoxError> {
+//! async fn handle(req: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, Infallible> {
 //!     panic!("something went wrong...")
 //! }
 //!
-//! fn handle_panic(err: Box<dyn Any + Send + 'static>) -> Response<Body> {
+//! fn handle_panic(err: Box<dyn Any + Send + 'static>) -> Response<Full<Bytes>> {
 //!     let details = if let Some(s) = err.downcast_ref::<String>() {
 //!         s.clone()
 //!     } else if let Some(s) = err.downcast_ref::<&str>() {
@@ -70,7 +71,7 @@
 //!     Response::builder()
 //!         .status(StatusCode::INTERNAL_SERVER_ERROR)
 //!         .header(header::CONTENT_TYPE, "application/json")
-//!         .body(Body::from(body))
+//!         .body(Full::from(body))
 //!         .unwrap()
 //! }
 //!

@@ -4,11 +4,10 @@
 //!
 //! #### Request
 //! ```rust
-//! use bytes::BytesMut;
+//! use bytes::{Bytes, BytesMut};
 //! use flate2::{write::GzEncoder, Compression};
 //! use http::{header, HeaderValue, Request, Response};
-//! use http_body::Body as _; // for Body::data
-//! use hyper::body::Body;
+//! use http_body_util::{Full, BodyExt};
 //! use std::{error::Error, io::Write};
 //! use tower_async::{Service, ServiceBuilder, service_fn, ServiceExt};
 //! use tower_async_http::{BoxError, decompression::{DecompressionBody, RequestDecompressionLayer}};
@@ -20,7 +19,7 @@
 //! encoder.write_all(b"Hello?")?;
 //! let request = Request::builder()
 //!     .header(header::CONTENT_ENCODING, "gzip")
-//!     .body(Body::from(encoder.finish()?))?;
+//!     .body(Full::from(encoder.finish()?))?;
 //!
 //! // Our HTTP server
 //! let mut server = ServiceBuilder::new()
@@ -32,14 +31,10 @@
 //! let _response = server.call(request).await?;
 //!
 //! // Handler receives request whose body is decoded when read
-//! async fn handler(mut req: Request<DecompressionBody<Body>>) -> Result<Response<Body>, BoxError>{
-//!     let mut data = BytesMut::new();
-//!     while let Some(chunk) = req.body_mut().data().await {
-//!         let chunk = chunk?;
-//!         data.extend_from_slice(&chunk[..]);
-//!     }
-//!     assert_eq!(data.freeze().to_vec(), b"Hello?");
-//!     Ok(Response::new(Body::from("Hello, World!")))
+//! async fn handler(mut req: Request<DecompressionBody<Full<Bytes>>>) -> Result<Response<Full<Bytes>>, BoxError>{
+//!     let data = req.into_body().collect().await?.to_bytes();
+//!     assert_eq!(&data[..], b"Hello?");
+//!     Ok(Response::new(Full::from("Hello, World!")))
 //! }
 //! # Ok(())
 //! # }
@@ -47,18 +42,17 @@
 //!
 //! #### Response
 //! ```rust
-//! use bytes::BytesMut;
+//! use bytes::{Bytes, BytesMut};
 //! use http::{Request, Response};
-//! use http_body::Body as _; // for Body::data
-//! use hyper::body::Body;
+//! use http_body_util::{BodyExt, Full};
 //! use std::convert::Infallible;
 //! use tower_async::{Service, ServiceExt, ServiceBuilder, service_fn};
 //! use tower_async_http::{compression::Compression, decompression::DecompressionLayer, BoxError};
 //! #
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), tower_async_http::BoxError> {
-//! # async fn handle(req: Request<Body>) -> Result<Response<Body>, Infallible> {
-//! #     let body = Body::from("Hello, World!");
+//! # async fn handle(req: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, Infallible> {
+//! #     let body = Full::from("Hello, World!");
 //! #     Ok(Response::new(body))
 //! # }
 //!
@@ -74,20 +68,16 @@
 //! // Call the service.
 //! //
 //! // `DecompressionLayer` takes care of setting `Accept-Encoding`.
-//! let request = Request::new(Body::empty());
+//! let request = Request::new(Full::<Bytes>::default());
 //!
 //! let response = client
 //!     .call(request)
 //!     .await?;
 //!
 //! // Read the body
-//! let mut body = response.into_body();
-//! let mut bytes = BytesMut::new();
-//! while let Some(chunk) = body.data().await {
-//!     let chunk = chunk?;
-//!     bytes.extend_from_slice(&chunk[..]);
-//! }
-//! let body = String::from_utf8(bytes.to_vec()).map_err(Into::<BoxError>::into)?;
+//! let body = response.into_body();
+//! let bytes = body.collect().await?.to_bytes().to_vec();
+//! let body = String::from_utf8(bytes).map_err(Into::<BoxError>::into)?;
 //!
 //! assert_eq!(body, "Hello, World!");
 //! #

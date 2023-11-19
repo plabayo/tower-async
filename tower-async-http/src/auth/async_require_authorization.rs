@@ -6,9 +6,10 @@
 //!
 //! ```
 //! use tower_async_http::auth::{AsyncRequireAuthorizationLayer, AsyncAuthorizeRequest};
-//! use hyper::{Request, Response, body::Body, Error};
+//! use hyper::{Request, Response, Error};
 //! use http::{StatusCode, header::AUTHORIZATION};
-//! use http_body_util::Empty;
+//! use http_body_util::Full;
+//! use bytes::Bytes;
 //! use tower_async::{Service, ServiceExt, ServiceBuilder, service_fn};
 //! use futures_util::future::BoxFuture;
 //!
@@ -20,7 +21,7 @@
 //!     B: Send + Sync + 'static,
 //! {
 //!     type RequestBody = B;
-//!     type ResponseBody = Empty;
+//!     type ResponseBody = Full<Bytes>;
 //!
 //!     async fn authorize(&self, mut request: Request<B>) -> Result<Request<B>, Response<Self::ResponseBody>> {
 //!         if let Some(user_id) = check_auth(&request).await {
@@ -32,7 +33,7 @@
 //!         } else {
 //!             let unauthorized_response = Response::builder()
 //!                 .status(StatusCode::UNAUTHORIZED)
-//!                 .body(Empty::new())
+//!                 .body(Full::<Bytes>::default())
 //!                 .unwrap();
 //!
 //!             Err(unauthorized_response)
@@ -45,10 +46,10 @@
 //!     # None
 //! }
 //!
-//! #[derive(Debug)]
+//! #[derive(Clone, Debug)]
 //! struct UserId(String);
 //!
-//! async fn handle(request: Request<Body>) -> Result<Response<Empty>, Error> {
+//! async fn handle(request: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, Error> {
 //!     // Access the `UserId` that was set in `on_authorized`. If `handle` gets called the
 //!     // request was authorized and `UserId` will be present.
 //!     let user_id = request
@@ -58,7 +59,7 @@
 //!
 //!     println!("request from {:?}", user_id);
 //!
-//!     Ok(Response::new(Empty::new()))
+//!     Ok(Response::new(Full::<Bytes>::default()))
 //! }
 //!
 //! # #[tokio::main]
@@ -75,9 +76,10 @@
 //!
 //! ```
 //! use tower_async_http::auth::{AsyncRequireAuthorizationLayer, AsyncAuthorizeRequest};
-//! use hyper::{Request, Response, body::Body, Error};
+//! use hyper::{Request, Response, Error};
 //! use http::StatusCode;
-//! use http_body_util::Empty;
+//! use http_body_util::Full;
+//! use bytes::Bytes;
 //! use tower_async::{Service, ServiceExt, ServiceBuilder};
 //! use futures_util::future::BoxFuture;
 //!
@@ -89,7 +91,7 @@
 //! #[derive(Debug)]
 //! struct UserId(String);
 //!
-//! async fn handle(request: Request<Body>) -> Result<Response<Body>, Error> {
+//! async fn handle(request: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, Error> {
 //!     # todo!();
 //!     // ...
 //! }
@@ -97,13 +99,13 @@
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! let service = ServiceBuilder::new()
-//!     .layer(AsyncRequireAuthorizationLayer::new(|request: Request<Body>| async move {
+//!     .layer(AsyncRequireAuthorizationLayer::new(|request: Request<Full<Bytes>>| async move {
 //!         if let Some(user_id) = check_auth(&request).await {
 //!             Ok(request)
 //!         } else {
 //!             let unauthorized_response = Response::builder()
 //!                 .status(StatusCode::UNAUTHORIZED)
-//!                 .body(Empty::new())
+//!                 .body(Full::<Bytes>::default())
 //!                 .unwrap();
 //!
 //!             Err(unauthorized_response)

@@ -8,7 +8,7 @@ use std::{
 use bytes::Bytes;
 use clap::Parser;
 use http::{header, StatusCode};
-use http_body_util::Emtpy;
+use http_body_util::Full;
 use hyper::service::make_service_fn;
 use tower_async::{
     limit::policy::{ConcurrentPolicy, LimitReached},
@@ -128,7 +128,7 @@ async fn main() {
                 if err.is::<LimitReached>() {
                     return Ok(hyper::Response::builder()
                         .status(StatusCode::TOO_MANY_REQUESTS)
-                        .body(Empty::new())
+                        .body(Full::<Bytes>::new())
                         .unwrap());
                 }
             }

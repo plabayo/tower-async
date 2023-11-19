@@ -4,14 +4,14 @@
 //!
 //! ```
 //! use http::{Request, Response, Method, header};
-//! use http_body_util::Empty;
-//! use hyper::body::Body;
+//! use http_body_util::Full;
+//! use bytes::Bytes;
 //! use tower_async::{ServiceBuilder, ServiceExt, Service};
 //! use tower_async_http::cors::{Any, CorsLayer};
 //! use std::convert::Infallible;
 //!
-//! async fn handle(request: Request<Body>) -> Result<Response<Empty>, Infallible> {
-//!     Ok(Response::new(Empty::new()))
+//! async fn handle(request: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, Infallible> {
+//!     Ok(Response::new(Full::default()))
 //! }
 //!
 //! # #[tokio::main]
@@ -28,11 +28,10 @@
 //!
 //! let request = Request::builder()
 //!     .header(header::ORIGIN, "https://example.com")
-//!     .body(Empty::new())
+//!     .body(Full::<Bytes>::default())
 //!     .unwrap();
 //!
 //! let response = service
-
 //!     .call(request)
 //!     .await?;
 //!
