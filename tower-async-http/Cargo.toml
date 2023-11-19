@@ -20,8 +20,8 @@ bytes = "1"
 futures-core = "0.3"
 futures-util = { version = "0.3", default_features = false, features = [] }
 http = "1"
-http-body = { git = "https://github.com/hyperium/http-body" }
-http-body-util = { git = "https://github.com/hyperium/http-body" }
+http-body = "1"
+http-body-util = "0.1"
 pin-project-lite = "0.2"
 tower-async-layer = { version = "0.2", path = "../tower-async-layer" }
 tower-async-service = { version = "0.2", path = "../tower-async-service" }

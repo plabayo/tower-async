@@ -24,7 +24,7 @@ tower-async-service = { version = "0.2", path = "../tower-async-service" }
 
 [dev-dependencies]
 http = "1"
-hyper-util = { git = "https://github.com/hyperium/hyper-util.git", features = ["server", "server-auto", "tokio"] }
+hyper-util = { version = "0.1", features = ["server", "server-auto", "tokio"] }
 tokio = { version = "1.0", features = ["full"] }
 tower-async = { path = "../tower-async", features = ["full"] }
 tower-async-http = { path = "../tower-async-http", features = ["full"] }
