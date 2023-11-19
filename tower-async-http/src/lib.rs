@@ -17,79 +17,92 @@
 //! This example shows how to apply middleware from tower-http to a [`Service`] and then run
 //! that service using [hyper].
 //!
-//! ```text
-//! // TODO: Fix (rust,no_run)
-//! // use tower_async_http::{
-//! //     add_extension::AddExtensionLayer,
-//! //     compression::CompressionLayer,
-//! //     propagate_header::PropagateHeaderLayer,
-//! //     sensitive_headers::SetSensitiveRequestHeadersLayer,
-//! //     set_header::SetResponseHeaderLayer,
-//! //     validate_request::ValidateRequestHeaderLayer,
-//! // };
-//! // use tower_async_bridge::ClassicServiceExt;
-//! // use tower_async::{ServiceBuilder, service_fn};
-//! // use tower::make::Shared;
-//! // use http::{Request, Response, header::{HeaderName, CONTENT_TYPE, AUTHORIZATION}};
-//! // use hyper::{Body, Error, server::Server, service::make_service_fn};
-//! // use std::{sync::Arc, net::SocketAddr, convert::Infallible, iter::once};
-//! // # struct DatabaseConnectionPool;
-//! // # impl DatabaseConnectionPool {
-//! // #     fn new() -> DatabaseConnectionPool { DatabaseConnectionPool }
-//! // # }
-//! // # fn content_length_from_response<B>(_: &http::Response<B>) -> Option<http::HeaderValue> { None }
-//! // # async fn update_in_flight_requests_metric(count: usize) {}
-//! //
-//! // // Our request handler. This is where we would implement the application logic
-//! // // for responding to HTTP requests...
-//! // async fn handler(request: Request<Body>) -> Result<Response<Body>, Error> {
-//! //     // ...
-//! //     # todo!()
-//! // }
-//! //
-//! // // Shared state across all request handlers --- in this case, a pool of database connections.
-//! // struct State {
-//! //     pool: DatabaseConnectionPool,
-//! // }
-//! //
-//! // #[tokio::main]
-//! // async fn main() {
-//! //     // Construct the shared state.
-//! //     let state = State {
-//! //         pool: DatabaseConnectionPool::new(),
-//! //     };
-//! //
-//! //     // Use tower's `ServiceBuilder` API to build a stack of tower middleware
-//! //     // wrapping our request handler.
-//! //     let service = ServiceBuilder::new()
-//! //         // Mark the `Authorization` request header as sensitive so it doesn't show in logs
-//! //         .layer(SetSensitiveRequestHeadersLayer::new(once(AUTHORIZATION)))
-//! //         // Share an `Arc<State>` with all requests
-//! //         .layer(AddExtensionLayer::new(Arc::new(state)))
-//! //         // Compress responses
-//! //         .layer(CompressionLayer::new())
-//! //         // Propagate `X-Request-Id`s from requests to responses
-//! //         .layer(PropagateHeaderLayer::new(HeaderName::from_static("x-request-id")))
-//! //         // If the response has a known size set the `Content-Length` header
-//! //         .layer(SetResponseHeaderLayer::overriding(CONTENT_TYPE, content_length_from_response))
-//! //         // Authorize requests using a token
-//! //         .layer(ValidateRequestHeaderLayer::bearer("passwordlol"))
-//! //         // Accept only application/json, application/* and */* in a request's ACCEPT header
-//! //         .layer(ValidateRequestHeaderLayer::accept("application/json"))
-//! //         // Wrap a `Service` in our middleware stack
-//! //         .service_fn(handler);
-//! //
-//! //     // Turn the service into a shared classic one,
-//! //     // so that it can be reused in a `hyper` server.
-//! //     let service = Shared::new(service.into_classic());
-//! //
-//! //     // And run our service using `hyper`
-//! //     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
-//! //     Server::bind(&addr)
-//! //         .serve(service)
-//! //         .await
-//! //         .expect("server error");
-//! // }
+//! ```rust,no_run
+//! use std::{sync::Arc, net::SocketAddr, convert::Infallible, iter::once};
+//!
+//! use http::{Request, Response, StatusCode, header::{AUTHORIZATION, CONTENT_TYPE, HeaderName}};
+//! use hyper::body::Incoming;
+//! use hyper_util::rt::{TokioExecutor, TokioIo};
+//! use hyper_util::server::conn::auto::Builder;
+//! use tokio::net::TcpListener;
+//!
+//! use tower_async::{ServiceBuilder, BoxError};
+//! use tower_async_http::{
+//!     ServiceBuilderExt,
+//!     add_extension::AddExtensionLayer,
+//!     compression::CompressionLayer,
+//!     propagate_header::PropagateHeaderLayer,
+//!     sensitive_headers::SetSensitiveRequestHeadersLayer,
+//!     set_header::SetResponseHeaderLayer,
+//!     validate_request::ValidateRequestHeaderLayer,
+//! };
+//! use tower_async_hyper::{HyperBody, TowerHyperServiceExt};
+//!
+//! # struct DatabaseConnectionPool;
+//! # impl DatabaseConnectionPool {
+//! #     fn new() -> DatabaseConnectionPool { DatabaseConnectionPool }
+//! # }
+//! # fn content_length_from_response<B>(_: &http::Response<B>) -> Option<http::HeaderValue> { None }
+//! # async fn update_in_flight_requests_metric(count: usize) {}
+//!
+//! // Our request handler. This is where we would implement the application logic
+//! // for responding to HTTP requests...
+//! async fn handler(request: Request<HyperBody>) -> Result<Response<HyperBody>, BoxError> {
+//!     // ...
+//!     # todo!()
+//! }
+//!
+//! // Shared state across all request handlers --- in this case, a pool of database connections.
+//! struct State {
+//!     pool: DatabaseConnectionPool,
+//! }
+//!
+//! #[tokio::main]
+//! async fn main() -> Result<(), BoxError> {
+//!     // Construct the shared state.
+//!     let state = State {
+//!         pool: DatabaseConnectionPool::new(),
+//!     };
+//!
+//!     // Use tower's `ServiceBuilder` API to build a stack of tower middleware
+//!     // wrapping our request handler.
+//!     let service = ServiceBuilder::new()
+//!         // To be able to use `Body` `Default` middleware
+//!         .map_request_body(HyperBody::from)
+//!         // Mark the `Authorization` request header as sensitive so it doesn't show in logs
+//!         .layer(SetSensitiveRequestHeadersLayer::new(once(AUTHORIZATION)))
+//!         // Share an `Arc<State>` with all requests
+//!         .layer(AddExtensionLayer::new(Arc::new(state)))
+//!         // Compress responses
+//!         .compression()
+//!         // Propagate `X-Request-Id`s from requests to responses
+//!         .layer(PropagateHeaderLayer::new(HeaderName::from_static("x-request-id")))
+//!         // If the response has a known size set the `Content-Length` header
+//!         .layer(SetResponseHeaderLayer::overriding(CONTENT_TYPE, content_length_from_response))
+//!         // Authorize requests using a token
+//!         .layer(ValidateRequestHeaderLayer::bearer("passwordlol"))
+//!         // Accept only application/json, application/* and */* in a request's ACCEPT header
+//!         .layer(ValidateRequestHeaderLayer::accept("application/json"))
+//!         // Wrap a `Service` in our middleware stack
+//!         .service_fn(handler);
+//!
+//!     let addr: SocketAddr = ([127, 0, 0, 1], 8080).into();
+//!     let listener = TcpListener::bind(addr).await?;
+//!
+//!     loop {
+//!         let (stream, _) = listener.accept().await?;
+//!         let service = service.clone().into_hyper_service();
+//!         tokio::spawn(async move {
+//!             let stream = TokioIo::new(stream);
+//!             let result = Builder::new(TokioExecutor::new())
+//!                 .serve_connection(stream, service)
+//!                 .await;
+//!             if let Err(e) = result {
+//!                 eprintln!("server connection error: {}", e);
+//!             }
+//!         });
+//!     }
+//! }
 //! ```
 //!
 //! Keep in mind that while this example uses [hyper], tower-http supports any HTTP
@@ -99,45 +112,44 @@
 //!
 //! tower-http middleware can also be applied to HTTP clients:
 //!
-//! ```text
-//! // TODO: Fix (rust,no_run)
-//! //use tower_async_http::{
-//! //    decompression::DecompressionLayer,
-//! //    set_header::SetRequestHeaderLayer,
-//! //};
-//! //use tower_async_bridge::AsyncServiceExt;
-//! //use tower_async::{ServiceBuilder, Service, ServiceExt};
-//! //use hyper::body::Body;
-//! //use http_body_util::Full;
-//! //use bytes::Bytes;
-//! //use http::{Request, HeaderValue, header::USER_AGENT};
-//! //
-//! //#[tokio::main]
-//! //async fn main() {
-//! //    let mut client = ServiceBuilder::new()
-//! //        // Set a `User-Agent` header on all requests.
-//! //        .layer(SetRequestHeaderLayer::overriding(
-//! //            USER_AGENT,
-//! //            HeaderValue::from_static("tower-http demo")
-//! //        ))
-//! //        // Decompress response bodies
-//! //        .layer(DecompressionLayer::new())
-//! //        // Wrap a `hyper::Client` in our middleware stack.
-//! //        // This is possible because `hyper::Client` implements
-//! //        // `tower_async::Service`.
-//! //        .service(hyper::Client::new().into_async());
-//! //
-//! //    // Make a request
-//! //    let request = Request::builder()
-//! //        .uri("http://example.com")
-//! //        .body(Full::<Bytes>::default())
-//! //        .unwrap();
-//! //
-//! //    let response = client
-//! //        .call(request)
-//! //        .await
-//! //        .unwrap();
-//! //}
+//! ```rust,no_run
+//! use tower_async_http::{
+//!     decompression::DecompressionLayer,
+//!     set_header::SetRequestHeaderLayer,
+//! };
+//! use tower_async_bridge::AsyncServiceExt;
+//! use tower_async::{ServiceBuilder, Service, ServiceExt};
+//! use http_body_util::Full;
+//! use bytes::Bytes;
+//! use http::{Request, HeaderValue, header::USER_AGENT};
+//! use hyper_util::{client::legacy::Client, rt::TokioExecutor};
+//!
+//! #[tokio::main]
+//! async fn main() {
+//!     let mut client = ServiceBuilder::new()
+//!         // Set a `User-Agent` header on all requests.
+//!         .layer(SetRequestHeaderLayer::overriding(
+//!             USER_AGENT,
+//!             HeaderValue::from_static("tower-http demo")
+//!         ))
+//!         // Decompress response bodies
+//!         .layer(DecompressionLayer::new())
+//!         // Wrap a `hyper::Client` in our middleware stack.
+//!         // This is possible because `hyper::Client` implements
+//!         // `tower_async::Service`.
+//!         .service(Client::builder(TokioExecutor::new()).build_http().into_async());
+//!
+//!     // Make a request
+//!     let request = Request::builder()
+//!         .uri("http://example.com")
+//!         .body(Full::<Bytes>::default())
+//!         .unwrap();
+//!
+//!     let response = client
+//!         .call(request)
+//!         .await
+//!         .unwrap();
+//! }
 //! ```
 //!
 //! # Feature Flags
