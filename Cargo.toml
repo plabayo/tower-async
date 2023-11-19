@@ -2,6 +2,7 @@
 
 members = [
   "tower-async",
+  "tower-async-bridge",
   "tower-async-http",
   "tower-async-hyper",
   "tower-async-layer",
