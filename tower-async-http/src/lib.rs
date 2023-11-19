@@ -202,12 +202,7 @@
     missing_docs
 )]
 #![deny(unreachable_pub)]
-#![allow(
-    elided_lifetimes_in_paths,
-    // TODO: Remove this once the MSRV bumps to 1.42.0 or above.
-    clippy::match_like_matches_macro,
-    clippy::type_complexity
-)]
+#![allow(elided_lifetimes_in_paths, clippy::type_complexity)]
 #![forbid(unsafe_code)]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![cfg_attr(test, allow(clippy::float_cmp))]

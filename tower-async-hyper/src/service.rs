@@ -5,7 +5,15 @@ use hyper::service::Service as HyperService;
 
 use tower_async_service::Service;
 
+/// Trait to convert a [`tower_async::Service`] into a [`hyper::service::Service`].
+///
+/// [`tower_async::Service`]: https://docs.rs/tower-async/latest/tower_async/trait.Service.html
+/// [`hyper::service::Service`]: https://docs.rs/hyper/latest/hyper/service/trait.Service.html
 pub trait TowerHyperServiceExt<S, Request> {
+    /// Convert a [`tower_async::Service`] into a [`hyper::service::Service`].
+    ///
+    /// [`tower_async::Service`]: https://docs.rs/tower-async/latest/tower_async/trait.Service.html
+    /// [`hyper::service::Service`]: https://docs.rs/hyper/latest/hyper/service/trait.Service.html
     fn into_hyper_service(self) -> HyperServiceWrapper<S>;
 }
 
@@ -20,6 +28,11 @@ where
     }
 }
 
+#[derive(Debug, Clone)]
+/// A wrapper around a [`tower_async::Service`] that implements [`hyper::service::Service`].
+///
+/// [`tower_async::Service`]: https://docs.rs/tower-async/latest/tower_async/trait.Service.html
+/// [`hyper::service::Service`]: https://docs.rs/hyper/latest/hyper/service/trait.Service.html
 pub struct HyperServiceWrapper<S> {
     service: Arc<S>,
 }

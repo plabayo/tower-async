@@ -51,7 +51,6 @@ impl<S, F> MapResponse<S, F> {
 impl<S, F, Request, Response> Service<Request> for MapResponse<S, F>
 where
     S: Service<Request>,
-    // TODO check if we can remove the Clone bound
     F: FnOnce(S::Response) -> Response + Clone,
 {
     type Response = Response;

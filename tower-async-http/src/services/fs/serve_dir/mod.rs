@@ -40,23 +40,43 @@ const DEFAULT_CAPACITY: usize = 65536;
 ///
 /// # Example
 ///
-/// ```text
-/// // TODO: fix
-/// // use tower_async_bridge::ClassicServiceWrapper;
-/// // use tower_async_http::services::ServeDir;
-/// //
-/// // // This will serve files in the "assets" directory and
-/// // // its subdirectories
-/// // let service = ServeDir::new("assets");
-/// //
-/// // # async {
-/// // // Run our service using `hyper`
-/// // let addr = std::net::SocketAddr::from(([127, 0, 0, 1], 3000));
-/// // hyper::Server::bind(&addr)
-/// //     .serve(tower::make::Shared::new(ClassicServiceWrapper::new(service)))
-/// //     .await
-/// //     .expect("server error");
-/// // # };
+/// ```rust,no_run
+/// use std::net::SocketAddr;
+///
+/// use hyper_util::rt::{TokioExecutor, TokioIo};
+/// use hyper_util::server::conn::auto::Builder;
+/// use tokio::net::TcpListener;
+///
+/// use tower_async_hyper::{TowerHyperServiceExt, HyperBody};
+/// use tower_async_http::{services::ServeDir, ServiceBuilderExt};
+/// use tower_async::ServiceBuilder;
+///
+/// #[tokio::main]
+/// async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+///     let addr: SocketAddr = ([127, 0, 0, 1], 8080).into();
+///     let listener = TcpListener::bind(addr).await?;
+///
+///     // This will serve files in the "assets" directory and
+///     // its subdirectories
+///     let service = ServiceBuilder::new()
+///         .map_request_body(HyperBody::from)
+///         .service(ServeDir::new("assets"))
+///         .into_hyper_service();
+///
+///     loop {
+///         let (stream, _) = listener.accept().await?;
+///         let service = service.clone();
+///         tokio::spawn(async move {
+///             let stream = TokioIo::new(stream);
+///             let result = Builder::new(TokioExecutor::new())
+///                 .serve_connection(stream, service)
+///                 .await;
+///             if let Err(e) = result {
+///                 eprintln!("server connection error: {}", e);
+///             }
+///         });
+///     }
+/// }
 /// ```
 #[derive(Clone, Debug)]
 pub struct ServeDir<F = DefaultServeDirFallback> {
@@ -211,23 +231,44 @@ impl<F> ServeDir<F> {
     ///
     /// This can be used to respond with a different file:
     ///
-    /// ```text
-    /// // // TODO: fix (rust)
-    /// // use tower_async_bridge::ClassicServiceWrapper;
-    /// // use tower_async_http::services::{ServeDir, ServeFile};
-    /// //
-    /// // let service = ServeDir::new("assets")
-    /// //     // respond with `not_found.html` for missing files
-    /// //     .fallback(ServeFile::new("assets/not_found.html"));
-    /// //
-    /// // # async {
-    /// // // Run our service using `hyper`
-    /// // let addr = std::net::SocketAddr::from(([127, 0, 0, 1], 3000));
-    /// // hyper::Server::bind(&addr)
-    /// //     .serve(tower::make::Shared::new(ClassicServiceWrapper::new(service)))
-    /// //     .await
-    /// //     .expect("server error");
-    /// // # };
+    /// ```rust,no_run
+    /// use std::net::SocketAddr;
+    ///
+    /// use hyper_util::rt::{TokioExecutor, TokioIo};
+    /// use hyper_util::server::conn::auto::Builder;
+    /// use tokio::net::TcpListener;
+    ///
+    /// use tower_async_hyper::{TowerHyperServiceExt, HyperBody};
+    /// use tower_async_http::{services::{ServeDir, ServeFile}, ServiceBuilderExt};
+    /// use tower_async::ServiceBuilder;
+    ///
+    /// #[tokio::main]
+    /// async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    ///     let addr: SocketAddr = ([127, 0, 0, 1], 8080).into();
+    ///     let listener = TcpListener::bind(addr).await?;
+    ///
+    ///     // This will serve files in the "assets" directory and
+    ///     // its subdirectories
+    ///     let service = ServiceBuilder::new()
+    ///         .map_request_body(HyperBody::from)
+    ///         .service(ServeDir::new("assets")
+    ///             .fallback(ServeFile::new("assets/not_found.html")))
+    ///         .into_hyper_service();
+    ///
+    ///     loop {
+    ///         let (stream, _) = listener.accept().await?;
+    ///         let service = service.clone();
+    ///         tokio::spawn(async move {
+    ///             let stream = TokioIo::new(stream);
+    ///             let result = Builder::new(TokioExecutor::new())
+    ///                 .serve_connection(stream, service)
+    ///                 .await;
+    ///             if let Err(e) = result {
+    ///                 eprintln!("server connection error: {}", e);
+    ///             }
+    ///         });
+    ///     }
+    /// }
     /// ```
     pub fn fallback<F2>(self, new_fallback: F2) -> ServeDir<F2> {
         ServeDir {
@@ -248,25 +289,45 @@ impl<F> ServeDir<F> {
     ///
     /// This can be used to respond with a different file:
     ///
-    /// ```text
-    /// // TODO: fix (rust)
-    /// // use tower_async_bridge::ClassicServiceWrapper;
-    /// // use tower_async_http::services::{ServeDir, ServeFile};
-    /// //
-    /// // let service = ClassicServiceWrapper::new(ServeDir::new("assets")
-    /// //     // respond with `404 Not Found` and the contents of `not_found.html` for missing files
-    /// //     .not_found_service(ServeFile::new("assets/not_found.html")));
-    /// //
-    /// // let service = tower::make::Shared::new(service);
-    /// //
-    /// // # async {
-    /// // // Run our service using `hyper`
-    /// // let addr = std::net::SocketAddr::from(([127, 0, 0, 1], 3000));
-    /// // hyper::Server::bind(&addr)
-    /// //     .serve(service)
-    /// //     .await
-    /// //     .expect("server error");
-    /// // # };
+    /// ```rust,no_run
+    /// use std::net::SocketAddr;
+    ///
+    /// use hyper_util::rt::{TokioExecutor, TokioIo};
+    /// use hyper_util::server::conn::auto::Builder;
+    /// use tokio::net::TcpListener;
+    ///
+    /// use tower_async_hyper::{TowerHyperServiceExt, HyperBody};
+    /// use tower_async_http::{services::{ServeDir, ServeFile}, ServiceBuilderExt};
+    /// use tower_async::ServiceBuilder;
+    ///
+    /// #[tokio::main]
+    /// async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    ///     let addr: SocketAddr = ([127, 0, 0, 1], 8080).into();
+    ///     let listener = TcpListener::bind(addr).await?;
+    ///
+    ///     // This will serve files in the "assets" directory and
+    ///     // its subdirectories
+    ///     let service = ServiceBuilder::new()
+    ///         .map_request_body(HyperBody::from)
+    ///         .service(ServeDir::new("assets")
+    ///             // respond with `404 Not Found` and the contents of `not_found.html` for missing files
+    ///             .not_found_service(ServeFile::new("assets/not_found.html")))
+    ///         .into_hyper_service();
+    ///
+    ///     loop {
+    ///         let (stream, _) = listener.accept().await?;
+    ///         let service = service.clone();
+    ///         tokio::spawn(async move {
+    ///             let stream = TokioIo::new(stream);
+    ///             let result = Builder::new(TokioExecutor::new())
+    ///                 .serve_connection(stream, service)
+    ///                 .await;
+    ///             if let Err(e) = result {
+    ///                 eprintln!("server connection error: {}", e);
+    ///             }
+    ///         });
+    ///     }
+    /// }
     /// ```
     ///
     /// Setups like this are often found in single page applications.
@@ -295,48 +356,70 @@ impl<F> ServeDir<F> {
     ///
     /// # Example
     ///
-    /// ```text
-    /// // TODO: fix
-    /// // use tower_async_http::services::ServeDir;
-    /// // use std::{io, convert::Infallible};
-    /// // use http::{Request, Response, StatusCode};
-    /// // use http_body::Body;
-    /// // use http_body_util::combinators::UnsyncBoxBody;
-    /// // use bytes::Bytes;
-    /// // use tower_async_bridge::ClassicServiceWrapper;
-    /// // use tower_async::{service_fn, ServiceExt, BoxError};
-    /// // use tower::make::Shared;
-    /// //
-    /// // async fn serve_dir(
-    /// //     request: Request<Body>
-    /// // ) -> Result<Response<UnsyncBoxBody<Bytes, BoxError>>, Infallible> {
-    /// //     let mut service = ServeDir::new("assets");
-    /// //
-    /// //     match service.try_call(request).await {
-    /// //         Ok(response) => {
-    /// //             Ok(response.map(|body| body.map_err(Into::into).boxed_unsync()))
-    /// //         }
-    /// //         Err(err) => {
-    /// //             let body = Body::from("Something went wrong...")
-    /// //                 .map_err(Into::into)
-    /// //                 .boxed_unsync();
-    /// //             let response = Response::builder()
-    /// //                 .status(StatusCode::INTERNAL_SERVER_ERROR)
-    /// //                 .body(body)
-    /// //                 .unwrap();
-    /// //             Ok(response)
-    /// //         }
-    /// //     }
-    /// // }
-    /// //
-    /// // # async {
-    /// // // Run our service using `hyper`
-    /// // let addr = std::net::SocketAddr::from(([127, 0, 0, 1], 3000));
-    /// // hyper::Server::bind(&addr)
-    /// //     .serve(Shared::new(ClassicServiceWrapper::new(service_fn(serve_dir))))
-    /// //     .await
-    /// //     .expect("server error");
-    /// // # };
+    /// ```rust,no_run
+    /// use std::net::SocketAddr;
+    /// use std::{io, convert::Infallible};
+    ///
+    /// use hyper_util::rt::{TokioExecutor, TokioIo};
+    /// use hyper_util::server::conn::auto::Builder;
+    /// use tokio::net::TcpListener;
+    /// use http::{Request, Response, StatusCode};
+    /// use http_body::Body;
+    /// use http_body_util::{BodyExt, Full, combinators::UnsyncBoxBody};
+    /// use bytes::Bytes;
+    ///
+    /// use tower_async_hyper::{TowerHyperServiceExt, HyperBody};
+    /// use tower_async_http::{services::{ServeDir, ServeFile}, ServiceBuilderExt};
+    /// use tower_async::{ServiceBuilder, BoxError};
+    ///
+    /// async fn serve_dir(
+    ///     request: Request<HyperBody>
+    /// ) -> Result<Response<UnsyncBoxBody<Bytes, BoxError>>, Infallible> {
+    ///     let mut service = ServeDir::new("assets");
+    ///
+    ///     match service.try_call(request).await {
+    ///         Ok(response) => {
+    ///             Ok(response.map(|body| body.map_err(Into::into).boxed_unsync()))
+    ///         }
+    ///         Err(err) => {
+    ///             let body = Full::from("Something went wrong...")
+    ///                 .map_err(Into::into)
+    ///                 .boxed_unsync();
+    ///             let response = Response::builder()
+    ///                 .status(StatusCode::INTERNAL_SERVER_ERROR)
+    ///                 .body(body)
+    ///                 .unwrap();
+    ///             Ok(response)
+    ///         }
+    ///     }
+    /// }
+    ///
+    /// #[tokio::main]
+    /// async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    ///     let addr: SocketAddr = ([127, 0, 0, 1], 8080).into();
+    ///     let listener = TcpListener::bind(addr).await?;
+    ///
+    ///     // This will serve files in the "assets" directory and
+    ///     // its subdirectories
+    ///     let service = ServiceBuilder::new()
+    ///         .map_request_body(HyperBody::from)
+    ///         .service_fn(serve_dir)
+    ///         .into_hyper_service();
+    ///
+    ///     loop {
+    ///         let (stream, _) = listener.accept().await?;
+    ///         let service = service.clone();
+    ///         tokio::spawn(async move {
+    ///             let stream = TokioIo::new(stream);
+    ///             let result = Builder::new(TokioExecutor::new())
+    ///                 .serve_connection(stream, service)
+    ///                 .await;
+    ///             if let Err(e) = result {
+    ///                 eprintln!("server connection error: {}", e);
+    ///             }
+    ///         });
+    ///     }
+    /// }
     /// ```
     pub async fn try_call<ReqBody, FResBody>(
         &self,

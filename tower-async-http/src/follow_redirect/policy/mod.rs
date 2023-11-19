@@ -234,20 +234,12 @@ pub enum Action {
 impl Action {
     /// Returns `true` if the `Action` is a `Follow` value.
     pub fn is_follow(&self) -> bool {
-        if let Action::Follow = self {
-            true
-        } else {
-            false
-        }
+        matches!(self, Action::Follow)
     }
 
     /// Returns `true` if the `Action` is a `Stop` value.
     pub fn is_stop(&self) -> bool {
-        if let Action::Stop = self {
-            true
-        } else {
-            false
-        }
+        matches!(self, Action::Stop)
     }
 }
 
