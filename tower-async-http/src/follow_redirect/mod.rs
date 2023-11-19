@@ -20,7 +20,6 @@
 //! use http::{Request, Response};
 //! use http_body_util::Full;
 //! use bytes::Bytes;
-//! use hyper::body::Body;
 //! use tower_async::{Service, ServiceBuilder, ServiceExt};
 //! use tower_async_http::follow_redirect::{FollowRedirectLayer, RequestUri};
 //!
@@ -60,7 +59,7 @@
 //! use http::{Request, Response};
 //! use http_body_util::Full;
 //! use bytes::Bytes;
-//! use tower_async::{Service, ServiceBuilder, ServiceExt};
+//! use tower_async::{Service, ServiceBuilder, ServiceExt, BoxError};
 //! use tower_async_http::follow_redirect::{
 //!     policy::{self, PolicyExt},
 //!     FollowRedirectLayer,
@@ -68,7 +67,7 @@
 //!
 //! #[derive(Debug)]
 //! enum MyError {
-//!     Hyper(hyper::Error),
+//!     Hyper(BoxError),
 //!     TooManyRedirects,
 //! }
 //!

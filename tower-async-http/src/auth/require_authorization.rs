@@ -6,18 +6,17 @@
 //!
 //! ```
 //! use tower_async_http::validate_request::{ValidateRequest, ValidateRequestHeader, ValidateRequestHeaderLayer};
-//! use hyper::{Request, Response, Error};
-//! use http::{StatusCode, header::AUTHORIZATION};
+//! use http::{Request, Response, StatusCode, header::AUTHORIZATION};
 //! use http_body_util::Full;
 //! use bytes::Bytes;
-//! use tower_async::{Service, ServiceExt, ServiceBuilder, service_fn};
+//! use tower_async::{Service, ServiceExt, ServiceBuilder, service_fn, BoxError};
 //!
-//! async fn handle(request: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, Error> {
+//! async fn handle(request: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, BoxError> {
 //!     Ok(Response::new(Full::default()))
 //! }
 //!
 //! # #[tokio::main]
-//! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! # async fn main() -> Result<(), BoxError> {
 //! let mut service = ServiceBuilder::new()
 //!     // Require the `Authorization` header to be `Bearer passwordlol`
 //!     .layer(ValidateRequestHeaderLayer::bearer("passwordlol"))
@@ -30,7 +29,7 @@
 //!     .unwrap();
 //!
 //! let response = service
-
+//!
 //!     .call(request)
 //!     .await?;
 //!

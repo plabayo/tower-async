@@ -14,7 +14,7 @@ use std::{fmt, ops::RangeInclusive};
 /// // use tower_async_http::{trace::TraceLayer, classify::StatusInRangeAsFailures};
 /// // use tower_async_bridge::AsyncServiceExt;
 /// // use tower_async::{ServiceBuilder, Service};
-/// // use hyper::{Client, Body};
+/// // use hyper::{Client, body::Body};
 /// // use http::{Request, Method};
 /// // use http_body_util::Full;
 /// // use bytes::Bytes;

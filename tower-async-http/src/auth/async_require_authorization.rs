@@ -6,11 +6,10 @@
 //!
 //! ```
 //! use tower_async_http::auth::{AsyncRequireAuthorizationLayer, AsyncAuthorizeRequest};
-//! use hyper::{Request, Response, Error};
-//! use http::{StatusCode, header::AUTHORIZATION};
+//! use http::{Request, Response, StatusCode, header::AUTHORIZATION};
 //! use http_body_util::Full;
 //! use bytes::Bytes;
-//! use tower_async::{Service, ServiceExt, ServiceBuilder, service_fn};
+//! use tower_async::{Service, ServiceExt, ServiceBuilder, service_fn, BoxError};
 //! use futures_util::future::BoxFuture;
 //!
 //! #[derive(Clone, Copy)]
@@ -49,7 +48,7 @@
 //! #[derive(Clone, Debug)]
 //! struct UserId(String);
 //!
-//! async fn handle(request: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, Error> {
+//! async fn handle(request: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, BoxError> {
 //!     // Access the `UserId` that was set in `on_authorized`. If `handle` gets called the
 //!     // request was authorized and `UserId` will be present.
 //!     let user_id = request
@@ -63,7 +62,7 @@
 //! }
 //!
 //! # #[tokio::main]
-//! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! # async fn main() -> Result<(), BoxError> {
 //! let service = ServiceBuilder::new()
 //!     // Authorize requests using `MyAuth`
 //!     .layer(AsyncRequireAuthorizationLayer::new(MyAuth))
@@ -76,11 +75,10 @@
 //!
 //! ```
 //! use tower_async_http::auth::{AsyncRequireAuthorizationLayer, AsyncAuthorizeRequest};
-//! use hyper::{Request, Response, Error};
-//! use http::StatusCode;
+//! use http::{Request, Response, StatusCode};
 //! use http_body_util::Full;
 //! use bytes::Bytes;
-//! use tower_async::{Service, ServiceExt, ServiceBuilder};
+//! use tower_async::{Service, ServiceExt, ServiceBuilder, BoxError};
 //! use futures_util::future::BoxFuture;
 //!
 //! async fn check_auth<B>(request: &Request<B>) -> Option<UserId> {
@@ -91,13 +89,13 @@
 //! #[derive(Debug)]
 //! struct UserId(String);
 //!
-//! async fn handle(request: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, Error> {
+//! async fn handle(request: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, BoxError> {
 //!     # todo!();
 //!     // ...
 //! }
 //!
 //! # #[tokio::main]
-//! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! # async fn main() -> Result<(), BoxError> {
 //! let service = ServiceBuilder::new()
 //!     .layer(AsyncRequireAuthorizationLayer::new(|request: Request<Full<Bytes>>| async move {
 //!         if let Some(user_id) = check_auth(&request).await {
