@@ -28,6 +28,7 @@ hyper-util = { version = "0.1", features = ["server", "server-auto", "tokio"] }
 tokio = { version = "1.0", features = ["full"] }
 tower-async = { path = "../tower-async", features = ["full"] }
 tower-async-http = { path = "../tower-async-http", features = ["full"] }
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 [package.metadata.docs.rs]
 all-features = true
