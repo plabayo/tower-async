@@ -61,6 +61,10 @@
 //!      e.g. those returned by `async functions` that the user might have to face by using
 //!      common utility functions from the wider _Tokio_ ecosystem;
 //! - Drop the notion of `poll_ready` (See [the FAQ](https://github.com/plabayo/tower-async#faq)).
+//! - Use `&self` for `Service::call` instead of `&mut self`:
+//!   - this to simplify its usage;
+//!   - makes it clear that the user is responsible for proper state sharing;
+//!   - makes it more compatible with the ecosystem (e.g. `hyper` (v1) also takes services by `&self`);
 //!
 //! ## Bridging to Tokio's official Tower Ecosystem
 //!
