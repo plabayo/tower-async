@@ -18,7 +18,8 @@
 //!
 //! ```
 //! use http::{Request, Response};
-//! use http_body_util::Empty;
+//! use http_body_util::Full;
+//! use bytes::Bytes;
 //! use hyper::body::Body;
 //! use tower_async::{Service, ServiceBuilder, ServiceExt};
 //! use tower_async_http::follow_redirect::{FollowRedirectLayer, RequestUri};
@@ -33,7 +34,7 @@
 //! #             .status(http::StatusCode::MOVED_PERMANENTLY)
 //! #             .header(http::header::LOCATION, dest);
 //! #     }
-//! #     Ok::<_, std::convert::Infallible>(res.body(Empty::new()).unwrap())
+//! #     Ok::<_, std::convert::Infallible>(res.body(Full::<Bytes>::default()).unwrap())
 //! # });
 //! let mut client = ServiceBuilder::new()
 //!     .layer(FollowRedirectLayer::new())
@@ -41,7 +42,7 @@
 //!
 //! let request = Request::builder()
 //!     .uri("https://rust-lang.org/")
-//!     .body(Empty::new())
+//!     .body(Full::<Bytes>::default())
 //!     .unwrap();
 //!
 //! let response = client.call(request).await?;
@@ -57,8 +58,8 @@
 //!
 //! ```
 //! use http::{Request, Response};
-//! use http_body_util::Empty;
-//! use hyper::body::Body;
+//! use http_body_util::Full;
+//! use bytes::Bytes;
 //! use tower_async::{Service, ServiceBuilder, ServiceExt};
 //! use tower_async_http::follow_redirect::{
 //!     policy::{self, PolicyExt},
@@ -74,7 +75,9 @@
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), MyError> {
 //! # let http_client =
-//! #     tower_async::service_fn(|_: Request<Body>| async { Ok(Response::new(Empty::new())) });
+//! #     tower_async::service_fn(|_: Request<Full<Bytes>>| async {
+//! #          Ok(Response::new(Full::<Bytes>::default()))
+//! #     });
 //! let policy = policy::Limited::new(10) // Set the maximum number of redirections to 10.
 //!     // Return an error when the limit was reached.
 //!     .or::<_, (), _>(policy::redirect_fn(|_| Err(MyError::TooManyRedirects)))

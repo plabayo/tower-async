@@ -4,17 +4,17 @@
 //!
 //! ```rust
 //! use http::{Request, Response, header::HeaderName};
-//! use http_body_util::Empty;
+//! use http_body_util::Full;
+//! use bytes::Bytes;
 //! use std::convert::Infallible;
 //! use tower_async::{Service, ServiceExt, ServiceBuilder, service_fn};
 //! use tower_async_http::propagate_header::PropagateHeaderLayer;
-//! use hyper::body::Body;
 //!
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! async fn handle(req: Request<Body>) -> Result<Response<Empty>, Infallible> {
+//! async fn handle(req: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, Infallible> {
 //!     // ...
-//!     # Ok(Response::new(Empty::new()))
+//!     # Ok(Response::new(Full::default()))
 //! }
 //!
 //! let mut svc = ServiceBuilder::new()
@@ -25,7 +25,7 @@
 //! // Call the service.
 //! let request = Request::builder()
 //!     .header("x-request-id", "1337")
-//!     .body(Empty::new())?;
+//!     .body(Full::default())?;
 //!
 //! let response = svc.call(request).await?;
 //!

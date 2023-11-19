@@ -24,14 +24,13 @@
 //! use bytes::Bytes;
 //! use std::convert::Infallible;
 //! use http::{Request, Response, StatusCode, HeaderValue, header::CONTENT_LENGTH};
-//! use http_body_util::{Limited, LengthLimitError};
+//! use http_body_util::{Limited, LengthLimitError, Full};
 //! use tower_async::{Service, ServiceExt, ServiceBuilder};
 //! use tower_async_http::limit::RequestBodyLimitLayer;
-//! # use crate::test_helpers::Body;
 //!
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! async fn handle(req: Request<Limited<Body>>) -> Result<Response<Body>, Infallible> {
+//! async fn handle(req: Request<Limited<Full<Bytes>>>) -> Result<Response<Full<Bytes>>, Infallible> {
 //!     panic!("This will not be hit")
 //! }
 //!
@@ -43,7 +42,7 @@
 //! // Call the service with a header that indicates the body is too large.
 //! let mut request = Request::builder()
 //!     .header(CONTENT_LENGTH, HeaderValue::from_static("5000"))
-//!     .body(Body::empty())
+//!     .body(Full::<Bytes>::default())
 //!     .unwrap();
 //!
 //! let response = svc.call(request).await?;
@@ -71,19 +70,20 @@
 //! # use bytes::Bytes;
 //! # use std::convert::Infallible;
 //! # use http::{Request, Response, StatusCode};
-//! # use http_body_util::{Limited, LengthLimitError};
+//! # use http_body_util::{Limited, LengthLimitError, Full, BodyExt};
 //! # use tower_async::{Service, ServiceExt, ServiceBuilder, BoxError};
 //! # use tower_async_http::limit::RequestBodyLimitLayer;
-//! # use crate::test_helpers::Body;
+//! #
+//! # type Body = Full<Bytes>;
 //! #
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), BoxError> {
 //! async fn handle(req: Request<Limited<Body>>) -> Result<Response<Body>, BoxError> {
-//!     let data = match hyper::body::Body::to_bytes(req.into_body()).await {
+//!     let data = match req.into_body().collect().await {
 //!         Ok(data) => data,
 //!         Err(err) => {
 //!             if let Some(_) = err.downcast_ref::<LengthLimitError>() {
-//!                 let mut resp = Response::new(Body::empty());
+//!                 let mut resp = Response::new(Body::default());
 //!                 *resp.status_mut() = StatusCode::PAYLOAD_TOO_LARGE;
 //!                 return Ok(resp);
 //!             } else {
@@ -92,7 +92,7 @@
 //!         }
 //!     };
 //!
-//!     Ok(Response::new(Body::empty()))
+//!     Ok(Response::new(Body::default()))
 //! }
 //!
 //! let mut svc = ServiceBuilder::new()
@@ -101,7 +101,7 @@
 //!     .service_fn(handle);
 //!
 //! // Call the service.
-//! let request = Request::new(Body::empty());
+//! let request = Request::new(Body::default());
 //!
 //! let response = svc.call(request).await?;
 //!

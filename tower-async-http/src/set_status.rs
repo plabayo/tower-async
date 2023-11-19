@@ -5,14 +5,14 @@
 //! ```
 //! use tower_async_http::set_status::SetStatusLayer;
 //! use http::{Request, Response, StatusCode};
-//! use http_body_util::Empty;
-//! use hyper::body::Body;
+//! use http_body_util::Full;
+//! use bytes::Bytes;
 //! use std::{iter::once, convert::Infallible};
 //! use tower_async::{ServiceBuilder, Service, ServiceExt};
 //!
-//! async fn handle(req: Request<Body>) -> Result<Response<Empty>, Infallible> {
+//! async fn handle(req: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, Infallible> {
 //!     // ...
-//!     # Ok(Response::new(Empty::new()))
+//!     # Ok(Response::new(Full::default()))
 //! }
 //!
 //! # #[tokio::main]
@@ -23,7 +23,7 @@
 //!     .service_fn(handle);
 //!
 //! // Call the service.
-//! let request = Request::builder().body(Empty::new())?;
+//! let request = Request::builder().body(Full::default())?;
 //!
 //! let response = service.call(request).await?;
 //!

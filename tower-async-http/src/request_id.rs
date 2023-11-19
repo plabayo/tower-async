@@ -4,17 +4,17 @@
 //!
 //! ```
 //! use http::{Request, Response, header::HeaderName};
-//! use http_body_util::Empty;
+//! use http_body_util::Full;
+//! use bytes::Bytes;
 //! use tower_async::{Service, ServiceExt, ServiceBuilder};
 //! use tower_async_http::request_id::{
 //!     SetRequestIdLayer, PropagateRequestIdLayer, MakeRequestId, RequestId,
 //! };
-//! use hyper::body::Body;
 //! use std::sync::{Arc, atomic::{AtomicU64, Ordering}};
 //!
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! # let handler = tower_async::service_fn(|request: Request<Body>| async move {
+//! # let handler = tower_async::service_fn(|request: Request<Full<Bytes>>| async move {
 //! #     Ok::<_, std::convert::Infallible>(Response::new(request.into_body()))
 //! # });
 //! #
@@ -48,7 +48,7 @@
 //!     .layer(PropagateRequestIdLayer::new(x_request_id))
 //!     .service(handler);
 //!
-//! let request = Request::new(Empty::new());
+//! let request = Request::new(Full::default());
 //! let response = svc.call(request).await?;
 //!
 //! assert_eq!(response.headers()["x-request-id"], "0");
@@ -62,13 +62,16 @@
 //! ```
 //! use tower_async_http::ServiceBuilderExt;
 //! # use http::{Request, Response, header::HeaderName};
-//! # use http_body_util::Empty;
+//! # use http_body_util::Full;
+//! # use bytes::Bytes;
 //! # use tower_async::{Service, ServiceExt, ServiceBuilder};
 //! # use tower_async_http::request_id::{
 //! #     SetRequestIdLayer, PropagateRequestIdLayer, MakeRequestId, RequestId,
 //! # };
-//! # use hyper::body::Body;
 //! # use std::sync::{Arc, atomic::{AtomicU64, Ordering}};
+//! #
+//! # type Body = Full<Bytes>;
+//! #
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! # let handler = tower_async::service_fn(|request: Request<Body>| async move {
@@ -94,7 +97,7 @@
 //!     .propagate_x_request_id()
 //!     .service(handler);
 //!
-//! let request = Request::new(Empty::new());
+//! let request = Request::new(Body::default());
 //! let response = svc.call(request).await?;
 //!
 //! assert_eq!(response.headers()["x-request-id"], "0");

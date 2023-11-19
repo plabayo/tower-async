@@ -8,13 +8,13 @@
 //! use tower_async_http::sensitive_headers::SetSensitiveHeadersLayer;
 //! use tower_async::{Service, ServiceExt, ServiceBuilder, service_fn};
 //! use http::{Request, Response, header::AUTHORIZATION};
-//! use http_body_util::Empty;
-//! use hyper::body::Body;
+//! use http_body_util::Full;
+//! use bytes::Bytes;
 //! use std::{iter::once, convert::Infallible};
 //!
-//! async fn handle(req: Request<Body>) -> Result<Response<Empty>, Infallible> {
+//! async fn handle(req: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, Infallible> {
 //!     // ...
-//!     # Ok(Response::new(Empty::new()))
+//!     # Ok(Response::new(Full::default()))
 //! }
 //!
 //! # #[tokio::main]
@@ -32,7 +32,7 @@
 //!
 //! // Call the service.
 //! let response = service
-//!     .call(Request::new(Empty::new()))
+//!     .call(Request::new(Full::default()))
 //!     .await?;
 //! # Ok(())
 //! # }

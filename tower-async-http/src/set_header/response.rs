@@ -12,11 +12,12 @@
 //! use http::{Request, Response, header::{self, HeaderValue}};
 //! use tower_async::{Service, ServiceExt, ServiceBuilder};
 //! use tower_async_http::set_header::SetResponseHeaderLayer;
-//! use hyper::body::Body;
+//! use http_body_util::Full;
+//! use bytes::Bytes;
 //!
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! # let render_html = tower_async::service_fn(|request: Request<Body>| async move {
+//! # let render_html = tower_async::service_fn(|request: Request<Full<Bytes>>| async move {
 //! #     Ok::<_, std::convert::Infallible>(Response::new(request.into_body()))
 //! # });
 //! #
@@ -33,7 +34,7 @@
 //!     )
 //!     .service(render_html);
 //!
-//! let request = Request::new(Body::empty());
+//! let request = Request::new(Full::default());
 //!
 //! let response = svc.call(request).await?;
 //!

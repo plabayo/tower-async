@@ -49,7 +49,7 @@
 //!
 //! ```rust
 //! use http::{Request, Response, HeaderMap, StatusCode};
-//! use hyper::body::Body;
+//! use http_body_util::Full;
 //! use bytes::Bytes;
 //! use tower_async::ServiceBuilder;
 //! use tracing::Level;
@@ -61,8 +61,8 @@
 //! # use tower_async::Service;
 //! # use std::convert::Infallible;
 //!
-//! # async fn handle(request: Request<Body>) -> Result<Response<Body>, Infallible> {
-//! #     Ok(Response::new(Body::from("foo")))
+//! # async fn handle(request: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, Infallible> {
+//! #     Ok(Response::new(Full::from("foo")))
 //! # }
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -87,7 +87,7 @@
 //!     .service_fn(handle);
 //! # let mut service = service;
 //! # let response = service
-//! #     .call(Request::new(Body::from("foo")))
+//! #     .call(Request::new(Full::from("foo")))
 //! #     .await?;
 //! # Ok(())
 //! # }
@@ -155,9 +155,12 @@
 //! use std::time::Duration;
 //! use tracing::Span;
 //! # use tower_async::Service;
-//! # use hyper::body::Body;
+//! # use http_body_util::Full;
+//! # use bytes::Bytes;
 //! # use http::{Response, Request};
 //! # use std::convert::Infallible;
+//! #
+//! # type Body = Full<Bytes>;
 //!
 //! # async fn handle(request: Request<Body>) -> Result<Response<Body>, Infallible> {
 //! #     Ok(Response::new(Body::from("foo")))
@@ -239,16 +242,16 @@
 //!
 //! ```rust
 //! use http::{Request, Response, HeaderMap, StatusCode};
-//! use hyper::body::Body;
+//! use http_body_util::Full;
 //! use bytes::Bytes;
 //! use tower_async::ServiceBuilder;
 //! use tower_async_http::trace::TraceLayer;
 //! use tracing::Span;
 //! use std::time::Duration;
-//! # use std::convert::Infallible;
+//! use std::convert::Infallible;
 //!
-//! # async fn handle(request: Request<Body>) -> Result<Response<Body>, Infallible> {
-//! #     Ok(Response::new(Body::from("foo")))
+//! # async fn handle(request: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, Infallible> {
+//! #     Ok(Response::new(Full::from("foo")))
 //! # }
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -257,13 +260,13 @@
 //! let service = ServiceBuilder::new()
 //!     .layer(
 //!         TraceLayer::new_for_http()
-//!             .make_span_with(|request: &Request<Body>| {
+//!             .make_span_with(|request: &Request<Full<Bytes>>| {
 //!                 tracing::debug_span!(
 //!                     "http-request",
 //!                     status_code = tracing::field::Empty,
 //!                 )
 //!             })
-//!             .on_response(|response: &Response<Body>, _latency: Duration, span: &Span| {
+//!             .on_response(|response: &Response<Full<Bytes>>, _latency: Duration, span: &Span| {
 //!                 span.record("status_code", &tracing::field::display(response.status()));
 //!
 //!                 tracing::debug!("response generated")
@@ -284,7 +287,8 @@
 //!
 //! ```rust
 //! use http::{Request, Response};
-//! use hyper::body::Body;
+//! use http_body_util::Full;
+//! use bytes::Bytes;
 //! use tower_async::ServiceBuilder;
 //! use tower_async_http::{
 //!     trace::TraceLayer,
@@ -295,8 +299,8 @@
 //! };
 //! use std::convert::Infallible;
 //!
-//! # async fn handle(request: Request<Body>) -> Result<Response<Body>, Infallible> {
-//! #     Ok(Response::new(Body::from("foo")))
+//! # async fn handle(request: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, Infallible> {
+//! #     Ok(Response::new(Full::from("foo")))
 //! # }
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {

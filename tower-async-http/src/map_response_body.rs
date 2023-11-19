@@ -5,46 +5,49 @@
 //! ```
 //! use bytes::Bytes;
 //! use http::{Request, Response};
-//! use http_body_util::Empty;
-//! use hyper::body::Body;
+//! use http_body::{Body, Frame};
+//! use http_body_util::Full;
 //! use std::convert::Infallible;
 //! use std::{pin::Pin, task::{Context, Poll}};
-//! use tower_async::{ServiceBuilder, service_fn, ServiceExt, Service};
+//! use tower_async::{ServiceBuilder, service_fn, ServiceExt, Service, BoxError};
 //! use tower_async_http::map_response_body::MapResponseBodyLayer;
 //! use futures::ready;
 //!
-//! // A wrapper for a `hyper::body::Body` that prints the size of data chunks
-//! struct PrintChunkSizesBody {
-//!     inner: Body,
+//! // A wrapper for a `http_body::Body` that prints the size of data chunks
+//! pin_project_lite::pin_project! {
+//!     struct PrintChunkSizesBody<B> {
+//!         #[pin]
+//!         inner: B,
+//!     }
 //! }
 //!
-//! impl PrintChunkSizesBody {
-//!     fn new(inner: Body) -> Self {
+//! impl<B> PrintChunkSizesBody<B> {
+//!     fn new(inner: B) -> Self {
 //!         Self { inner }
 //!     }
 //! }
 //!
-//! impl http_body::Body for PrintChunkSizesBody {
+//! impl<B> Body for PrintChunkSizesBody<B>
+//!     where B: Body<Data = Bytes, Error = BoxError>,
+//! {
 //!     type Data = Bytes;
-//!     type Error = hyper::Error;
+//!     type Error = BoxError;
 //!
-//!     fn poll_data(
+//!     fn poll_frame(
 //!         mut self: Pin<&mut Self>,
 //!         cx: &mut Context<'_>,
-//!     ) -> Poll<Option<Result<Self::Data, Self::Error>>> {
-//!         if let Some(chunk) = ready!(Pin::new(&mut self.inner).poll_data(cx)?) {
-//!             println!("chunk size = {}", chunk.len());
-//!             Poll::Ready(Some(Ok(chunk)))
+//!     ) -> Poll<Option<Result<Frame<Self::Data>, Self::Error>>> {
+//!         let inner_body = self.as_mut().project().inner;
+//!         if let Some(frame) = ready!(inner_body.poll_frame(cx)?) {
+//!             if let Some(chunk) = frame.data_ref() {
+//!                 println!("chunk size = {}", chunk.len());
+//!             } else {
+//!                 eprintln!("no data chunk found");
+//!             }
+//!             Poll::Ready(Some(Ok(frame)))
 //!         } else {
 //!             Poll::Ready(None)
 //!         }
-//!     }
-//!
-//!     fn poll_trailers(
-//!         mut self: Pin<&mut Self>,
-//!         cx: &mut Context<'_>,
-//!     ) -> Poll<Result<Option<hyper::HeaderMap>, Self::Error>> {
-//!         Pin::new(&mut self.inner).poll_trailers(cx)
 //!     }
 //!
 //!     fn is_end_stream(&self) -> bool {
@@ -56,9 +59,9 @@
 //!     }
 //! }
 //!
-//! async fn handle<B>(_: Request<B>) -> Result<Response<Empty>, Infallible> {
+//! async fn handle(_: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, Infallible> {
 //!     // ...
-//!     # Ok(Response::new(Empty::new()))
+//!     # Ok(Response::new(Full::default()))
 //! }
 //!
 //! # #[tokio::main]
@@ -69,7 +72,7 @@
 //!     .service_fn(handle);
 //!
 //! // Call the service
-//! let request = Request::new(Body::from("foobar"));
+//! let request = Request::new(Full::from("foobar"));
 //!
 //! svc.call(request).await?;
 //! # Ok(())
