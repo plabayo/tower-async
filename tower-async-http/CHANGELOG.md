@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.2.0 (November 20, 2023)
+
+- Update to http-body 1.0;
+- Update to http 1.0;
+- Make library ready for `Hyper 1.0` usage;
+- Adapt to new `tower_async::Service` contract:
+  - `call` takes now `&self` instead of `&mut self`;
+  - `call` returns `impl Future` instead of declared as `async fn`;
+
 ## 0.1.4 (September 10, 2023)
 
 Sync with <https://github.com/tower-rs/tower-http/releases/tag/tower-http-0.4.4>.

@@ -148,13 +148,13 @@
 //! your `Cargo.toml`:
 //!
 //! ```toml
-//! tower-async-http = { version = "0.1", features = ["timeout"] }
+//! tower-async-http = { version = "0.2", features = ["timeout"] }
 //! ```
 //!
 //! You can use `"full"` to enable everything:
 //!
 //! ```toml
-//! tower-async-http = { version = "0.1", features = ["full"] }
+//! tower-async-http = { version = "0.2", features = ["full"] }
 //! ```
 //!
 //! [tower-async]: https://crates.io/crates/tower-async

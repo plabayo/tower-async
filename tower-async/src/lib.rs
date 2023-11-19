@@ -163,14 +163,14 @@
 //! `Cargo.toml`:
 //!
 //! ```toml
-//! tower-async = { version = "0.1", features = ["full"] }
+//! tower-async = { version = "0.2", features = ["full"] }
 //! ```
 //!
 //! Alternatively, you can only enable some features. For example,
 //! to enable only the [`timeout`][timeouts] middleware, write:
 //!
 //! ```toml
-//! tower-async = { version = "0.1", features = ["timeout"] }
+//! tower-async = { version = "0.2", features = ["timeout"] }
 //! ```
 //!
 //! See [here][all_layers] for a complete list of all middleware provided by
