@@ -46,33 +46,51 @@ where
     ) -> Poll<Option<Result<Frame<Self::Data>, Self::Error>>> {
         let this = self.project();
         let _guard = this.span.enter();
-
-        let result = if let Some(result) = ready!(this.inner.poll_frame(cx)) {
-            result
-        } else {
-            return Poll::Ready(None);
-        };
+        let result = ready!(this.inner.poll_frame(cx));
 
         let latency = this.start.elapsed();
         *this.start = Instant::now();
 
-        match &result {
-            Ok(frame) => {
-                if let Some(data) = frame.data_ref() {
-                    this.on_body_chunk.on_body_chunk(data, latency, this.span);
-                }
+        match result {
+            Some(Ok(frame)) => {
+                let frame = match frame.into_data() {
+                    Ok(chunk) => {
+                        this.on_body_chunk.on_body_chunk(&chunk, latency, this.span);
+                        Frame::data(chunk)
+                    }
+                    Err(frame) => frame,
+                };
+
+                let frame = match frame.into_trailers() {
+                    Ok(trailers) => {
+                        if let Some((on_eos, stream_start)) = this.on_eos.take() {
+                            on_eos.on_eos(Some(&trailers), stream_start.elapsed(), this.span);
+                        }
+                        Frame::trailers(trailers)
+                    }
+                    Err(frame) => frame,
+                };
+
+                Poll::Ready(Some(Ok(frame)))
             }
-            Err(err) => {
+            Some(Err(err)) => {
                 if let Some((classify_eos, on_failure)) =
                     this.classify_eos.take().zip(this.on_failure.take())
                 {
-                    let failure_class = classify_eos.classify_error(err);
+                    let failure_class = classify_eos.classify_error(&err);
                     on_failure.on_failure(failure_class, latency, this.span);
                 }
+
+                Poll::Ready(Some(Err(err)))
+            }
+            None => {
+                if let Some((on_eos, stream_start)) = this.on_eos.take() {
+                    on_eos.on_eos(None, stream_start.elapsed(), this.span);
+                }
+
+                Poll::Ready(None)
             }
         }
-
-        Poll::Ready(Some(result))
     }
 
     fn is_end_stream(&self) -> bool {
@@ -81,21 +99,5 @@ where
 
     fn size_hint(&self) -> http_body::SizeHint {
         self.inner.size_hint()
-    }
-}
-
-impl<B: Default, C: Default, OnBodyChunk: Default, OnEos: Default, OnFailure: Default> Default
-    for ResponseBody<B, C, OnBodyChunk, OnEos, OnFailure>
-{
-    fn default() -> Self {
-        Self {
-            inner: Default::default(),
-            classify_eos: Default::default(),
-            on_eos: Default::default(),
-            on_body_chunk: Default::default(),
-            on_failure: Default::default(),
-            start: Instant::now(),
-            span: Span::current(),
-        }
     }
 }

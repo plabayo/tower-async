@@ -219,8 +219,7 @@
 //! ### `on_eos`
 //!
 //! The `on_eos` callback is called when a streaming response body ends, that is
-//! when `http_body::Body::poll_trailers` returns `Poll::Ready(Ok(trailers))`.
-//! TODO: is this still used?!
+//! when `http_body::Body::poll_frame` returns `Poll::Ready(None)`.
 //!
 //! `on_eos` is called even if the trailers produced are `None`.
 //!
@@ -231,7 +230,6 @@
 //! - The inner [`Service`]'s response future resolves to an error.
 //! - A response is classified as a failure.
 //! - [`http_body::Body::poll_frame`] returns an error.
-//! // TODO: is poll_trailers correctly transitioned?!
 //! - An end-of-stream is classified as a failure.
 //!
 //! # Recording fields on the span
@@ -378,7 +376,6 @@
 //! [`TraceLayer::make_span_with`]: crate::trace::TraceLayer::make_span_with
 //! [`Span`]: tracing::Span
 //! [`ServerErrorsAsFailures`]: crate::classify::ServerErrorsAsFailures
-//! TODO: is on_eos still ever called?
 
 use std::{fmt, time::Duration};
 
