@@ -207,7 +207,7 @@ impl ClassifyResponse for GrpcErrorsAsFailures {
 
     fn classify_error<E>(self, error: &E) -> Self::FailureClass
     where
-        E: fmt::Display + 'static,
+        E: fmt::Display,
     {
         GrpcFailureClass::Error(error.to_string())
     }
@@ -238,7 +238,7 @@ impl ClassifyEos for GrpcEosErrorsAsFailures {
 
     fn classify_error<E>(self, error: &E) -> Self::FailureClass
     where
-        E: fmt::Display + 'static,
+        E: fmt::Display,
     {
         GrpcFailureClass::Error(error.to_string())
     }

@@ -33,7 +33,7 @@ impl<B> OnResponse<B> for () {
 
 impl<B, F> OnResponse<B> for F
 where
-    F: FnOnce(&Response<B>, Duration, &Span),
+    F: Fn(&Response<B>, Duration, &Span),
 {
     fn on_response(self, response: &Response<B>, latency: Duration, span: &Span) {
         self(response, latency, span)

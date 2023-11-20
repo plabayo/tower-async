@@ -32,7 +32,7 @@ impl OnEos for () {
 
 impl<F> OnEos for F
 where
-    F: FnOnce(Option<&HeaderMap>, Duration, &Span),
+    F: Fn(Option<&HeaderMap>, Duration, &Span),
 {
     fn on_eos(self, trailers: Option<&HeaderMap>, stream_duration: Duration, span: &Span) {
         self(trailers, stream_duration, span)

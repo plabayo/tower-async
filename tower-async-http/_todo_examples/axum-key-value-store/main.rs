@@ -79,11 +79,11 @@ fn app() -> Router {
         .map_response_body(axum::body::boxed)
         // Compress responses
         .compression();
-        // Set a `Content-Type` if there isn't one already.
-        // .insert_response_header_if_not_present(
-        //     header::CONTENT_TYPE,
-        //     HeaderValue::from_static("application/octet-stream"),
-        // );
+    // Set a `Content-Type` if there isn't one already.
+    // .insert_response_header_if_not_present(
+    //     header::CONTENT_TYPE,
+    //     HeaderValue::from_static("application/octet-stream"),
+    // );
 
     let router_layer = middleware.into_classic();
 

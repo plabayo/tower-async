@@ -54,7 +54,7 @@ where
 
     fn classify_error<E>(self, error: &E) -> Self::FailureClass
     where
-        E: std::fmt::Display + 'static,
+        E: std::fmt::Display,
     {
         (self.f)(self.inner.classify_error(error))
     }
@@ -73,7 +73,7 @@ where
 
     fn classify_error<E>(self, error: &E) -> Self::FailureClass
     where
-        E: std::fmt::Display + 'static,
+        E: std::fmt::Display,
     {
         (self.f)(self.inner.classify_error(error))
     }

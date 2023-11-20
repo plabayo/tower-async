@@ -78,7 +78,7 @@ pub trait MakeClassifier {
 ///
 ///     fn classify_error<E>(self, error: &E) -> Self::FailureClass
 ///     where
-///         E: fmt::Display + 'static,
+///         E: fmt::Display,
 ///     {
 ///         error.to_string()
 ///     }
@@ -180,7 +180,7 @@ pub trait ClassifyResponse {
     /// errors. A retry policy might allow retrying some errors and not others.
     fn classify_error<E>(self, error: &E) -> Self::FailureClass
     where
-        E: fmt::Display + 'static;
+        E: fmt::Display;
 
     /// Transform the failure classification using a function.
     ///
@@ -251,7 +251,7 @@ pub trait ClassifyEos {
     /// errors. A retry policy might allow retrying some errors and not others.
     fn classify_error<E>(self, error: &E) -> Self::FailureClass
     where
-        E: fmt::Display + 'static;
+        E: fmt::Display;
 
     /// Transform the failure classification using a function.
     ///
@@ -293,7 +293,7 @@ impl<T> ClassifyEos for NeverClassifyEos<T> {
 
     fn classify_error<E>(self, _error: &E) -> Self::FailureClass
     where
-        E: fmt::Display + 'static,
+        E: fmt::Display,
     {
         // `NeverClassifyEos` contains an `Infallible` so it can never be constructed
         unreachable!()
@@ -346,7 +346,7 @@ impl ClassifyResponse for ServerErrorsAsFailures {
 
     fn classify_error<E>(self, error: &E) -> Self::FailureClass
     where
-        E: fmt::Display + 'static,
+        E: fmt::Display,
     {
         ServerErrorsFailureClass::Error(error.to_string())
     }
@@ -391,11 +391,11 @@ mod usable_for_retries {
     impl<ReqB, ResB, E, C> Policy<Request<ReqB>, Response<ResB>, E> for RetryBasedOnClassification<C>
     where
         C: ClassifyResponse + Clone,
-        E: fmt::Display + 'static,
+        E: fmt::Display,
         C::FailureClass: IsRetryable,
         ResB: http_body::Body,
         Request<ReqB>: Clone,
-        E: std::error::Error + 'static,
+        E: std::error::Error,
     {
         async fn retry(
             &self,

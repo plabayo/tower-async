@@ -342,7 +342,7 @@
 //!
 //!     fn classify_error<E>(self, error: &E) -> Self::FailureClass
 //!     where
-//!         E: std::fmt::Display + 'static,
+//!         E: std::fmt::Display,
 //!     {
 //!         "something went wrong..."
 //!     }

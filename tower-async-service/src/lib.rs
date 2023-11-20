@@ -137,7 +137,7 @@
 /// impl<T, Request> Service<Request> for Timeout<T>
 /// where
 ///     T: Service<Request>,
-///     T::Error: Into<Box<dyn Error + Send + Sync>> + 'static,
+///     T::Error: Into<Box<dyn Error + Send + Sync>>,
 ///     T::Response: 'static,
 /// {
 ///     // `Timeout` doesn't modify the response type, so we use `T`'s response type

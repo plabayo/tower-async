@@ -96,7 +96,7 @@ impl ClassifyResponse for StatusInRangeAsFailures {
 
     fn classify_error<E>(self, error: &E) -> Self::FailureClass
     where
-        E: std::fmt::Display + 'static,
+        E: std::fmt::Display,
     {
         StatusInRangeFailureClass::Error(error.to_string())
     }

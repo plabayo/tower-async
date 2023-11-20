@@ -31,7 +31,7 @@ impl<B, C, OnBodyChunkT, OnEosT, OnFailureT> Body
     for ResponseBody<B, C, OnBodyChunkT, OnEosT, OnFailureT>
 where
     B: Body,
-    B::Error: fmt::Display + 'static,
+    B::Error: fmt::Display,
     C: ClassifyEos,
     OnEosT: OnEos,
     OnBodyChunkT: OnBodyChunk<B::Data>,
