@@ -1,4 +1,3 @@
-use futures_util::FutureExt;
 use std::fmt;
 use tower_async_layer::Layer;
 use tower_async_service::Service;
@@ -51,15 +50,15 @@ impl<S, F> MapResult<S, F> {
 impl<S, F, Request, Response, Error> Service<Request> for MapResult<S, F>
 where
     S: Service<Request>,
-    Error: From<S::Error>,
-    F: FnOnce(Result<S::Response, S::Error>) -> Result<Response, Error> + Clone,
+    F: Fn(Result<S::Response, S::Error>) -> Result<Response, Error>,
 {
     type Response = Response;
     type Error = Error;
 
     #[inline]
     async fn call(&self, request: Request) -> Result<Self::Response, Self::Error> {
-        self.inner.call(request).map(self.f.clone()).await
+        let result = self.inner.call(request).await;
+        (self.f)(result)
     }
 }
 

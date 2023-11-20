@@ -175,14 +175,21 @@ mod tests {
         Ok(res)
     }
 
-    // TODO: revisit
-    // #[allow(dead_code)]
-    // async fn is_compatible_with_hyper() {
-    //     use tower_async_bridge::AsyncServiceExt;
-    //     let mut client = Decompression::new(Client::new().into_async());
+    #[allow(dead_code)]
+    async fn is_compatible_with_hyper() {
+        use hyper_util::{client::legacy::Client, rt::TokioExecutor};
+        use tower_async::ServiceBuilder;
+        use tower_async_bridge::AsyncServiceExt;
 
-    //     let req = Request::new(Body::empty());
+        let client = Client::builder(TokioExecutor::new())
+            .build_http()
+            .into_async();
+        let client = ServiceBuilder::new()
+            .layer(DecompressionLayer::new())
+            .service(client);
 
-    //     let _: Response<DecompressionBody<Body>> = client.call(req).await.unwrap();
-    // }
+        let req = Request::new(Body::default());
+
+        let _: Response<DecompressionBody<_>> = client.call(req).await.unwrap();
+    }
 }

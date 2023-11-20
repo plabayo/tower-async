@@ -1,6 +1,5 @@
-use futures_core::TryFuture;
-use futures_util::TryFutureExt;
 use std::fmt;
+
 use tower_async_layer::Layer;
 use tower_async_service::Service;
 
@@ -49,22 +48,22 @@ impl<S, F> AndThen<S, F> {
     }
 }
 
-impl<S, F, Request, Fut> Service<Request> for AndThen<S, F>
+impl<S, F, Request, Fut, Output, Error> Service<Request> for AndThen<S, F>
 where
     S: Service<Request>,
-    S::Error: Into<Fut::Error>,
-    F: FnOnce(S::Response) -> Fut + Clone,
-    Fut: TryFuture,
+    S::Error: Into<Error>,
+    F: Fn(S::Response) -> Fut,
+    Fut: std::future::Future<Output = Result<Output, Error>>,
 {
-    type Response = Fut::Ok;
-    type Error = Fut::Error;
+    type Response = Output;
+    type Error = Error;
 
     async fn call(&self, request: Request) -> Result<Self::Response, Self::Error> {
-        self.inner
-            .call(request)
-            .err_into()
-            .and_then(self.f.clone())
-            .await
+        let result = self.inner.call(request).await;
+        match result {
+            Ok(response) => (self.f)(response).await,
+            Err(error) => Err(error.into()),
+        }
     }
 }
 

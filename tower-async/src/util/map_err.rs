@@ -1,6 +1,5 @@
 use std::fmt;
 
-use futures_util::TryFutureExt;
 use tower_async_layer::Layer;
 use tower_async_service::Service;
 
@@ -52,14 +51,17 @@ impl<S, F> MapErr<S, F> {
 impl<S, F, Request, Error> Service<Request> for MapErr<S, F>
 where
     S: Service<Request>,
-    F: FnOnce(S::Error) -> Error + Clone,
+    F: Fn(S::Error) -> Error,
 {
     type Response = S::Response;
     type Error = Error;
 
     #[inline]
     async fn call(&self, request: Request) -> Result<Self::Response, Self::Error> {
-        self.inner.call(request).map_err(self.f.clone()).await
+        match self.inner.call(request).await {
+            Ok(response) => Ok(response),
+            Err(error) => Err((self.f)(error)),
+        }
     }
 }
 

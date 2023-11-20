@@ -1,7 +1,7 @@
 use axum::{
     body::Bytes,
     extract::{Path, State},
-    http::{header, HeaderValue, StatusCode},
+    http::{header, StatusCode},
     response::IntoResponse,
     routing::get,
     Router,
@@ -61,8 +61,8 @@ fn app() -> Router {
 
     // Build our middleware stack
     let middleware = ServiceBuilder::new()
-        // Mark the `Authorization` and `Cookie` headers as sensitive so it doesn't show in logs
-        .sensitive_request_headers(sensitive_headers.clone())
+        // // Mark the `Authorization` and `Cookie` headers as sensitive so it doesn't show in logs
+        // .sensitive_request_headers(sensitive_headers.clone())
         // Add high level tracing/logging to all requests
         .layer(
             TraceLayer::new_for_http()
@@ -72,23 +72,25 @@ fn app() -> Router {
                 .make_span_with(DefaultMakeSpan::new().include_headers(true))
                 .on_response(DefaultOnResponse::new().include_headers(true).latency_unit(LatencyUnit::Micros)),
         )
-        .sensitive_response_headers(sensitive_headers)
+        // .sensitive_response_headers(sensitive_headers)
         // Set a timeout
         .layer(TimeoutLayer::new(Duration::from_secs(10)))
         // Box the response body so it implements `Default` which is required by axum
         .map_response_body(axum::body::boxed)
         // Compress responses
-        .compression()
+        .compression();
         // Set a `Content-Type` if there isn't one already.
-        .insert_response_header_if_not_present(
-            header::CONTENT_TYPE,
-            HeaderValue::from_static("application/octet-stream"),
-        );
+        // .insert_response_header_if_not_present(
+        //     header::CONTENT_TYPE,
+        //     HeaderValue::from_static("application/octet-stream"),
+        // );
+
+    let router_layer = middleware.into_classic();
 
     // Build route service
     Router::new()
         .route("/:key", get(get_key).post(set_key))
-        .layer(middleware.into_classic())
+        .layer(router_layer)
         .with_state(state)
 }
 

@@ -1,5 +1,5 @@
-use futures_util::FutureExt;
 use std::{fmt, future::Future};
+
 use tower_async_layer::Layer;
 use tower_async_service::Service;
 
@@ -52,7 +52,7 @@ impl<S, F, Request, Response, Error, Fut> Service<Request> for Then<S, F>
 where
     S: Service<Request>,
     S::Error: Into<Error>,
-    F: FnOnce(Result<S::Response, S::Error>) -> Fut + Clone,
+    F: Fn(Result<S::Response, S::Error>) -> Fut,
     Fut: Future<Output = Result<Response, Error>>,
 {
     type Response = Response;
@@ -60,7 +60,8 @@ where
 
     #[inline]
     async fn call(&self, request: Request) -> Result<Self::Response, Self::Error> {
-        self.inner.call(request).then(self.f.clone()).await
+        let result = self.inner.call(request).await;
+        (self.f)(result).await
     }
 }
 

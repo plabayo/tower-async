@@ -8,17 +8,20 @@ use std::{
 use bytes::Bytes;
 use clap::Parser;
 use http::{header, StatusCode};
-use http_body_util::Full;
-use hyper::service::make_service_fn;
+use hyper_util::{
+    rt::{TokioExecutor, TokioIo},
+    server::conn::auto::Builder,
+};
+use tokio::net::TcpListener;
 use tower_async::{
     limit::policy::{ConcurrentPolicy, LimitReached},
     BoxError, Service, ServiceBuilder,
 };
-use tower_async_bridge::ClassicServiceExt;
 use tower_async_http::{
     trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer},
     LatencyUnit, ServiceBuilderExt,
 };
+use tower_async_hyper::{HyperBody, TowerHyperServiceExt};
 
 /// Simple Hyper server with an HTTP API
 #[derive(Debug, Parser)]
@@ -28,8 +31,8 @@ struct Config {
     port: u16,
 }
 
-type Request = hyper::Request<hyper::body::Body>;
-type Response = hyper::Response<hyper::body::Body>;
+type Request = hyper::Request<HyperBody>;
+type Response = hyper::Response<String>;
 
 #[derive(Debug, Clone)]
 struct WebServer {
@@ -111,6 +114,7 @@ async fn main() {
     let sensitive_headers: Arc<[_]> = vec![header::AUTHORIZATION, header::COOKIE].into();
 
     let web_service = ServiceBuilder::new()
+        .map_request_body(HyperBody::from)
         .compression()
         .sensitive_request_headers(sensitive_headers.clone())
         .layer(
@@ -123,29 +127,39 @@ async fn main() {
         )
         .sensitive_response_headers(sensitive_headers)
         .timeout(Duration::from_secs(10))
-        .map_result(|result: Result<Response, BoxError>| {
-            if let Err(err) = &result {
-                if err.is::<LimitReached>() {
-                    return Ok(hyper::Response::builder()
-                        .status(StatusCode::TOO_MANY_REQUESTS)
-                        .body(Full::<Bytes>::new())
-                        .unwrap());
-                }
-            }
-            result
-        })
+        .map_response(|res| res)
+        .map_err(|err| err)
+        // .map_result(|result: Result<Response, BoxError>| {
+        //     if let Err(err) = &result {
+        //         if err.is::<LimitReached>() {
+        //             return Ok(hyper::Response::builder()
+        //                 .status(StatusCode::TOO_MANY_REQUESTS)
+        //                 .body(String::default())
+        //                 .unwrap());
+        //         }
+        //     }
+        //     result
+        // })
         .limit(ConcurrentPolicy::new(1))
         .service(WebServer::new())
-        .into_classic();
+        .into_hyper_service();
 
     let addr = SocketAddr::from((Ipv4Addr::UNSPECIFIED, config.port));
     tracing::info!("Listening on {}", addr);
-    // Serve our application
-    hyper::Server::bind(&addr)
-        .serve(make_service_fn(|_| {
-            let web_service = web_service.clone();
-            async move { Ok::<_, Infallible>(web_service.clone()) }
-        }))
-        .await
-        .expect("server error");
+
+    let listener = TcpListener::bind(addr).await.unwrap();
+
+    loop {
+        let (stream, _) = listener.accept().await.unwrap();
+        let service = web_service.clone();
+        tokio::spawn(async move {
+            let stream = TokioIo::new(stream);
+            let result = Builder::new(TokioExecutor::new())
+                .serve_connection(stream, service)
+                .await;
+            if let Err(e) = result {
+                eprintln!("server connection error: {}", e);
+            }
+        });
+    }
 }

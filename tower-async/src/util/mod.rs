@@ -157,7 +157,7 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     fn map_response<F, Response>(self, f: F) -> MapResponse<Self, F>
     where
         Self: Sized,
-        F: FnOnce(Self::Response) -> Response + Clone,
+        F: Fn(Self::Response) -> Response,
     {
         MapResponse::new(self, f)
     }
@@ -215,7 +215,7 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     fn map_err<F, Error>(self, f: F) -> MapErr<Self, F>
     where
         Self: Sized,
-        F: FnOnce(Self::Error) -> Error + Clone,
+        F: Fn(Self::Error) -> Error,
     {
         MapErr::new(self, f)
     }
@@ -415,7 +415,7 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     where
         Self: Sized,
         Error: From<Self::Error>,
-        F: FnOnce(Result<Self::Response, Self::Error>) -> Result<Response, Error> + Clone,
+        F: Fn(Result<Self::Response, Self::Error>) -> Result<Response, Error>,
     {
         MapResult::new(self, f)
     }
@@ -674,7 +674,7 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     ///
     /// // If the database service returns an error, attempt to recover by
     /// // calling `recover_from_error`. Otherwise, return the successful response.
-    /// let mut new_service = service.then(|result| async move {
+    /// let new_service = service.then(|result| async move {
     ///     match result {
     ///         Ok(record) => Ok(record),
     ///         Err(e) => recover_from_error(e).await,
@@ -701,7 +701,7 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     where
         Self: Sized,
         Error: From<Self::Error>,
-        F: FnOnce(Result<Self::Response, Self::Error>) -> Fut + Clone,
+        F: Fn(Result<Self::Response, Self::Error>) -> Fut,
         Fut: Future<Output = Result<Response, Error>>,
     {
         Then::new(self, f)
