@@ -67,7 +67,7 @@
 //!
 //! #[derive(Debug)]
 //! enum MyError {
-//!     Hyper(BoxError),
+//!     Other(BoxError),
 //!     TooManyRedirects,
 //! }
 //!
@@ -85,7 +85,7 @@
 //!
 //! let mut client = ServiceBuilder::new()
 //!     .layer(FollowRedirectLayer::with_policy(policy))
-//!     .map_err(MyError::Hyper)
+//!     .map_err(MyError::Other)
 //!     .service(http_client);
 //!
 //! // ...
@@ -345,7 +345,7 @@ mod tests {
 
     use crate::test_helpers::Body;
 
-    use hyper::header::LOCATION;
+    use http::header::LOCATION;
     use std::convert::Infallible;
     use tower_async::{ServiceBuilder, ServiceExt};
 

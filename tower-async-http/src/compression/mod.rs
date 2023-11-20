@@ -88,13 +88,14 @@ mod tests {
     use super::*;
 
     use crate::compression::predicate::SizeAbove;
-    use crate::test_helpers::{Body, TowerHttpBodyExt};
+    use crate::test_helpers::{Body, WithTrailers};
 
     use async_compression::tokio::write::{BrotliDecoder, BrotliEncoder};
-    use bytes::BytesMut;
     use flate2::read::GzDecoder;
     use http::header::{ACCEPT_ENCODING, CONTENT_ENCODING, CONTENT_TYPE};
-    use hyper::{Error, Request, Response};
+    use http::{HeaderMap, HeaderName, Request, Response};
+    use http_body_util::BodyExt;
+    use std::convert::Infallible;
     use std::io::Read;
     use std::sync::{Arc, RwLock};
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -127,13 +128,9 @@ mod tests {
         let res = svc.call(req).await.unwrap();
 
         // read the compressed body
-        let mut body = res.into_body();
-        let mut data = BytesMut::new();
-        while let Some(chunk) = body.data().await {
-            let chunk = chunk.unwrap();
-            data.extend_from_slice(&chunk[..]);
-        }
-        let compressed_data = data.freeze().to_vec();
+        let collected = res.into_body().collect().await.unwrap();
+        let trailers = collected.trailers().cloned().unwrap();
+        let compressed_data = collected.to_bytes();
 
         // decompress the body
         // doing this with flate2 as that is much easier than async-compression and blocking during
@@ -143,6 +140,9 @@ mod tests {
         decoder.read_to_string(&mut decompressed).unwrap();
 
         assert_eq!(decompressed, "Hello, World!");
+
+        // trailers are maintained
+        assert_eq!(trailers["foo"], "bar");
     }
 
     #[tokio::test]
@@ -158,13 +158,8 @@ mod tests {
         let res = svc.call(req).await.unwrap();
 
         // read the compressed body
-        let mut body = res.into_body();
-        let mut data = BytesMut::new();
-        while let Some(chunk) = body.data().await {
-            let chunk = chunk.unwrap();
-            data.extend_from_slice(&chunk[..]);
-        }
-        let compressed_data = data.freeze().to_vec();
+        let body = res.into_body();
+        let compressed_data = body.collect().await.unwrap().to_bytes();
 
         // decompress the body
         let decompressed = zstd::stream::decode_all(std::io::Cursor::new(compressed_data)).unwrap();
@@ -215,12 +210,8 @@ mod tests {
         );
 
         // read the compressed body
-        let mut body = res.into_body();
-        let mut data = BytesMut::new();
-        while let Some(chunk) = body.data().await {
-            let chunk = chunk.unwrap();
-            data.extend_from_slice(&chunk[..]);
-        }
+        let body = res.into_body();
+        let data = body.collect().await.unwrap().to_bytes();
 
         // decompress the body
         let data = {
@@ -237,8 +228,11 @@ mod tests {
         assert_eq!(data, DATA.as_bytes());
     }
 
-    async fn handle(_req: Request<Body>) -> Result<Response<Body>, Error> {
-        Ok(Response::new(Body::from("Hello, World!")))
+    async fn handle(_req: Request<Body>) -> Result<Response<WithTrailers<Body>>, Infallible> {
+        let mut trailers = HeaderMap::new();
+        trailers.insert(HeaderName::from_static("foo"), "bar".parse().unwrap());
+        let body = Body::from("Hello, World!").with_trailers(trailers);
+        Ok(Response::builder().body(body).unwrap())
     }
 
     #[tokio::test]
@@ -259,6 +253,7 @@ mod tests {
         #[derive(Default, Clone)]
         struct EveryOtherResponse(Arc<RwLock<u64>>);
 
+        #[allow(clippy::dbg_macro)]
         impl Predicate for EveryOtherResponse {
             fn should_compress<B>(&self, _: &http::Response<B>) -> bool
             where
@@ -279,12 +274,8 @@ mod tests {
         let res = svc.call(req).await.unwrap();
 
         // read the uncompressed body
-        let mut body = res.into_body();
-        let mut data = BytesMut::new();
-        while let Some(chunk) = body.data().await {
-            let chunk = chunk.unwrap();
-            data.extend_from_slice(&chunk[..]);
-        }
+        let body = res.into_body();
+        let data = body.collect().await.unwrap().to_bytes();
         let still_uncompressed = String::from_utf8(data.to_vec()).unwrap();
         assert_eq!(DATA, &still_uncompressed);
 
@@ -296,18 +287,14 @@ mod tests {
         let res = svc.call(req).await.unwrap();
 
         // read the compressed body
-        let mut body = res.into_body();
-        let mut data = BytesMut::new();
-        while let Some(chunk) = body.data().await {
-            let chunk = chunk.unwrap();
-            data.extend_from_slice(&chunk[..]);
-        }
+        let body = res.into_body();
+        let data = body.collect().await.unwrap().to_bytes();
         assert!(String::from_utf8(data.to_vec()).is_err());
     }
 
     #[tokio::test]
     async fn doesnt_compress_images() {
-        async fn handle(_req: Request<Body>) -> Result<Response<Body>, Error> {
+        async fn handle(_req: Request<Body>) -> Result<Response<Body>, Infallible> {
             let mut res = Response::new(Body::from(
                 "a".repeat((SizeAbove::DEFAULT_MIN_SIZE * 2) as usize),
             ));
@@ -332,7 +319,7 @@ mod tests {
 
     #[tokio::test]
     async fn does_compress_svg() {
-        async fn handle(_req: Request<Body>) -> Result<Response<Body>, Error> {
+        async fn handle(_req: Request<Body>) -> Result<Response<Body>, Infallible> {
             let mut res = Response::new(Body::from(
                 "a".repeat((SizeAbove::DEFAULT_MIN_SIZE * 2) as usize),
             ));
@@ -377,13 +364,8 @@ mod tests {
         let res = svc.call(req).await.unwrap();
 
         // read the compressed body
-        let mut body = res.into_body();
-        let mut data = BytesMut::new();
-        while let Some(chunk) = body.data().await {
-            let chunk = chunk.unwrap();
-            data.extend_from_slice(&chunk[..]);
-        }
-        let compressed_data = data.freeze().to_vec();
+        let body = res.into_body();
+        let compressed_data = body.collect().await.unwrap().to_bytes();
 
         // build the compressed body with the same quality level
         let compressed_with_level = {
@@ -401,7 +383,7 @@ mod tests {
         };
 
         assert_eq!(
-            compressed_data.as_slice(),
+            compressed_data,
             compressed_with_level.as_slice(),
             "Compression level is not respected"
         );

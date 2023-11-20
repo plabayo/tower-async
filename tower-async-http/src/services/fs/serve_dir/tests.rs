@@ -1,5 +1,5 @@
 use crate::services::{ServeDir, ServeFile};
-use crate::test_helpers::{self, Body, TowerHttpBodyExt};
+use crate::test_helpers::{self, Body};
 
 use brotli::BrotliDecompress;
 use bytes::Bytes;
@@ -8,6 +8,7 @@ use http::header::ALLOW;
 use http::{header, Method, Response};
 use http::{Request, StatusCode};
 use http_body::Body as HttpBody;
+use http_body_util::BodyExt;
 use std::convert::Infallible;
 use std::io::Read;
 use tower_async::{service_fn, ServiceExt};
@@ -60,8 +61,7 @@ async fn head_request() {
     assert_eq!(res.headers()["content-type"], "text/plain");
     assert_eq!(res.headers()["content-length"], "23");
 
-    let body = res.into_body().data().await;
-    assert!(body.is_none());
+    assert!(res.into_body().frame().await.is_none());
 }
 
 #[tokio::test]
@@ -80,8 +80,7 @@ async fn precompresed_head_request() {
     assert_eq!(res.headers()["content-encoding"], "gzip");
     assert_eq!(res.headers()["content-length"], "59");
 
-    let body = res.into_body().data().await;
-    assert!(body.is_none());
+    assert!(res.into_body().frame().await.is_none());
 }
 
 #[tokio::test]
@@ -117,7 +116,7 @@ async fn precompressed_gzip() {
     assert_eq!(res.headers()["content-type"], "text/plain");
     assert_eq!(res.headers()["content-encoding"], "gzip");
 
-    let body = res.into_body().data().await.unwrap().unwrap();
+    let body = res.into_body().collect().await.unwrap().to_bytes();
     let mut decoder = GzDecoder::new(&body[..]);
     let mut decompressed = String::new();
     decoder.read_to_string(&mut decompressed).unwrap();
@@ -138,7 +137,7 @@ async fn precompressed_br() {
     assert_eq!(res.headers()["content-type"], "text/plain");
     assert_eq!(res.headers()["content-encoding"], "br");
 
-    let body = res.into_body().data().await.unwrap().unwrap();
+    let body = res.into_body().collect().await.unwrap().to_bytes();
     let mut decompressed = Vec::new();
     BrotliDecompress(&mut &body[..], &mut decompressed).unwrap();
     let decompressed = String::from_utf8(decompressed.to_vec()).unwrap();
@@ -158,7 +157,7 @@ async fn precompressed_deflate() {
     assert_eq!(res.headers()["content-type"], "text/plain");
     assert_eq!(res.headers()["content-encoding"], "deflate");
 
-    let body = res.into_body().data().await.unwrap().unwrap();
+    let body = res.into_body().collect().await.unwrap().to_bytes();
     let mut decoder = DeflateDecoder::new(&body[..]);
     let mut decompressed = String::new();
     decoder.read_to_string(&mut decompressed).unwrap();
@@ -179,7 +178,7 @@ async fn unsupported_precompression_algorithm_fallbacks_to_uncompressed() {
     assert_eq!(res.headers()["content-type"], "text/plain");
     assert!(res.headers().get("content-encoding").is_none());
 
-    let body = res.into_body().data().await.unwrap().unwrap();
+    let body = res.into_body().collect().await.unwrap().to_bytes();
     let body = String::from_utf8(body.to_vec()).unwrap();
     assert!(body.starts_with("\"This is a test file!\""));
 }
@@ -207,7 +206,7 @@ async fn only_precompressed_variant_existing() {
     assert_eq!(res.headers()["content-type"], "text/plain");
     assert_eq!(res.headers()["content-encoding"], "gzip");
 
-    let body = res.into_body().data().await.unwrap().unwrap();
+    let body = res.into_body().collect().await.unwrap().to_bytes();
     let mut decoder = GzDecoder::new(&body[..]);
     let mut decompressed = String::new();
     decoder.read_to_string(&mut decompressed).unwrap();
@@ -229,7 +228,7 @@ async fn missing_precompressed_variant_fallbacks_to_uncompressed() {
     // Uncompressed file is served because compressed version is missing
     assert!(res.headers().get("content-encoding").is_none());
 
-    let body = res.into_body().data().await.unwrap().unwrap();
+    let body = res.into_body().collect().await.unwrap().to_bytes();
     let body = String::from_utf8(body.to_vec()).unwrap();
     assert!(body.starts_with("Test file!"));
 }
@@ -251,7 +250,7 @@ async fn missing_precompressed_variant_fallbacks_to_uncompressed_for_head_reques
     // Uncompressed file is served because compressed version is missing
     assert!(res.headers().get("content-encoding").is_none());
 
-    assert!(res.into_body().data().await.is_none());
+    assert!(res.into_body().frame().await.is_none());
 }
 
 #[tokio::test]
@@ -347,7 +346,7 @@ async fn fallbacks_to_different_precompressed_variant_if_not_found_for_head_requ
     assert_eq!(res.headers()["content-encoding"], "br");
     assert_eq!(res.headers()["content-length"], "15");
 
-    assert!(res.into_body().data().await.is_none());
+    assert!(res.into_body().frame().await.is_none());
 }
 
 #[tokio::test]
@@ -366,7 +365,7 @@ async fn fallbacks_to_different_precompressed_variant_if_not_found() {
     assert_eq!(res.headers()["content-type"], "text/plain");
     assert_eq!(res.headers()["content-encoding"], "br");
 
-    let body = res.into_body().data().await.unwrap().unwrap();
+    let body = res.into_body().collect().await.unwrap().to_bytes();
     let mut decompressed = Vec::new();
     BrotliDecompress(&mut &body[..], &mut decompressed).unwrap();
     let decompressed = String::from_utf8(decompressed.to_vec()).unwrap();
@@ -583,8 +582,7 @@ async fn last_modified() {
 
     let res = svc.oneshot(req).await.unwrap();
     assert_eq!(res.status(), StatusCode::NOT_MODIFIED);
-    let body = res.into_body().data().await;
-    assert!(body.is_none());
+    assert!(res.into_body().frame().await.is_none());
 
     let svc = ServeDir::new("..");
     let req = Request::builder()
@@ -596,7 +594,7 @@ async fn last_modified() {
     let res = svc.oneshot(req).await.unwrap();
     assert_eq!(res.status(), StatusCode::OK);
     let readme_bytes = include_bytes!("../../../../../README.md");
-    let body = res.into_body().data().await.unwrap().unwrap();
+    let body = res.into_body().collect().await.unwrap().to_bytes();
     assert_eq!(body.as_ref(), readme_bytes);
 
     // -- If-Unmodified-Since
@@ -610,7 +608,7 @@ async fn last_modified() {
 
     let res = svc.oneshot(req).await.unwrap();
     assert_eq!(res.status(), StatusCode::OK);
-    let body = res.into_body().data().await.unwrap().unwrap();
+    let body = res.into_body().collect().await.unwrap().to_bytes();
     assert_eq!(body.as_ref(), readme_bytes);
 
     let svc = ServeDir::new("..");
@@ -622,8 +620,7 @@ async fn last_modified() {
 
     let res = svc.oneshot(req).await.unwrap();
     assert_eq!(res.status(), StatusCode::PRECONDITION_FAILED);
-    let body = res.into_body().data().await;
-    assert!(body.is_none());
+    assert!(res.into_body().frame().await.is_none());
 }
 
 #[tokio::test]

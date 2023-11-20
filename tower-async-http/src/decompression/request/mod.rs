@@ -6,13 +6,12 @@ mod tests {
     use super::service::RequestDecompression;
 
     use crate::decompression::DecompressionBody;
-    use crate::test_helpers::{Body, TowerHttpBodyExt};
+    use crate::test_helpers::Body;
 
-    use bytes::BytesMut;
     use flate2::{write::GzEncoder, Compression};
-    use http::{header, Response, StatusCode};
-    use hyper::{Error, Request};
-    use std::io::Write;
+    use http::{header, Request, Response, StatusCode};
+    use http_body_util::BodyExt;
+    use std::{convert::Infallible, io::Write};
     use tower_async::{service_fn, Service};
 
     #[tokio::test]
@@ -48,7 +47,7 @@ mod tests {
 
     async fn assert_request_is_decompressed(
         req: Request<DecompressionBody<Body>>,
-    ) -> Result<Response<Body>, Error> {
+    ) -> Result<Response<Body>, Infallible> {
         let (parts, mut body) = req.into_parts();
         let body = read_body(&mut body).await;
 
@@ -60,7 +59,7 @@ mod tests {
 
     async fn assert_request_is_passed_through(
         req: Request<DecompressionBody<Body>>,
-    ) -> Result<Response<Body>, Error> {
+    ) -> Result<Response<Body>, Infallible> {
         let (parts, mut body) = req.into_parts();
         let body = read_body(&mut body).await;
 
@@ -72,7 +71,7 @@ mod tests {
 
     async fn should_not_be_called(
         _: Request<DecompressionBody<Body>>,
-    ) -> Result<Response<Body>, Error> {
+    ) -> Result<Response<Body>, Infallible> {
         panic!("Inner service should not be called");
     }
 
@@ -87,11 +86,6 @@ mod tests {
     }
 
     async fn read_body(body: &mut DecompressionBody<Body>) -> Vec<u8> {
-        let mut data = BytesMut::new();
-        while let Some(chunk) = body.data().await {
-            let chunk = chunk.unwrap();
-            data.extend_from_slice(&chunk[..]);
-        }
-        data.freeze().to_vec()
+        body.collect().await.unwrap().to_bytes().to_vec()
     }
 }

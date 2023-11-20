@@ -123,7 +123,7 @@ mod tests {
     use std::str::FromStr;
 
     use crate::services::ServeFile;
-    use crate::test_helpers::{Body, TowerHttpBodyExt};
+    use crate::test_helpers::Body;
 
     use brotli::BrotliDecompress;
     use flate2::bufread::DeflateDecoder;
@@ -131,6 +131,7 @@ mod tests {
     use http::header;
     use http::Method;
     use http::{Request, StatusCode};
+    use http_body_util::BodyExt;
     use mime::Mime;
     use tower_async::ServiceExt;
 
@@ -142,7 +143,7 @@ mod tests {
 
         assert_eq!(res.headers()["content-type"], "text/markdown");
 
-        let body = res.into_body().data().await.unwrap().unwrap();
+        let body = res.into_body().collect().await.unwrap().to_bytes();
         let body = String::from_utf8(body.to_vec()).unwrap();
 
         assert!(body.starts_with("# Tower Async HTTP"));
@@ -156,7 +157,7 @@ mod tests {
 
         assert_eq!(res.headers()["content-type"], "image/jpg");
 
-        let body = res.into_body().data().await.unwrap().unwrap();
+        let body = res.into_body().collect().await.unwrap().to_bytes();
         let body = String::from_utf8(body.to_vec()).unwrap();
 
         assert!(body.starts_with("# Tower Async HTTP"));
@@ -173,8 +174,7 @@ mod tests {
         assert_eq!(res.headers()["content-type"], "text/plain");
         assert_eq!(res.headers()["content-length"], "23");
 
-        let body = res.into_body().data().await;
-        assert!(body.is_none());
+        assert!(res.into_body().frame().await.is_none());
     }
 
     #[tokio::test]
@@ -192,8 +192,7 @@ mod tests {
         assert_eq!(res.headers()["content-encoding"], "gzip");
         assert_eq!(res.headers()["content-length"], "59");
 
-        let body = res.into_body().data().await;
-        assert!(body.is_none());
+        assert!(res.into_body().frame().await.is_none());
     }
 
     #[tokio::test]
@@ -209,7 +208,7 @@ mod tests {
         assert_eq!(res.headers()["content-type"], "text/plain");
         assert_eq!(res.headers()["content-encoding"], "gzip");
 
-        let body = res.into_body().data().await.unwrap().unwrap();
+        let body = res.into_body().collect().await.unwrap().to_bytes();
         let mut decoder = GzDecoder::new(&body[..]);
         let mut decompressed = String::new();
         decoder.read_to_string(&mut decompressed).unwrap();
@@ -229,7 +228,7 @@ mod tests {
         assert_eq!(res.headers()["content-type"], "text/plain");
         assert!(res.headers().get("content-encoding").is_none());
 
-        let body = res.into_body().data().await.unwrap().unwrap();
+        let body = res.into_body().collect().await.unwrap().to_bytes();
         let body = String::from_utf8(body.to_vec()).unwrap();
         assert!(body.starts_with("\"This is a test file!\""));
     }
@@ -248,7 +247,7 @@ mod tests {
         // Uncompressed file is served because compressed version is missing
         assert!(res.headers().get("content-encoding").is_none());
 
-        let body = res.into_body().data().await.unwrap().unwrap();
+        let body = res.into_body().collect().await.unwrap().to_bytes();
         let body = String::from_utf8(body.to_vec()).unwrap();
         assert!(body.starts_with("Test file!"));
     }
@@ -269,8 +268,7 @@ mod tests {
         // Uncompressed file is served because compressed version is missing
         assert!(res.headers().get("content-encoding").is_none());
 
-        let body = res.into_body().data().await;
-        assert!(body.is_none());
+        assert!(res.into_body().frame().await.is_none());
     }
 
     #[tokio::test]
@@ -292,7 +290,7 @@ mod tests {
         assert_eq!(res.headers()["content-type"], "text/plain");
         assert_eq!(res.headers()["content-encoding"], "gzip");
 
-        let body = res.into_body().data().await.unwrap().unwrap();
+        let body = res.into_body().collect().await.unwrap().to_bytes();
         let mut decoder = GzDecoder::new(&body[..]);
         let mut decompressed = String::new();
         decoder.read_to_string(&mut decompressed).unwrap();
@@ -312,7 +310,7 @@ mod tests {
         assert_eq!(res.headers()["content-type"], "text/plain");
         assert_eq!(res.headers()["content-encoding"], "br");
 
-        let body = res.into_body().data().await.unwrap().unwrap();
+        let body = res.into_body().collect().await.unwrap().to_bytes();
         let mut decompressed = Vec::new();
         BrotliDecompress(&mut &body[..], &mut decompressed).unwrap();
         let decompressed = String::from_utf8(decompressed.to_vec()).unwrap();
@@ -331,7 +329,7 @@ mod tests {
         assert_eq!(res.headers()["content-type"], "text/plain");
         assert_eq!(res.headers()["content-encoding"], "deflate");
 
-        let body = res.into_body().data().await.unwrap().unwrap();
+        let body = res.into_body().collect().await.unwrap().to_bytes();
         let mut decoder = DeflateDecoder::new(&body[..]);
         let mut decompressed = String::new();
         decoder.read_to_string(&mut decompressed).unwrap();
@@ -353,7 +351,7 @@ mod tests {
         assert_eq!(res.headers()["content-type"], "text/plain");
         assert_eq!(res.headers()["content-encoding"], "gzip");
 
-        let body = res.into_body().data().await.unwrap().unwrap();
+        let body = res.into_body().collect().await.unwrap().to_bytes();
         let mut decoder = GzDecoder::new(&body[..]);
         let mut decompressed = String::new();
         decoder.read_to_string(&mut decompressed).unwrap();
@@ -368,7 +366,7 @@ mod tests {
         assert_eq!(res.headers()["content-type"], "text/plain");
         assert_eq!(res.headers()["content-encoding"], "br");
 
-        let body = res.into_body().data().await.unwrap().unwrap();
+        let body = res.into_body().collect().await.unwrap().to_bytes();
         let mut decompressed = Vec::new();
         BrotliDecompress(&mut &body[..], &mut decompressed).unwrap();
         let decompressed = String::from_utf8(decompressed.to_vec()).unwrap();
@@ -383,7 +381,7 @@ mod tests {
 
         assert_eq!(res.headers()["content-type"], "text/markdown");
 
-        let body = res.into_body().data().await.unwrap().unwrap();
+        let body = res.into_body().collect().await.unwrap().to_bytes();
         let body = String::from_utf8(body.to_vec()).unwrap();
 
         assert!(body.starts_with("# Tower Async HTTP"));
@@ -405,7 +403,7 @@ mod tests {
         assert_eq!(res.headers()["content-type"], "text/plain");
         assert_eq!(res.headers()["content-encoding"], "br");
 
-        let body = res.into_body().data().await.unwrap().unwrap();
+        let body = res.into_body().collect().await.unwrap().to_bytes();
         let mut decompressed = Vec::new();
         BrotliDecompress(&mut &body[..], &mut decompressed).unwrap();
         let decompressed = String::from_utf8(decompressed.to_vec()).unwrap();
@@ -430,8 +428,7 @@ mod tests {
         assert_eq!(res.headers()["content-length"], "15");
         assert_eq!(res.headers()["content-encoding"], "br");
 
-        let body = res.into_body().data().await;
-        assert!(body.is_none());
+        assert!(res.into_body().frame().await.is_none());
     }
 
     #[tokio::test]
@@ -482,8 +479,7 @@ mod tests {
 
         let res = svc.oneshot(req).await.unwrap();
         assert_eq!(res.status(), StatusCode::NOT_MODIFIED);
-        let body = res.into_body().data().await;
-        assert!(body.is_none());
+        assert!(res.into_body().frame().await.is_none());
 
         let svc = ServeFile::new("../README.md");
         let req = Request::builder()
@@ -494,7 +490,7 @@ mod tests {
         let res = svc.oneshot(req).await.unwrap();
         assert_eq!(res.status(), StatusCode::OK);
         let readme_bytes = include_bytes!("../../../../README.md");
-        let body = res.into_body().data().await.unwrap().unwrap();
+        let body = res.into_body().collect().await.unwrap().to_bytes();
         assert_eq!(body.as_ref(), readme_bytes);
 
         // -- If-Unmodified-Since
@@ -507,7 +503,7 @@ mod tests {
 
         let res = svc.oneshot(req).await.unwrap();
         assert_eq!(res.status(), StatusCode::OK);
-        let body = res.into_body().data().await.unwrap().unwrap();
+        let body = res.into_body().collect().await.unwrap().to_bytes();
         assert_eq!(body.as_ref(), readme_bytes);
 
         let svc = ServeFile::new("../README.md");
@@ -518,7 +514,6 @@ mod tests {
 
         let res = svc.oneshot(req).await.unwrap();
         assert_eq!(res.status(), StatusCode::PRECONDITION_FAILED);
-        let body = res.into_body().data().await;
-        assert!(body.is_none());
+        assert!(res.into_body().frame().await.is_none());
     }
 }

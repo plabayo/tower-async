@@ -393,7 +393,7 @@ impl MakeRequestId for MakeRequestUuid {
 mod tests {
     use crate::test_helpers::Body;
     use crate::ServiceBuilderExt as _;
-    use hyper::Response;
+    use http::Response;
     use std::{
         convert::Infallible,
         sync::{

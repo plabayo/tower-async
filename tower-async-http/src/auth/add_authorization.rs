@@ -178,6 +178,8 @@ where
 
 #[cfg(test)]
 mod tests {
+    use std::convert::Infallible;
+
     #[allow(unused_imports)]
     use super::*;
 
@@ -225,7 +227,7 @@ mod tests {
                 let auth = request.headers().get(http::header::AUTHORIZATION).unwrap();
                 assert!(auth.is_sensitive());
 
-                Ok::<_, hyper::Error>(Response::new(Body::empty()))
+                Ok::<_, Infallible>(Response::new(Body::empty()))
             });
 
         let client = AddAuthorization::bearer(svc, "foo").as_sensitive(true);

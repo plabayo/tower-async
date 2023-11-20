@@ -69,10 +69,10 @@ where
         self: Pin<&mut Self>,
         cx: &mut Context<'_>,
     ) -> Poll<Option<Result<Frame<Self::Data>, Self::Error>>> {
-        self.project().reader.poll_next(cx).map(|opt| match opt {
-            Some(Ok(bytes)) => Some(Ok(Frame::data(bytes))),
-            Some(Err(err)) => Some(Err(err)),
-            None => None,
-        })
+        match std::task::ready!(self.project().reader.poll_next(cx)) {
+            Some(Ok(chunk)) => Poll::Ready(Some(Ok(Frame::data(chunk)))),
+            Some(Err(err)) => Poll::Ready(Some(Err(err))),
+            None => Poll::Ready(None),
+        }
     }
 }

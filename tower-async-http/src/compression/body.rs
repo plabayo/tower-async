@@ -157,13 +157,10 @@ where
             #[cfg(feature = "compression-zstd")]
             BodyInnerProj::Zstd { inner } => inner.poll_frame(cx),
             BodyInnerProj::Identity { inner } => match ready!(inner.poll_frame(cx)) {
-                Some(Ok(frame)) => match frame.into_data() {
-                    Ok(mut buf) => {
-                        let bytes = buf.copy_to_bytes(buf.remaining());
-                        Poll::Ready(Some(Ok(Frame::data(bytes))))
-                    }
-                    Err(_) => Poll::Ready(None),
-                },
+                Some(Ok(frame)) => {
+                    let frame = frame.map_data(|mut buf| buf.copy_to_bytes(buf.remaining()));
+                    Poll::Ready(Some(Ok(frame)))
+                }
                 Some(Err(err)) => Poll::Ready(Some(Err(err.into()))),
                 None => Poll::Ready(None),
             },

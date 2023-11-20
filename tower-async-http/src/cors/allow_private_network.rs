@@ -71,7 +71,7 @@ impl AllowPrivateNetwork {
             AllowPrivateNetworkInner::Predicate(c) => c(origin?, parts),
         };
 
-        allow_private_network.then(|| (ALLOW_PRIVATE_NETWORK, TRUE.clone()))
+        allow_private_network.then_some((ALLOW_PRIVATE_NETWORK, TRUE.clone()))
     }
 }
 
