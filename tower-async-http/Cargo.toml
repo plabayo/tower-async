@@ -23,7 +23,6 @@ http = "1"
 http-body = "1"
 http-body-util = "0.1"
 pin-project-lite = "0.2"
-tower-async-hyper = { version = "0.1", path = "../tower-async-hyper" }
 tower-async-layer = { version = "0.2", path = "../tower-async-layer" }
 tower-async-service = { version = "0.2", path = "../tower-async-service" }
 
@@ -59,6 +58,7 @@ tower = { version = "0.4", features = ["util", "make", "timeout"] }
 tower-async = { path = "../tower-async", features = ["full"] }
 tower-async-bridge = { path = "../tower-async-bridge", features = ["full"] }
 tower-async-http = { path = ".", features = ["full"] }
+tower-async-hyper = { path = "../tower-async-hyper" }
 tracing = { version = "0.1", default_features = false }
 tracing-subscriber = "0.3"
 uuid = { version = "1.0", features = ["v4"] }
