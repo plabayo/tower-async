@@ -66,9 +66,8 @@ impl WebServer {
         hyper::Response::builder()
             .header(hyper::header::CONTENT_TYPE, "text/html")
             .status(status)
-            .body(
-                format!(
-                    r##"<!DOCTYPE html>
+            .body(format!(
+                r##"<!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8">
@@ -82,10 +81,8 @@ impl WebServer {
     </body>
 </html>
 "##,
-                    self.start_time.elapsed().as_secs()
-                )
-                .into(),
-            )
+                self.start_time.elapsed().as_secs()
+            ))
             .unwrap()
     }
 }
