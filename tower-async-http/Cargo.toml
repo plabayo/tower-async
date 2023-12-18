@@ -4,7 +4,7 @@ description = """
 Tower Async middleware and utilities for HTTP clients and servers.
 An "Async Trait" fork from the original Tower Library.
 """
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Glen De Cauwsemaecker <glen@plabayo.tech>"]
 edition = "2021"
 license = "MIT"
