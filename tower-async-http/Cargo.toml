@@ -42,7 +42,7 @@ tracing = { version = "0.1", default_features = false, optional = true }
 uuid = { version = "1.0", features = ["v4"], optional = true }
 
 [dev-dependencies]
-axum = { git = "https://github.com/tokio-rs/axum", branch = "david/hyper-1.0-rc.x" }
+axum = "0.7.2"
 brotli = "3"
 bytes = "1"
 clap = { version = "4.3", features = ["derive"] }
