@@ -1,6 +1,8 @@
 //! Various utility types and functions that are generally used with Tower.
 
 mod and_then;
+mod boxed;
+mod boxed_clone;
 mod either;
 
 mod map_err;
@@ -16,6 +18,8 @@ pub mod rng;
 
 pub use self::{
     and_then::{AndThen, AndThenLayer},
+    boxed::{BoxCloneServiceLayer, BoxLayer, BoxService},
+    boxed_clone::BoxCloneService,
     either::Either,
     map_err::{MapErr, MapErrLayer},
     map_request::{MapRequest, MapRequestLayer},
