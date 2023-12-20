@@ -568,7 +568,7 @@ impl<L> ServiceBuilder<L> {
     >
     where
         L: Layer<S>,
-        L::Service: Service<R> + Send + 'static,
+        L::Service: Service<R> + Send + Sync + 'static,
         R: 'static,
     {
         self.layer(crate::util::BoxService::layer())

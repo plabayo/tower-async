@@ -8,6 +8,9 @@
 #![allow(elided_lifetimes_in_paths, clippy::type_complexity)]
 #![cfg_attr(test, allow(clippy::float_cmp))]
 #![cfg_attr(docsrs, feature(doc_auto_cfg, doc_cfg))]
+#![allow(incomplete_features)]
+#![feature(associated_type_bounds)]
+#![feature(return_type_notation)]
 // `rustdoc::broken_intra_doc_links` is checked on CI
 
 //! `async fn(Request) -> Result<Response, Error>`

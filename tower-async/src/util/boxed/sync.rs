@@ -40,17 +40,17 @@ use std::future::Future;
 /// [`Service`]: crate::Service
 /// [`Rc`]: std::rc::Rc
 pub struct BoxService<T, U, E> {
-    inner: Box<dyn ServiceDyn<T, Response = U, Error = E> + Send>,
+    inner: Box<dyn ServiceDyn<T, Response = U, Error = E> + Send + Sync + 'static>,
 }
 
 impl<T, U, E> BoxService<T, U, E> {
     #[allow(missing_docs)]
     pub fn new<S>(inner: S) -> Self
     where
-        S: ServiceDyn<T, Response = U, Error = E> + Send + 'static,
+        S: ServiceDyn<T, Response = U, Error = E> + Send + Sync + 'static,
     {
         // rust can't infer the type
-        let inner: Box<dyn ServiceDyn<T, Response = U, Error = E> + Send> = Box::new(inner);
+        let inner: Box<dyn ServiceDyn<T, Response = U, Error = E> + Send + Sync + 'static> = Box::new(inner);
         BoxService { inner }
     }
 
@@ -60,7 +60,7 @@ impl<T, U, E> BoxService<T, U, E> {
     /// [`Layer`]: crate::Layer
     pub fn layer<S>() -> LayerFn<fn(S) -> Self>
     where
-        S: Service<T, Response = U, Error = E> + Send + 'static,
+        S: Service<T, Response = U, Error = E> + Send + Sync + 'static,
         T: 'static,
     {
         layer_fn(Self::new)
@@ -71,7 +71,7 @@ impl<T, U, E> Service<T> for BoxService<T, U, E> {
     type Response = U;
     type Error = E;
 
-    fn call(&self, request: T) -> impl Future<Output = Result<U, E>> {
+    fn call(&self, request: T) -> impl Future<Output = Result<U, E>> + Send + Sync + 'static {
         self.inner.call(request)
     }
 }

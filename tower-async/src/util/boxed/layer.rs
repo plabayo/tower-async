@@ -51,15 +51,15 @@ use tower_async_service::Service;
 /// [`BoxService`]: super::BoxService
 /// [`Timeout`]: crate::timeout
 pub struct BoxLayer<In, T, U, E> {
-    boxed: Arc<dyn Layer<In, Service = BoxService<T, U, E>> + Send + 'static>,
+    boxed: Arc<dyn Layer<In, Service = BoxService<T, U, E>> + Send + Sync + 'static>,
 }
 
 impl<In, T, U, E> BoxLayer<In, T, U, E> {
     /// Create a new [`BoxLayer`].
     pub fn new<L>(inner_layer: L) -> Self
     where
-        L: Layer<In> + Send + 'static,
-        L::Service: Service<T, Response = U, Error = E> + Send + 'static,
+        L: Layer<In> + Send + Sync + 'static,
+        L::Service: Service<T, Response = U, Error = E> + Send + Sync + 'static,
         T: 'static,
     {
         let layer = layer_fn(move |inner: In| {

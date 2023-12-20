@@ -753,7 +753,7 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// [`boxed_clone`]: Self::boxed_clone
     fn boxed(self) -> BoxService<Request, Self::Response, Self::Error>
     where
-        Self: Sized + Send + 'static,
+        Self: Sized + Send + Sync + 'static,
         Request: 'static,
     {
         BoxService::new(self)
