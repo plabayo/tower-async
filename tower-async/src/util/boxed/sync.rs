@@ -60,18 +60,25 @@ impl<T, U, E> BoxService<T, U, E> {
     /// [`Layer`]: crate::Layer
     pub fn layer<S>() -> LayerFn<fn(S) -> Self>
     where
-        S: Service<T, Response = U, Error = E> + Send + Sync + 'static,
-        T: 'static,
+        S: Service<T, Response = U, Error = E, call(): Send + Sync> + Send + Sync + 'static,
+        U: Send + Sync + 'static,
+        E: Send + Sync + 'static,
+        T: Send + 'static,
     {
         layer_fn(Self::new)
     }
 }
 
-impl<T, U, E> Service<T> for BoxService<T, U, E> {
+impl<T, U, E> Service<T> for BoxService<T, U, E>
+    where
+        U: Send + Sync + 'static,
+        E: Send + Sync + 'static,
+        T: Send + 'static,
+{
     type Response = U;
     type Error = E;
 
-    fn call(&self, request: T) -> impl Future<Output = Result<U, E>> + Send + Sync + 'static {
+    fn call(&self, request: T) -> impl Future<Output = Result<U, E>> {
         self.inner.call(request)
     }
 }

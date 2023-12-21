@@ -59,8 +59,10 @@ impl<In, T, U, E> BoxLayer<In, T, U, E> {
     pub fn new<L>(inner_layer: L) -> Self
     where
         L: Layer<In> + Send + Sync + 'static,
-        L::Service: Service<T, Response = U, Error = E> + Send + Sync + 'static,
-        T: 'static,
+        L::Service: Service<T, Response = U, Error = E, call(): Send + Sync> + Send + Sync + 'static,
+        U: Send + Sync + 'static,
+        E: Send + Sync + 'static,
+        T: Send + 'static,
     {
         let layer = layer_fn(move |inner: In| {
             let out = inner_layer.layer(inner);

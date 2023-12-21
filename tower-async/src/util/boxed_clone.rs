@@ -68,8 +68,10 @@ impl<T, U, E> BoxCloneService<T, U, E> {
     /// [`Layer`]: crate::Layer
     pub fn layer<S>() -> LayerFn<fn(S) -> Self>
     where
-        S: Service<T, Response = U, Error = E> + Clone + Send + 'static,
-        T: 'static,
+        S: Service<T, Response = U, Error = E, call(): Send + Sync> + Clone + Send + Sync + 'static,
+        U: Send + Sync + 'static,
+        E: Send + Sync + 'static,
+        T: Send + 'static,
     {
         layer_fn(Self::new)
     }
@@ -94,7 +96,7 @@ impl<T, U, E> Clone for BoxCloneService<T, U, E> {
 trait CloneService<R>: ServiceDyn<R> {
     fn clone_box(
         &self,
-    ) -> Box<dyn CloneService<R, Response = Self::Response, Error = Self::Error> + Send>;
+    ) -> Box<dyn CloneService<R, Response = Self::Response, Error = Self::Error,> + Send>;
 }
 
 impl<R, T> CloneService<R> for T

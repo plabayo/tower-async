@@ -10,12 +10,12 @@ pub trait ServiceDyn<Request> {
     fn call(
         &self,
         req: Request,
-    ) -> Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send + Sync + 'static>>;
+    ) -> Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send + Sync + '_>>;
 }
 
 impl<T, Request> ServiceDyn<Request> for T
 where
-    T: Service<Request, call(): Send> + Send + Sync + 'static,
+    T: Service<Request, call(): Send + Sync> + Send + Sync + 'static,
     T::Response: Send + Sync + 'static,
     T::Error: Send + Sync + 'static,
     Request: Send + 'static,
@@ -26,7 +26,7 @@ where
     fn call(
         &self,
         req: Request,
-    ) -> Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send + Sync + 'static>> {
+    ) -> Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send + Sync + '_>> {
         Box::pin(<Self as Service<Request>>::call(self, req))
     }
 }

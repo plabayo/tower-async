@@ -22,7 +22,7 @@ use tokio::net::TcpListener;
 use tower_async::{
     limit::policy::{ConcurrentPolicy, LimitReached},
     service_fn,
-    util::BoxService,
+    util::BoxCloneService,
     BoxError, Service, ServiceBuilder, ServiceExt,
 };
 use tower_async_http::{
@@ -110,14 +110,14 @@ impl UriParams {
 #[derive(Debug)]
 struct RouterEndpoint {
     matcher: EndpointMatcher,
-    service: BoxService<WebRequest, WebResponse, WebResponse>,
+    service: BoxCloneService<WebRequest, WebResponse, WebResponse>,
 }
 
 impl RouterEndpoint {
     pub(crate) fn new(
         method: Method,
         path: &'static str,
-        service: BoxService<WebRequest, WebResponse, WebResponse>,
+        service: BoxCloneService<WebRequest, WebResponse, WebResponse>,
     ) -> Self {
         Self {
             matcher: EndpointMatcher::new(method, path),
@@ -198,15 +198,7 @@ impl EndpointMatcher {
 
 #[derive(Debug, Default)]
 pub struct Router {
-    endpoints: Arc<Vec<RouterEndpoint>>,
-}
-
-impl Clone for Router {
-    fn clone(&self) -> Self {
-        Self {
-            endpoints: self.endpoints.clone(),
-        }
-    }
+    endpoints: Vec<RouterEndpoint>,
 }
 
 impl Router {
@@ -214,45 +206,75 @@ impl Router {
     // I Only changed this to make my example work
     pub fn on<F, Fut, O, E>(&mut self, method: Method, endpoint: &'static str, f: F)
     where
-        F: Fn(WebRequest) -> Fut + Send + Sync + 'static,
+        F: Fn(WebRequest) -> Fut + Clone + Send + Sync + 'static,
         Fut: std::future::Future<Output = Result<O, E>> + Send + Sync + 'static,
-        E: IntoWebResponse + Send + 'static,
-        O: IntoWebResponse + Send + 'static,
+        E: IntoWebResponse + Send + Sync + 'static,
+        O: IntoWebResponse + Send + Sync + 'static,
     {
         let svc = service_fn(f)
             .map_response(IntoWebResponse::into_web_response)
-            .map_err(IntoWebResponse::into_web_response)
-            .boxed();
+            .map_err(IntoWebResponse::into_web_response);
+        let svc = BoxCloneService::new(svc);
         self.endpoints
             .push(RouterEndpoint::new(method, endpoint, svc));
     }
+
+    pub fn into_service(self) -> RouterService {
+        RouterService {
+            endpoints: Arc::new(self.endpoints),
+        }
+    }
 }
 
-impl Service<WebRequest> for Router {
+
+#[derive(Debug, Default)]
+pub struct RouterService {
+    endpoints: Arc<Vec<RouterEndpoint>>,
+}
+
+impl RouterService {
+    fn find_cloned_endpoint_service(&self, req: &mut WebRequest) -> Option<BoxCloneService<WebRequest, WebResponse, WebResponse>> {
+        let method = req.method();
+        let path = req.uri().path().trim_matches('/');
+
+        for endpoint in self.endpoints.iter() {
+            if let Some(params) = endpoint.matcher.match_request(method, path.as_ref()) {
+                req.extensions_mut().insert(params);
+                return Some(endpoint.service.clone());
+            }
+        }
+        None
+    }
+}
+
+impl Clone for RouterService {
+    fn clone(&self) -> Self {
+        Self {
+            endpoints: self.endpoints.clone(),
+        }
+    }
+}
+
+impl Service<WebRequest> for RouterService {
     type Response = WebResponse;
     type Error = Infallible;
 
     fn call(
         &self,
         mut req: WebRequest,
-    ) -> impl std::future::Future<Output = Result<Self::Response, Self::Error>> + Send + Sync + 'static
+    ) -> impl std::future::Future<Output = Result<Self::Response, Self::Error>>
     {
-        let endpoints = self.endpoints.clone();
+        let maybe_service = self.find_cloned_endpoint_service(&mut req);
         async move {
-            let method = req.method();
-            let path = req.uri().path().trim_matches('/');
-
-            for endpoint in endpoints.iter() {
-                if let Some(params) = endpoint.matcher.match_request(method, path.as_ref()) {
-                    req.extensions_mut().insert(params);
-                    return match endpoint.service.call(req).await {
+            match maybe_service {
+                Some(service) => {
+                    return match service.call(req).await {
                         Ok(res) => Ok(res),
                         Err(err) => Ok(err.into_web_response()),
-                    };
+                    }
                 }
+                None =>  Ok(StatusCode::NOT_FOUND.into_web_response())
             }
-
-            Ok(StatusCode::NOT_FOUND.into_web_response())
         }
     }
 }
@@ -314,7 +336,7 @@ async fn main() {
         .timeout(Duration::from_secs(10))
         .map_result(map_limit_result)
         .limit(ConcurrentPolicy::new(1))
-        .service(router)
+        .service(router.into_service())
         .into_hyper_service();
 
     let addr = SocketAddr::from((Ipv4Addr::UNSPECIFIED, config.port));

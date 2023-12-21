@@ -43,6 +43,8 @@ timeout = ["tokio/time", "tokio/macros"]
 util = ["__common", "futures-util"]
 util-tokio = ["util", "tokio/time"]
 
+nightly = []
+
 [dependencies]
 tower-async-layer = { version = "0.2", path = "../tower-async-layer" }
 tower-async-service = { version = "0.2", path = "../tower-async-service" }

@@ -55,7 +55,7 @@ serde_json = "1.0"
 sync_wrapper = "0.1"
 tokio = { version = "1", features = ["full"] }
 tower = { version = "0.4", features = ["util", "make", "timeout"] }
-tower-async = { path = "../tower-async", features = ["full"] }
+tower-async = { path = "../tower-async", features = ["full", "nightly"] }
 tower-async-bridge = { path = "../tower-async-bridge", features = ["full"] }
 tower-async-http = { path = ".", features = ["full"] }
 tower-async-hyper = { path = "../tower-async-hyper" }

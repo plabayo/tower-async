@@ -1,9 +1,12 @@
 //! Various utility types and functions that are generally used with Tower.
 
 mod and_then;
-mod boxed;
-mod boxed_clone;
 mod either;
+
+#[cfg(feature = "nightly")]
+mod boxed;
+#[cfg(feature = "nightly")]
+mod boxed_clone;
 
 mod map_err;
 mod map_request;
@@ -18,8 +21,6 @@ pub mod rng;
 
 pub use self::{
     and_then::{AndThen, AndThenLayer},
-    boxed::{BoxCloneServiceLayer, BoxLayer, BoxService},
-    boxed_clone::BoxCloneService,
     either::Either,
     map_err::{MapErr, MapErrLayer},
     map_request::{MapRequest, MapRequestLayer},
@@ -27,6 +28,12 @@ pub use self::{
     map_result::{MapResult, MapResultLayer},
     service_fn::{service_fn, ServiceFn},
     then::{Then, ThenLayer},
+};
+
+#[cfg(feature = "nightly")]
+pub use self::{
+    boxed::{BoxCloneServiceLayer, BoxLayer, BoxService},
+    boxed_clone::BoxCloneService,
 };
 
 use std::future::Future;
@@ -710,7 +717,14 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     {
         Then::new(self, f)
     }
+}
 
+/// An extension trait for `Service`s that provides a variety of convenient
+/// adapters, available in nightly edition only
+#[cfg(feature = "nightly")]
+pub trait NightlyServiceExt<Request>:
+    tower_async_service::Service<Request, call(): Send + Sync>
+{
     /// Convert the service into a [`Service`] + [`Send`] trait object.
     ///
     /// See [`BoxService`] for more details.
@@ -754,11 +768,14 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     fn boxed(self) -> BoxService<Request, Self::Response, Self::Error>
     where
         Self: Sized + Send + Sync + 'static,
-        Request: 'static,
+        Self::Response: Send + Sync + 'static,
+        Self::Error: Send + Sync + 'static,
+        Request: Send + 'static,
     {
         BoxService::new(self)
     }
 
+    #[cfg(feature = "nightly")]
     /// Convert the service into a [`Service`] + [`Clone`] + [`Send`] trait object.
     ///
     /// This is similar to the [`boxed`] method, but it requires that `Self` implement
@@ -802,8 +819,10 @@ pub trait ServiceExt<Request>: tower_async_service::Service<Request> {
     /// [`boxed`]: Self::boxed
     fn boxed_clone(self) -> BoxCloneService<Request, Self::Response, Self::Error>
     where
-        Self: Clone + Sized + Send + 'static,
-        Request: 'static,
+        Self: Clone + Sized + Send + Sync + 'static,
+        Self::Response: Send + Sync + 'static,
+        Self::Error: Send + Sync + 'static,
+        Request: Send + 'static,
     {
         BoxCloneService::new(self)
     }

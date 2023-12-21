@@ -520,7 +520,10 @@ impl<L> ServiceBuilder<L> {
     {
         self
     }
+}
 
+#[cfg(feature = "nightly")]
+impl<L> ServiceBuilder<L> {
     /// This wraps the inner service with the [`Layer`] returned by [`BoxService::layer()`].
     ///
     /// See that method for more details.
@@ -549,7 +552,7 @@ impl<L> ServiceBuilder<L> {
     /// ```
     ///
     /// [`BoxService::layer()`]: crate::util::BoxService::layer()
-    #[cfg(feature = "util")]
+    #[cfg(all(feature = "util", feature = "nightly"))]
     pub fn boxed<S, R>(
         self,
     ) -> ServiceBuilder<
@@ -568,8 +571,10 @@ impl<L> ServiceBuilder<L> {
     >
     where
         L: Layer<S>,
-        L::Service: Service<R> + Send + Sync + 'static,
-        R: 'static,
+        L::Service: Service<R, call(): Send + Sync> + Send + Sync + 'static,
+        <L::Service as Service<R>>::Response: Send + Sync + 'static,
+        <L::Service as Service<R>>::Error: Send + Sync + 'static,
+        R: Send + 'static,
     {
         self.layer(crate::util::BoxService::layer())
     }
@@ -610,7 +615,7 @@ impl<L> ServiceBuilder<L> {
     /// [`BoxCloneService::layer()`]: crate::util::BoxCloneService::layer()
     /// [`BoxCloneService`]: crate::util::BoxCloneService
     /// [`boxed`]: Self::boxed
-    #[cfg(feature = "util")]
+    #[cfg(all(feature = "util", feature = "nightly"))]
     pub fn boxed_clone<S, R>(
         self,
     ) -> ServiceBuilder<
@@ -629,8 +634,10 @@ impl<L> ServiceBuilder<L> {
     >
     where
         L: Layer<S>,
-        L::Service: Service<R> + Clone + Send + 'static,
-        R: 'static,
+        L::Service: Service<R, call(): Send + Sync> + Clone + Send + Sync + 'static,
+        <L::Service as Service<R>>::Response: Send + Sync + 'static,
+        <L::Service as Service<R>>::Error: Send + Sync + 'static,
+        R: Send + 'static,
     {
         self.layer(crate::util::BoxCloneService::layer())
     }
