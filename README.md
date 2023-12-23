@@ -19,6 +19,19 @@ to integrate async functions into middleware.
 [actions-badge]: https://github.com/plabayo/tower-async/workflows/CI/badge.svg
 [actions-url]:https://github.com/plabayo/tower-async/actions?query=workflow%3ACI
 
+> NOTE that the crates in this repository are meant as an open source collaborative playground
+> to experiment ideas in regards to the async future of tower. It is not actively developed
+> beyond its intiatial implementation by Plabayo.
+>
+> It remains however open to all to contribute to it, discuss using/about it,
+> and so on.
+>
+> The future of tower is tower itself, and the Rust language teams have exciting
+> plans for it, as can be for exmaple read at <https://blog.rust-lang.org/2023/12/21/async-fn-rpit-in-traits.html>.
+> We learned a lot from forking tower and working on this experimental fork, but it became very clear
+> that (1) this approach might not be _the_ approach and (2) the Rust language (even nightly)
+> was clearly not yet ready for this kind of code.
+
 ## Overview
 
 Tower Async aims to make it as easy as possible to build robust networking clients and
@@ -98,8 +111,10 @@ At the very least it is desired that [`tower_async`] is the puppeteer with where
 making use of [`tower`] (classic) (middleware) layers.
 
 For an example on how to operate purely within a [`tower_async`] environment you can
-explore [the Rama codebase](https://www.github.com/plabayo/rama), a proxy framework,
+explore [the old Rama codebase @ `a11c228a667126316bfb13c3a58159bdd83cb6b4`](https://github.com/plabayo/rama/tree/a11c228a667126316bfb13c3a58159bdd83cb6b4), a proxy framework,
 written purely with a [`tower_async`] mindset, and the main motivator to start this fork.
+The latest rama codebase however makes use of [`tower`] once again, as the time was not yet ready
+for using [`tower-async`] in this capacity.
 
 You can however also bridge [`tower`] and [`tower_async`] in any other way. Please consult
 [the "Bridging to Tokio's official Tower Ecosystem" chapter](#Bridging-to-Tokios-official-Tower-Ecosystem)
