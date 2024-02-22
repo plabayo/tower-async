@@ -32,6 +32,15 @@ to integrate async functions into middleware.
 > that (1) this approach might not be _the_ approach and (2) the Rust language (even nightly)
 > was clearly not yet ready for this kind of code.
 
+For now the ideas of `tower-async` continue to live in `rama` where it was further changed
+and adapted to meet the needs to `rama`. `rama` keeps also in sync with `tower-rs/*` codebases,
+such as `tower` and `tower-http`, porting over improvements from these repos manually as they
+get contributed to the `tower-rs` org.
+
+You can find `rama` at: <https://github.com/plabayo/rama/>.
+
+Website of `rama` is: <https://ramaproxy.org/>.
+
 ## Overview
 
 Tower Async aims to make it as easy as possible to build robust networking clients and
