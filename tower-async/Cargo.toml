@@ -6,7 +6,7 @@ name = "tower-async"
 #   - README.md
 # - Update CHANGELOG.md.
 # - Create "vX.X.X" git tag.
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Glen De Cauwsemaecker <glen@plabayo.tech>"]
 license = "MIT"
 readme = "README.md"
@@ -42,6 +42,8 @@ retry = ["__common", "tokio/time", "util"]
 timeout = ["tokio/time", "tokio/macros"]
 util = ["__common", "futures-util"]
 util-tokio = ["util", "tokio/time"]
+
+nightly = []
 
 [dependencies]
 tower-async-layer = { version = "0.2", path = "../tower-async-layer" }

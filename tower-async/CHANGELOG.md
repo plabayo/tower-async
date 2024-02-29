@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.2.1 (December 19, 2023)
+
+- Reintroduce boxed support for Services (`util::{BoxService, BoxCloneService}`):
+  - `ServiceBuilder::{boxed, boxed_clone}`;
+  - `ServiceExt::{boxed, boxed_clone}`;
+  - Achieved using erase concept as defined in <https://blog.rust-lang.org/inside-rust/2023/05/03/stabilizing-async-fn-in-trait.html#modeling-dynamic-dispatch>.
+
 ## 0.2.0 (November 20, 2023)
 
 - Adapt to new `tower_async::Service` contract:
